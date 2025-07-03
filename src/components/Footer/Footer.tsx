@@ -48,17 +48,18 @@ function Footer() {
                 Inicio
               </Link>
               <Link
-                href="/quienes-somos"
-                className="block transition-colors hover:text-gray-600"
-              >
-                ¿Quiénes somos?
-              </Link>
-              <Link
                 href="/noticias"
                 className="block transition-colors hover:text-gray-600"
               >
                 Noticias
               </Link>
+              <Link
+                href="/marco-normativo"
+                className="block transition-colors hover:text-gray-600"
+              >
+                Marco normativo
+              </Link>
+
               <Link
                 href="/actividades"
                 className="block transition-colors hover:text-gray-600"
@@ -69,16 +70,14 @@ function Footer() {
                 href="/capacitaciones"
                 className="block transition-colors hover:text-gray-600"
               >
-                Cursos gratuitos
+                Capacitaciones
               </Link>
-
               <Link
-                href="#"
+                href="/quienes-somos"
                 className="block transition-colors hover:text-gray-600"
               >
-                Más
+                ¿Quiénes somos?
               </Link>
-
               <Link
                 href="/contacto"
                 className="block transition-colors hover:text-gray-600"
@@ -131,8 +130,8 @@ function Footer() {
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 256 256"
-                        width="20"
-                        height="20"
+                        width="18"
+                        height="18"
                         fill="black"
                       >
                         <path d="M208.005 78.284a78.366 78.366 0 0 1-43.999-13.224v74.941a63.96 63.96 0 1 1-63.96-63.96c1.792 0 3.56.088 5.3.255v35.994a28.06 28.06 0 1 0 28.06 28.06V0h33.457a44.823 44.823 0 0 0 6.435 22.847c7.934 13.285 22.347 22.176 38.707 22.947v32.49z" />
