@@ -1,0 +1,32 @@
+@keyframes dotAnimation {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px); /* Empieza a la izquierda */
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(0); /* Se mueve hacia la posición original */
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(10px); /* Termina desplazándose hacia la derecha */
+  }
+}
+
+.dot {
+  opacity: 0;
+  display: inline-block;
+  animation: dotAnimation 1s infinite;
+}
+
+.animate-dot {
+  animation-name: dotAnimation;
+}
+
+.animation-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}

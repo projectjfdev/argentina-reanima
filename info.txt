@@ -1,0 +1,103 @@
+✅ Lo que tu compañero debe hacer después de clonar el repo
+
+1 - Instalar dependencias
+
+Ejecutar: npm install
+
+2 - Crear el archivo .env con la variable DATABASE_URL
+DATABASE_URL="postgresql://postgres:password@localhost:5432/argreanimadb?schema=public"
+Si seguiste todo como lo hizo Fazt, la variable de entorno deberia ser tal cual.
+El user por defecto es postgres y la contraseña es password (o la que hayas puesto)
+Y el puerto por defecto es 5432
+
+3 - Generar el cliente de Prisma
+Ya que el generated/prisma no debería subirse al repo, hacer lo siguiente:
+
+Ejecutar esto en consola: npx prisma generate
+Esto creará la carpeta src/generated/prisma con el cliente Prisma que usás en los imports.
+
+4 - Crear la base de datos
+
+Ejecutar: npx prisma db push
+Esto creará (si no existe) la base de datos especificada en el archivo `.env` (en este caso `argreanimadb`), y sincronizará todas las tablas definidas en `schema.prisma` **directamente en la base de datos**, sin necesidad de crear migraciones.
+Ideal para entornos de desarrollo o para montar el proyecto rápidamente.
+
+--------------------------
+
+¿Como saber si tengo creada la base de datos argreanimadb?
+
+1 - Abris la power shell de postgresql que instalamos cuando instalamos postgres, se llama SQL Shell (psql)
+2 - Ejecutamos este comando: \l o \list
+Resultado: Deberia aparecer argreanimadb
+
+--------------------------
+
+🧩 Actualización de la base de datos con Prisma
+💡 Opción 1 (Recomendada para desarrollo rápido o cambios pequeños):
+Si estás agregando/modificando campos y no necesitás un historial de migraciones:
+
+Modificá el archivo schema.prisma según lo que necesites.
+
+Eliminá las filas existentes si estás agregando campos requeridos sin valor por defecto.
+
+Ejecutá:
+
+npx prisma db push
+Esto sincroniza tu base de datos con el esquema, sin generar una migración. Es ideal para desarrollo.
+
+Tus compañeros deben también ejecutar:
+
+npx prisma db push
+después de hacer pull, para que su base de datos quede alineada con el schema.prisma.
+Si aún sigue sin poder usarse la db, ejecutar npx prisma generate
+
+🧱 Opción 2 (Para entornos más estrictos o con historial de cambios):
+Cuando alguien (por ejemplo Franco) modifica o agrega un modelo nuevo en schema.prisma, debe ejecutar:
+
+npx prisma migrate dev --name descripcion-de-tu-cambio
+Esto crea una carpeta nueva en /prisma/migrations y actualiza la base de datos local.
+
+Luego, otro desarrollador (por ejemplo Jero) hace un pull del repo y debe ejecutar:
+
+npx prisma migrate dev
+Sin necesidad de usar --name, ya que la migración ya fue creada.
+
+-------------------------------------------
+
+2 - Luego de que Franco realice el punto 1:
+
+* Antes de hacer un pull en la base de datos necesitamos resetear nuestra base de datos local con  npx prisma migrate reset
+* si ya tenemos datos reales de produccion no uysar el migrate reset por que se pierden los datos 
+
+* Si tenemos datos de produccion es mejor usar -  npx prisma migrate resolve --applied "nombre-de-la-migración"
+
+
+
+Jero hace un pull del repo como siempre y, importante, ejecuta: npx prisma migrate dev
+Sin necesidad de poner --name, porque la migración ya está creada.
+
+---------------------------
+
+Interfaz grafica de prisma npx prisma studio
+
+############# DEPLOY ###########
+Luego de tener la URL de la DB:
+
+1 - Agregar el siguiente script:
+
+ "scripts": {
+    "postinstall": "prisma generate"
+  },
+
+2 - Ejecutar en consola:
+npx prisma generate
+npx prisma db push
+
+3 - Hacer deploy a Vercel
+
+---------------------------
+
+TODO: 
+
+Meter esta info sobre el marco normativo, no se si en una LP nueva o ya existentes
+https://drive.google.com/drive/u/4/folders/1W9G_CDp-jPCfmzswNhWv174Qv4Hem4Z-
