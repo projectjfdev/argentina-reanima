@@ -228,7 +228,7 @@ const Navbar = ({
                                 La RCP y el cuidado emocional
                               </div>
                               <p className="text-sm leading-snug text-muted-foreground">
-                                Brindar apoyo emocional a quienes lo necesitan
+                                El protocolo de intervención incluye los cuidados emocionales
                               </p>
                             </div>
                           </Link>
