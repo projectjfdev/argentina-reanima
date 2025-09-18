@@ -1,6 +1,6 @@
 {
     "message": "Todas las noticias",
-    "total": 22,
+    "total": 29,
     "news": [
         {
             "id": 3,
@@ -265,6 +265,90 @@
             "dateNew": "2021-01-28T03:00:00.000Z",
             "createdAt": "2025-06-30T18:20:20.072Z",
             "updatedAt": "2025-06-30T18:20:20.072Z"
+        },
+        {
+            "id": 26,
+            "title": "Bariloche nos recibió con las manos listas para hacer RCP",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1755442223/images/s6c5dzdelhugshptfphg.jpg",
+            "imagePublicId": "images/s6c5dzdelhugshptfphg",
+            "description": "Mas de 350 personas capacitadas. Un equipo increíble, junto a Protección Civil y Bomberos locales. ",
+            "redirect": "https://www.rionegro.com.ar/sociedad/bariloche-camuzzi-brindo-capacitaciones-gratuitas-de-rcp-4254833/",
+            "category": "Alianza con Camuzzi Gas",
+            "dateNew": "2025-08-06T03:00:00.000Z",
+            "createdAt": "2025-08-17T14:50:24.829Z",
+            "updatedAt": "2025-08-17T14:50:24.829Z"
+        },
+        {
+            "id": 27,
+            "title": "La Capacitación como motor de Crecimiento",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1755442740/images/yivtsewpiximv4aaeylq.jpg",
+            "imagePublicId": "images/yivtsewpiximv4aaeylq",
+            "description": "Nuestros auxiliares se continúan capacitando para mejorar, día a día, la calidad de nuestros cursos. Gracias @Inspirefemeba",
+            "redirect": "https://www.instagram.com/p/DNQj6b5RcxI/?igsh=NnZoc2UyaGdueWlr",
+            "category": "Medios",
+            "dateNew": "2025-08-08T03:00:00.000Z",
+            "createdAt": "2025-08-17T14:59:02.687Z",
+            "updatedAt": "2025-08-17T14:59:02.687Z"
+        },
+        {
+            "id": 25,
+            "title": "Argentina Reanima en San Martín de los Andes",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1755441611/images/ybdllincohanw9o2smwi.jpg",
+            "imagePublicId": "images/ybdllincohanw9o2smwi",
+            "description": "Junto a Protección Civil y Bomberos sumamos más de 200 manos que saben hacer RCP",
+            "redirect": "https://smandespatagonia.com/masiva-asistencia-al-taller-sobre-monoxido-de-carbono-y-tecnicas-de-reanimacion/",
+            "category": "Alianza con Camuzzi Gas",
+            "dateNew": "2025-08-09T03:00:00.000Z",
+            "createdAt": "2025-08-17T14:40:14.178Z",
+            "updatedAt": "2025-08-17T15:21:03.599Z"
+        },
+        {
+            "id": 28,
+            "title": "Bariloche y su gente con dos herramientas Vitales para Salvar Vidas",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1755538013/images/tlj9enuqydqk5n9hgz0v.jpg",
+            "imagePublicId": "images/tlj9enuqydqk5n9hgz0v",
+            "description": "Gran titulo de El Cordillerano¡! Allí estuvimos con nuestra Asociación sumando manos, que intenten Salvar Vidas.",
+            "redirect": "https://www.elcordillerano.com.ar/noticias/2025/08/14/218792-se-multiplican-las-manos-que-salvan-vidas-mas-de-350-barilochenses-aprendieron-a-practicar-rcp",
+            "category": "Alianza con Camuzzi Gas",
+            "dateNew": "2025-08-14T03:00:00.000Z",
+            "createdAt": "2025-08-18T17:26:55.520Z",
+            "updatedAt": "2025-08-18T17:26:55.520Z"
+        },
+        {
+            "id": 29,
+            "title": "Semana Lucha contra la Muerte Súbita",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1756129498/images/n0r5asgm1ibkwjv47yqw.jpg",
+            "imagePublicId": "images/n0r5asgm1ibkwjv47yqw",
+            "description": "Junto a FAC y la Secretaría de RCP, sumando manos que intenten Salvar Vidas, en diferentes lugares del país.",
+            "redirect": "https://www.eldia.com/nota/2025-8-25-2-14-32-capacitacion-en-rcp-para-salvar-vidas-la-ciudad",
+            "category": "Medios",
+            "dateNew": "2025-08-23T03:00:00.000Z",
+            "createdAt": "2025-08-25T13:45:01.045Z",
+            "updatedAt": "2025-08-25T13:45:01.045Z"
+        },
+        {
+            "id": 30,
+            "title": "Filial Argentina Reanima. Rio Tercero. Córdoba",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1756327093/images/rgdearv7ex9pgcmayraz.jpg",
+            "imagePublicId": "images/rgdearv7ex9pgcmayraz",
+            "description": "Lic. Julio Godoy. Referente de nuestra Asociación en Córdoba. Semana de la lucha contra la muerte súbita.",
+            "redirect": "https://youtu.be/HWFzz-T5MqY?si=UjWoVZ_-1fw78Z4D",
+            "category": "Medios",
+            "dateNew": "2025-08-25T03:00:00.000Z",
+            "createdAt": "2025-08-27T20:38:15.308Z",
+            "updatedAt": "2025-08-27T20:38:15.308Z"
+        },
+        {
+            "id": 31,
+            "title": "Testimonios que nos dan fuerzas para continuar!¡",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1757337204/images/zbnwr7fwketqowxd60e3.jpg",
+            "imagePublicId": "images/zbnwr7fwketqowxd60e3",
+            "description": "💓 Historias reales que salvan vidas.\nEstuvimos en Ensenada para entrevistar y reconocer a Marcos Ricci y Ricardo Villalonga, quienes salvaron la vida de Raúl gracias a sus conocimientos en RCP.",
+            "redirect": "https://www.youtube.com/watch?v=AlHi-wLbz1M",
+            "category": "Medios",
+            "dateNew": "2025-09-05T03:00:00.000Z",
+            "createdAt": "2025-09-08T13:13:26.118Z",
+            "updatedAt": "2025-09-08T13:13:26.118Z"
         }
     ],
     "status": 200,
