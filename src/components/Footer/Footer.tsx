@@ -70,7 +70,7 @@ function Footer() {
                 href="/capacitaciones"
                 className="block transition-colors hover:text-gray-600"
               >
-                Capacitaciones
+                Videos
               </Link>
               <Link
                 href="/quienes-somos"

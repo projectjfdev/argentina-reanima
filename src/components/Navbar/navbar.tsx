@@ -199,7 +199,7 @@ const Navbar = ({
                       href="/capacitaciones"
                     >
                       <span className="after:content-[''] after:absolute after:left-0 after:-bottom-2 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full relative">
-                        Capacitaciones
+                        Videos
                       </span>
                     </Link>
                   </div>
@@ -228,7 +228,8 @@ const Navbar = ({
                                 La RCP y el cuidado emocional
                               </div>
                               <p className="text-sm leading-snug text-muted-foreground">
-                                El protocolo de intervención incluye los cuidados emocionales
+                                El protocolo de intervención incluye los
+                                cuidados emocionales
                               </p>
                             </div>
                           </Link>

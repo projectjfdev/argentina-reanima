@@ -221,16 +221,16 @@ const FormCreateCourse = () => {
                   htmlFor="title"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Título del curso <span className="text-secondary">*</span>
+                  Título de sección <span className="text-secondary">*</span>
                 </label>
                 <Input
                   id="title"
                   type="text"
                   {...register("title", {
-                    required: "El título del curso es requerido",
+                    required: "El título de sección es requerido",
                   })}
                   className="bg-gray-50 border-gray-400 placeholder:text-gray-400 text-gray-800 w-full focus:border-primary focus:ring-primary"
-                  placeholder="Título del curso"
+                  placeholder="Título de seccion"
                 />
                 {errors.title && (
                   <p className="text-red-500 text-xs mt-1">
@@ -276,7 +276,7 @@ const FormCreateCourse = () => {
           {step === 2 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-medium">Lecciones</h2>
+                <h2 className="text-lg font-medium">Videos</h2>
                 <Button
                   type="button"
                   variant="outline"
@@ -284,7 +284,7 @@ const FormCreateCourse = () => {
                   onClick={addLesson}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Agregar Lección
+                  Agregar Video
                 </Button>
               </div>
 
@@ -295,16 +295,15 @@ const FormCreateCourse = () => {
                       htmlFor={`lessons.${index}.title`}
                       className="block text-sm font-medium text-gray-700 mb-1"
                     >
-                      Título de la lección{" "}
-                      <span className="text-secondary">*</span>
+                      Título del video <span className="text-secondary">*</span>
                     </label>
                     <Input
                       id={`lessons.${index}.title`}
                       {...register(`lessons.${index}.title` as const, {
-                        required: "El título de la lección es requerido",
+                        required: "El título del video lección es requerido",
                       })}
                       className="bg-gray-50 border-gray-400 placeholder:text-gray-400 text-gray-800 w-full"
-                      placeholder="Título de la lección"
+                      placeholder="Título del video"
                     />
                     {errors.lessons?.[index]?.title && (
                       <p className="text-red-500 text-xs mt-1">
@@ -317,8 +316,7 @@ const FormCreateCourse = () => {
                       htmlFor={`lessons.${index}.href`}
                       className="block text-sm font-medium text-gray-700 mb-1"
                     >
-                      URL de la lección{" "}
-                      <span className="text-secondary">*</span>
+                      URL de Youtube <span className="text-secondary">*</span>
                     </label>
                     <Input
                       id={`lessons.${index}.href`}
@@ -352,7 +350,9 @@ const FormCreateCourse = () => {
           )}
           {step === 3 && (
             <div className="w-full max-w-4xl mx-auto">
-              <h2 className="text-lg font-medium mb-4">Resumen del curso</h2>
+              <h2 className="text-lg font-medium mb-4">
+                Resumen de la sección
+              </h2>
 
               <div className="space-y-4 p-4 border rounded-md">
                 <div>
@@ -367,7 +367,7 @@ const FormCreateCourse = () => {
 
                 <div>
                   <h3 className="font-medium">
-                    Lecciones ({watch("lessons").length}):
+                    Videos ({watch("lessons").length}):
                   </h3>
                   <ul className="list-disc pl-5 space-y-1">
                     {watch("lessons").map((lesson, index) => (

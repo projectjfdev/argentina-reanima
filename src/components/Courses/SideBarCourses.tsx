@@ -121,7 +121,7 @@ const SidebarCourses = ({
                   />
                 </div> */}
                 <div>
-                  <p className="font-semibold">Menú de cursos</p>
+                  <p className="font-semibold">Menú de videos</p>
                   <p className="text-sm text-gray-500">
                     argentinareanima.ac@gmail.com
                   </p>
@@ -222,7 +222,7 @@ const SidebarCourses = ({
               />
             </div> */}
             <div>
-              <p className="font-semibold">Menú de cursos</p>
+              <p className="font-semibold">Menú de videos</p>
               <p className="text-sm text-gray-500">
                 argentinareanima.ac@gmail.com
               </p>

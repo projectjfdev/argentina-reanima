@@ -19,12 +19,12 @@ function DashboardPage() {
       cta: "Crear Noticia",
     },
     {
-      title: "Cursos",
+      title: "Videos",
       href: "/dashboard/cursos",
       description:
-        "Creá y gestioná tus cursos para ofrecer contenido de calidad a tus usuarios.",
+        "Creá y gestioná tus videos para ofrecer contenido de calidad a tus usuarios.",
       icon: <School />,
-      cta: "Ir a Cursos",
+      cta: "Crear Video",
     },
   ];
   return (

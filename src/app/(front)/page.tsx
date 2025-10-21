@@ -7,14 +7,13 @@ import {
 
 import { Titleh1 } from "@/components/Texts/Titleh1";
 import { LogoSlider } from "@/components/LogoSlider/LogoSlider";
-import { TextImage } from "@/components/TextImage/TextImage";
 import { BoxTresHome } from "@/components/Box3Home/BoxTresHome";
 import BannerHero from "@/components/BannerHero/BannerHero";
 import { useEffect, useState } from "react";
 import { AnimatedLogos } from "@/components/AnimatedCarousel/AnimatedLogos";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import AutoOpenModal from "@/components/Modal/AutoOpenModal";
+// import AutoOpenModal from "@/components/Modal/AutoOpenModal";
 import { DicedHeroSection } from "@/components/TextImage/TextImage4";
 
 export default function Home() {
@@ -124,7 +123,7 @@ export default function Home() {
       <div className="pb-7 md:pb-10 px-4 md:px-0">
         <LogoSlider />
       </div>
-      <AutoOpenModal />
+      {/* <AutoOpenModal /> */}
     </div>
   );
 }
