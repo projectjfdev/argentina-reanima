@@ -34,7 +34,7 @@ const NoticiasPage = () => {
   }, [loadNews, search, category, currentPage]);
 
   return (
-    <div className="flex flex-col  gap-7 md:gap-16">
+    <div className="flex flex-col gap-7 md:gap-16">
       <BannerHero
         src={
           "https://res.cloudinary.com/dtbryiptz/image/upload/v1748214527/Ca%C3%B1uelas-97_rpyvyl_amuuye.jpg"

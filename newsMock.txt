@@ -1,6 +1,6 @@
 {
     "message": "Todas las noticias",
-    "total": 29,
+    "total": 37,
     "news": [
         {
             "id": 3,
@@ -349,6 +349,102 @@
             "dateNew": "2025-09-05T03:00:00.000Z",
             "createdAt": "2025-09-08T13:13:26.118Z",
             "updatedAt": "2025-09-08T13:13:26.118Z"
+        },
+        {
+            "id": 32,
+            "title": "Primer Congreso Nacional Instructores de RCP. Trenque Lauquen",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1759976205/images/b68hwjferkm5k2ztdn22.jpg",
+            "imagePublicId": "images/b68hwjferkm5k2ztdn22",
+            "description": "Nuestra Asociación será parte de este primer Congreso. Allí estaremos, sumando manos para continuar luchando contra la muerte súbita. ",
+            "redirect": "https://www.trenquelauquen.gov.ar/noticias/trenque-lauquen-sera-sede-del-primer-congreso-nacional-para-instructores-de-rcp/",
+            "category": "Medios",
+            "dateNew": "2025-09-19T03:00:00.000Z",
+            "createdAt": "2025-10-09T02:16:47.361Z",
+            "updatedAt": "2025-10-09T02:16:47.361Z"
+        },
+        {
+            "id": 33,
+            "title": "Primer Congreso Nacional de Instructores de RCP. Trenque Lauquen",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1761243793/images/tckmnjryqvkauz9dxhqo.jpg",
+            "imagePublicId": "images/tckmnjryqvkauz9dxhqo",
+            "description": "Estuvimos presentes en el Congreso. Gracias a Noticias 12 de Trenque Lauquen por la entrevista a nuestro presidente Sergio Felice",
+            "redirect": "https://www.youtube.com/watch?v=NEnuqSsclRw",
+            "category": "Medios",
+            "dateNew": "2025-10-16T03:00:00.000Z",
+            "createdAt": "2025-10-23T18:23:15.814Z",
+            "updatedAt": "2025-10-23T18:23:15.814Z"
+        },
+        {
+            "id": 34,
+            "title": "Primer Congreso Nacional de Instructores de RCP. Trenque Lauquen",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1761399957/images/dcgov8uml8qhu0ke5cqx.jpg",
+            "imagePublicId": "images/dcgov8uml8qhu0ke5cqx",
+            "description": "Te invitamos a escuchar el reportaje a nuestro presidente Sergio Felice. Gracias a FM 100.9. Trenque Lauquen",
+            "redirect": "https://www.youtube.com/watch?v=VS3XzyPtqtA",
+            "category": "Medios",
+            "dateNew": "2025-10-16T03:00:00.000Z",
+            "createdAt": "2025-10-25T13:46:00.015Z",
+            "updatedAt": "2025-10-25T13:46:00.015Z"
+        },
+        {
+            "id": 35,
+            "title": "Momento de Homenajes en el 1° congreso de instructores de RCP. Trenque Lauquen.",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1761524954/images/u09auwn0p877zqzbqggc.jpg",
+            "imagePublicId": "images/u09auwn0p877zqzbqggc",
+            "description": "Mariano Casoy, papá de Tomás, e impulsor fundamental junto a Jorge Bombau, de la reglamentación de la ley 27159; nos explica el significado que tiene plantar un árbol para homenajear a su hijo.\nTomás, Beltrán, Jorge y muchos más, presentes en esta soleada y conmovedora jornada .",
+            "redirect": "https://www.youtube.com/watch?v=3PainCpXtug",
+            "category": "Medios",
+            "dateNew": "2025-10-16T03:00:00.000Z",
+            "createdAt": "2025-10-27T00:29:15.656Z",
+            "updatedAt": "2025-10-27T00:29:15.656Z"
+        },
+        {
+            "id": 36,
+            "title": "El porqué de nuestra pasión, el fundamento de nuestro lema...",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1763821102/images/vscw9chajdjrypp90vlf.jpg",
+            "imagePublicId": "images/vscw9chajdjrypp90vlf",
+            "description": "Porque cada acción, cada capacitación y cada vida que intentamos salvar honra su memoria y la de todos aquellos que partieron sin que nadie pudiera asistirlos a tiempo. Solo bajamos los brazos para hacer RCP!¡",
+            "redirect": "https://www.youtube.com/watch?v=afsa6HPZ8kc",
+            "category": "Medios",
+            "dateNew": "2025-11-01T03:00:00.000Z",
+            "createdAt": "2025-11-22T14:18:24.653Z",
+            "updatedAt": "2025-11-22T14:19:23.478Z"
+        },
+        {
+            "id": 37,
+            "title": "Gracias Kun Agüero",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1763822198/images/pr5ecpgiitlyxf7wr8ne.jpg",
+            "imagePublicId": "images/pr5ecpgiitlyxf7wr8ne",
+            "description": "De corazón, gracias por este saludo, por levantar nuestra bandera y por remarcar lo importante que es aprender RCP.\nPara Argentina Reanima este gesto vale muchísimo. No solo por lo que representás como ídolo de millones, sino por tu propia experiencia y tu compromiso.",
+            "redirect": "https://www.youtube.com/shorts/GQo_ylWwC2c",
+            "category": "Medios",
+            "dateNew": "2025-11-22T03:00:00.000Z",
+            "createdAt": "2025-11-22T14:36:42.083Z",
+            "updatedAt": "2025-11-22T14:36:42.083Z"
+        },
+        {
+            "id": 38,
+            "title": "Argentina Reanima en Trelew y Puerto Madryn",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1763854045/images/lrpzjqd1bragukdlhzut.jpg",
+            "imagePublicId": "images/lrpzjqd1bragukdlhzut",
+            "description": "Mas de 450 personas participaron en cuatro jornadas . Orgullosos de esta alianza con Camuzzi para multiplicar Prevención y Acción en gran parte de nuestro país.",
+            "redirect": "https://canal12web.com/jornadas-de-rcp-y-charlas-sobre-monoxido-de-carbono-para-un-invierno-seguro/",
+            "category": "Alianza con Camuzzi Gas",
+            "dateNew": "2025-05-07T03:00:00.000Z",
+            "createdAt": "2025-11-22T23:27:27.329Z",
+            "updatedAt": "2025-11-22T23:27:27.329Z"
+        },
+        {
+            "id": 39,
+            "title": "Hoy cumplimos 5 años",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1768318926/images/jom1hyhaz0yecizb937r.png",
+            "imagePublicId": "images/jom1hyhaz0yecizb937r",
+            "description": "Cinco años de trabajo sostenido, de compromiso real y de una convicción que nunca negociamos: hacer las cosas bien, con humildad  y solo bajar los brazos para hacer RCP.\nGracias a Todos!¡!¡",
+            "redirect": "https://www.eldia.com/nota/2026-1-7-2-17-44-cumple-cinco-anos-la-asociacion-civil-platense-argentina-reanima-la-ciudad",
+            "category": "Medios",
+            "dateNew": "2026-01-14T03:00:00.000Z",
+            "createdAt": "2026-01-13T15:42:15.394Z",
+            "updatedAt": "2026-01-13T15:42:15.394Z"
         }
     ],
     "status": 200,

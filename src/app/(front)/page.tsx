@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 // import AutoOpenModal from "@/components/Modal/AutoOpenModal";
 import { DicedHeroSection } from "@/components/TextImage/TextImage4";
+import { AnimatedFeatureSpotlight } from "@/components/BannerHero/BannerHomenaje";
 
 export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
@@ -60,6 +61,21 @@ export default function Home() {
       </div>
 
       <Separator className="bg-gray-300" />
+
+      <div className="flex items-center justify-center w-full bg-blue-100 pt-40 pb-24">
+        <AnimatedFeatureSpotlight
+          // preheaderIcon={<HeartHandshake className="h-4 w-4" />}
+          // preheaderText="Instructor de Argentina Reanima"
+          heading="En memoria de Sergio Marcos"
+          description="Enorme persona, ser humano increíble e instructor apasionado, enseñó hasta el último momento, incluso mientras daba una batalla larga y digna contra la enfermedad. Nunca perdió las ganas de compartir, de enseñar, de mostrar lo bueno de la vida y de seguir sembrando conciencia para salvar vidas."
+          buttonText="Ver homenaje"
+          buttonProps={{
+            onClick: () => window.open("/homenaje-sergio-marcos"),
+          }}
+          imageUrl="/images/sergio/sergio-main.jpeg"
+          imageAlt="Sergio, instructor de RCP con pechera blanca de Argentina Reanima, demostrando maniobra de desobstrucción de vías aéreas en un muñeco de bebé durante un curso de primeros auxilios."
+        />
+      </div>
 
       <div className="px-4 md:px-0 ">
         {/* <TextImage /> */}

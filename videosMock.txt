@@ -1,0 +1,36 @@
+{
+    "message": "Todos los cursos",
+    "total": 4,
+    "courses": [
+        {
+            "id": 3,
+            "title": "Video Institucional",
+            "category": "RCP y DEA",
+            "createdAt": "2025-10-25T12:15:56.518Z",
+            "updatedAt": "2025-10-25T12:15:56.518Z"
+        },
+        {
+            "id": 4,
+            "title": "Homenajes. Primer Congreso de Instructores de RCP. Trenque Lauquen",
+            "category": "RCP y DEA",
+            "createdAt": "2025-11-11T19:45:44.039Z",
+            "updatedAt": "2025-11-11T19:45:44.039Z"
+        },
+        {
+            "id": 5,
+            "title": "Disertaciones en Primer Congreso. Trenque Lauquen",
+            "category": "RCP y DEA",
+            "createdAt": "2025-11-22T14:03:05.251Z",
+            "updatedAt": "2025-11-22T14:03:05.251Z"
+        },
+        {
+            "id": 6,
+            "title": "Disertaciones en Primer Congreso. Trenque Lauquen",
+            "category": "RCP y DEA",
+            "createdAt": "2025-11-22T14:04:43.691Z",
+            "updatedAt": "2025-11-22T14:04:43.691Z"
+        }
+    ],
+    "status": 200,
+    "success": true
+}
