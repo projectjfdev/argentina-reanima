@@ -3,7 +3,7 @@
 import type React from "react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Search } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, cubicBezier } from "framer-motion";
 import { cn } from "@/libs/utils";
 
 const SUGGESTIONS = [
@@ -69,7 +69,7 @@ const SearchBar = ({ placeholder = "Buscar...", onSearch }: SearchBarProps) => {
 
     if (value.trim()) {
       const filtered = SUGGESTIONS.filter((item) =>
-        item.toLowerCase().includes(value.toLowerCase())
+        item.toLowerCase().includes(value.toLowerCase()),
       );
       setSuggestions(filtered);
     } else {
@@ -121,7 +121,7 @@ const SearchBar = ({ placeholder = "Buscar...", onSearch }: SearchBarProps) => {
     animate: {
       rotate: isAnimating ? [0, -15, 15, -10, 10, 0] : 0,
       scale: isAnimating ? [1, 1.3, 1] : 1,
-      transition: { duration: 0.6, ease: "easeInOut" },
+      transition: { duration: 0.6, ease: cubicBezier(0.25, 0.1, 0.25, 1) },
     },
   };
 
@@ -137,7 +137,7 @@ const SearchBar = ({ placeholder = "Buscar...", onSearch }: SearchBarProps) => {
       y: 0,
       scale: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 300,
         damping: 15,
         delay: i * 0.07,
@@ -223,7 +223,7 @@ const SearchBar = ({ placeholder = "Buscar...", onSearch }: SearchBarProps) => {
             "flex items-center w-full rounded-full border relative overflow-hidden backdrop-blur-md",
             isFocused
               ? "border-transparent shadow-sm"
-              : "border-gray-200 dark:border-gray-700 bg-white/30 dark:bg-gray-800/50"
+              : "border-gray-200 dark:border-gray-700 bg-white/30 dark:bg-gray-800/50",
           )}
           animate={{
             boxShadow: isFocused
@@ -270,7 +270,7 @@ const SearchBar = ({ placeholder = "Buscar...", onSearch }: SearchBarProps) => {
             }}
             className={cn(
               "w-[300px] rounded-full bg-transparent py-2 pl-14 pr-4 text-gray-900 dark:text-gray-100 placeholder-gray-500 outline-none focus:ring-0",
-              isUnsupportedBrowser ? "text-gray-700 dark:text-gray-300" : ""
+              isUnsupportedBrowser ? "text-gray-700 dark:text-gray-300" : "",
             )}
             spellCheck={false}
           />
@@ -282,11 +282,10 @@ const SearchBar = ({ placeholder = "Buscar...", onSearch }: SearchBarProps) => {
                 initial={{ opacity: 0, scale: 0.8, x: -20 }}
                 animate={{ opacity: 1, scale: 1, x: 0 }}
                 exit={{ opacity: 0, scale: 0.8, x: -20 }}
-                style={{color: "white",background: "#1A9DD9"}}
+                style={{ color: "white", background: "#1A9DD9" }}
                 whileHover={{
                   scale: 1.05,
-                  background:
-                    "#1A9DD9",
+                  background: "#1A9DD9",
                   boxShadow: "0 10px 25px -5px rgba(139, 92, 246, 0.5)",
                 }}
                 whileTap={{ scale: 0.95 }}

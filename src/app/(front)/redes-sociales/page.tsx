@@ -4,7 +4,7 @@ import BannerHero from "@/components/BannerHero/BannerHero";
 import { Titleh1 } from "@/components/Texts/Titleh1";
 import Image from "next/image";
 import InstagramEmbed from "@/components/RedesSociales/InstagramEmbed";
-import { motion } from "framer-motion";
+import { cubicBezier, motion } from "framer-motion";
 import {
   Instagram,
   Heart,
@@ -36,7 +36,7 @@ const RedesSocialesPage = () => {
       y: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
+        ease: cubicBezier(0.25, 0.1, 0.25, 1),
       },
     },
   };
@@ -48,7 +48,7 @@ const RedesSocialesPage = () => {
       scale: 1,
       transition: {
         duration: 0.8,
-        ease: "easeOut",
+        ease: cubicBezier(0.25, 0.1, 0.25, 1),
       },
     },
   };
@@ -490,7 +490,7 @@ const RedesSocialesPage = () => {
                   onClick={() =>
                     window.open(
                       "https://www.instagram.com/argentinareanimaac/",
-                      "_blank"
+                      "_blank",
                     )
                   }
                 >
@@ -503,7 +503,7 @@ const RedesSocialesPage = () => {
                   onClick={() =>
                     window.open(
                       "https://www.facebook.com/profile.php?id=100087258240312",
-                      "_blank"
+                      "_blank",
                     )
                   }
                   className="bg-white text-primary px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
@@ -520,7 +520,7 @@ const RedesSocialesPage = () => {
                   onClick={() =>
                     window.open(
                       "https://www.youtube.com/channel/UCUe7YAlQawPP9VHg_1B172w",
-                      "_blank"
+                      "_blank",
                     )
                   }
                   className="bg-white text-primary px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
@@ -536,7 +536,7 @@ const RedesSocialesPage = () => {
                   onClick={() =>
                     window.open(
                       "https://www.tiktok.com/@argentina.reanima",
-                      "_blank"
+                      "_blank",
                     )
                   }
                   className="bg-white text-primary px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"

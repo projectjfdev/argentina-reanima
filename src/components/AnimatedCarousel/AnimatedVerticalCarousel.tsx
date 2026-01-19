@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/libs/utils";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
-import { motion, useAnimation, useInView } from "framer-motion";
+import { cubicBezier, motion, useAnimation, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
@@ -56,7 +56,7 @@ export function AnimatedVerticalCarousel({
 
   const handlePrev = () => {
     setActiveIndex(
-      (prev) => (prev - 1 + testimonials.length) % testimonials.length
+      (prev) => (prev - 1 + testimonials.length) % testimonials.length,
     );
   };
 
@@ -82,7 +82,7 @@ export function AnimatedVerticalCarousel({
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: cubicBezier(0.25, 0.1, 0.25, 1),
       },
     },
   };
@@ -95,7 +95,7 @@ export function AnimatedVerticalCarousel({
       id="testimonials-alt"
       className={cn(
         "py-16 md:py-32 relative overflow-hidden flex justify-center",
-        className
+        className,
       )}
     >
       <div className="container items-center px-4 md:px-6">
@@ -119,7 +119,7 @@ export function AnimatedVerticalCarousel({
                     "transition-all duration-500 border",
                     index === activeIndex
                       ? "relative opacity-100 translate-x-0 shadow-lg"
-                      : "absolute inset-0 opacity-0 translate-x-[100px] pointer-events-none"
+                      : "absolute inset-0 opacity-0 translate-x-[100px] pointer-events-none",
                   )}
                 >
                   <CardContent className="p-6 md:p-8 h-full flex flex-col">
@@ -174,7 +174,7 @@ export function AnimatedVerticalCarousel({
                     "w-2 h-2 rounded-full transition-colors",
                     index === activeIndex
                       ? "bg-primary"
-                      : "bg-muted-foreground/20"
+                      : "bg-muted-foreground/20",
                   )}
                   role="button"
                   tabIndex={0}

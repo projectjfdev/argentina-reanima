@@ -24,7 +24,7 @@ const SPRING_CONFIG = {
   mass: 0.75,
   restDelta: 0.005,
   duration: 0.3,
-};
+} as const;
 const blurVariants: Variants = {
   hidden: {
     filter: "blur(10px)",
@@ -43,7 +43,7 @@ function useContainerScrollContext() {
   const context = React.useContext(ContainerScrollContext);
   if (!context) {
     throw new Error(
-      "useContainerScrollContext must be used within a ContainerScroll Component"
+      "useContainerScrollContext must be used within a ContainerScroll Component",
     );
   }
   return context;
@@ -62,7 +62,10 @@ export const ContainerScroll = ({
     <ContainerScrollContext.Provider value={{ scrollYProgress }}>
       <div
         ref={scrollRef}
-        className={cn("relative top-20 md:top-0 h-[60vh] md:min-h-[120vh]", className)}
+        className={cn(
+          "relative top-20 md:top-0 h-[60vh] md:min-h-[120vh]",
+          className,
+        )}
         style={{
           perspective: "1000px",
           perspectiveOrigin: "center top",
@@ -86,7 +89,7 @@ export const ContainerSticky = ({
     <div
       className={cn(
         "sticky left-0 top-0 min-h-[70rem] md:min-h-[120rem] w-full overflow-hidden",
-        className
+        className,
       )}
       style={{
         perspective: "1000px",
@@ -115,7 +118,7 @@ export const GalleryContainer = ({
     <motion.div
       className={cn(
         "relative grid size-full grid-cols-3 gap-2 rounded-2xl",
-        className
+        className,
       )}
       style={{
         rotateX,
