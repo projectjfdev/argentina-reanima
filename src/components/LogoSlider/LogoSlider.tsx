@@ -25,7 +25,8 @@ export const LogoSlider = () => {
                   <Tooltip>
                     <TooltipTrigger>
                       <Image
-                        src="https://res.cloudinary.com/dtbryiptz/image/upload/v1747672052/fac-logo_ghhy7j.png"
+                        src="/images/fac.png"
+                        // src="https://res.cloudinary.com/dtbryiptz/image/upload/v1747672052/fac-logo_ghhy7j.png"
                         alt="Federación Argentina de Cardiología"
                         width={80}
                         height={80}
@@ -43,7 +44,8 @@ export const LogoSlider = () => {
                   <Tooltip>
                     <TooltipTrigger>
                       <Image
-                        src="https://res.cloudinary.com/dtbryiptz/image/upload/v1747672053/IUFAC-logo_wqwxz7.png"
+                        src="/images/fac.png"
+                        // src="https://res.cloudinary.com/dtbryiptz/image/upload/v1747672053/IUFAC-logo_wqwxz7.png"
                         alt="Instructor Universitario Federación Argentina de
                         Cardiología"
                         width={80}
@@ -65,7 +67,8 @@ export const LogoSlider = () => {
                   <Tooltip>
                     <TooltipTrigger>
                       <Image
-                        src="https://res.cloudinary.com/dtbryiptz/image/upload/v1747672052/logofac-logo_cgycz8.png"
+                        src="/images/fac.png"
+                        // src="https://res.cloudinary.com/dtbryiptz/image/upload/v1747672052/logofac-logo_cgycz8.png"
                         alt="Red Nacional Prevención Muerte Subita"
                         width={80}
                         height={80}

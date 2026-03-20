@@ -20,8 +20,9 @@ Realizamos jornadas en fechas clave, como el Día de la RCP y el Día Mundial de
 Este convenio es un gran paso que confirma que estamos haciendo las cosas bien. Sigamos trabajando juntos para salvar vidas.
 14/3/2025`,
 
-          avatar:
-            "https://res.cloudinary.com/dtbryiptz/image/upload/v1747672052/fac-logo_ghhy7j.png",
+          // avatar:
+          // "https://res.cloudinary.com/dtbryiptz/image/upload/v1747672052/fac-logo_ghhy7j.png",
+          avatar: "/images/fac.png",
         },
         {
           id: 2,
@@ -35,8 +36,9 @@ Un reconocimiento especial a todo el equipo de Argentina Reanima, que trabaja in
 Seguimos profesionalizando la capacitación para luchar contra la muerte súbita.
 Solo bajamos los brazos para hacer RCP.`,
 
-          avatar:
-            "https://res.cloudinary.com/dtbryiptz/image/upload/v1747672053/IUFAC-logo_wqwxz7.png",
+          // avatar:
+          // "https://res.cloudinary.com/dtbryiptz/image/upload/v1747672053/IUFAC-logo_wqwxz7.png",
+          avatar: "/images/fac.png",
         },
         {
           id: 3,
@@ -51,8 +53,8 @@ Queremos agradecer profundamente a la Fundación Argentina Cardiología (FAC) y 
 Seguimos creciendo, convencidos de que vamos por el buen camino: el de la capacitación, el trabajo conjunto, el aprendizaje permanente y la lucha constante contra la muerte súbita.
 ¡Solo bajamos los brazos para hacer RCP!`,
 
-          avatar:
-            "https://res.cloudinary.com/dtbryiptz/image/upload/v1747672052/logofac-logo_cgycz8.png",
+          avatar: "/images/fac.png",
+          // "https://res.cloudinary.com/dtbryiptz/image/upload/v1747672052/logofac-logo_cgycz8.png",
         },
       ]}
     />
