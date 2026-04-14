@@ -22,7 +22,7 @@ Este convenio es un gran paso que confirma que estamos haciendo las cosas bien. 
 
           // avatar:
           // "https://res.cloudinary.com/dtbryiptz/image/upload/v1747672052/fac-logo_ghhy7j.png",
-          avatar: "/images/fac.png",
+          avatar: "/images/fac2.jpeg",
         },
         {
           id: 2,
@@ -38,7 +38,7 @@ Solo bajamos los brazos para hacer RCP.`,
 
           // avatar:
           // "https://res.cloudinary.com/dtbryiptz/image/upload/v1747672053/IUFAC-logo_wqwxz7.png",
-          avatar: "/images/fac.png",
+          avatar: "/images/fac2.jpeg",
         },
         {
           id: 3,
@@ -53,7 +53,7 @@ Queremos agradecer profundamente a la Fundación Argentina Cardiología (FAC) y 
 Seguimos creciendo, convencidos de que vamos por el buen camino: el de la capacitación, el trabajo conjunto, el aprendizaje permanente y la lucha constante contra la muerte súbita.
 ¡Solo bajamos los brazos para hacer RCP!`,
 
-          avatar: "/images/fac.png",
+          avatar: "/images/fac2.jpeg",
           // "https://res.cloudinary.com/dtbryiptz/image/upload/v1747672052/logofac-logo_cgycz8.png",
         },
       ]}

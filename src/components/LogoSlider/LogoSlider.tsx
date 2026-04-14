@@ -44,7 +44,7 @@ export const LogoSlider = () => {
                   <Tooltip>
                     <TooltipTrigger>
                       <Image
-                        src="/images/fac.png"
+                        src="/images/fac2.jpeg"
                         // src="https://res.cloudinary.com/dtbryiptz/image/upload/v1747672053/IUFAC-logo_wqwxz7.png"
                         alt="Instructor Universitario Federación Argentina de
                         Cardiología"
