@@ -21,7 +21,7 @@ export const ContactForm = () => {
         process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID as string,
         process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID as string,
         form,
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY as string
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY as string,
       )
       .then(
         (result) => {
@@ -42,7 +42,7 @@ export const ContactForm = () => {
         (error) => {
           setResultado("Error al enviar el mensaje");
           console.log(error.text);
-        }
+        },
       )
       .finally(() => {
         setLoading(false);
@@ -135,7 +135,7 @@ export const ContactForm = () => {
                 id="message"
                 name="message"
                 required
-                placeholder="Escribe tu mensaje"
+                placeholder="Escriba su mensaje"
               />
             </div>
             <Button type="submit" className="w-full">

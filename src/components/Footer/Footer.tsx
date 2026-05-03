@@ -120,7 +120,7 @@ function Footer() {
                       onClick={() =>
                         window.open(
                           "https://www.tiktok.com/@argentina.reanima",
-                          "_blank"
+                          "_blank",
                         )
                       }
                       variant="outline"
@@ -152,7 +152,7 @@ function Footer() {
                       onClick={() =>
                         window.open(
                           "https://www.facebook.com/profile.php?id=100087258240312",
-                          "_blank"
+                          "_blank",
                         )
                       }
                       variant="outline"
@@ -176,7 +176,7 @@ function Footer() {
                       onClick={() =>
                         window.open(
                           "https://www.instagram.com/argentinareanimaac",
-                          "_blank"
+                          "_blank",
                         )
                       }
                       variant="outline"
@@ -199,7 +199,7 @@ function Footer() {
                       onClick={() =>
                         window.open(
                           "https://www.youtube.com/channel/UCUe7YAlQawPP9VHg_1B172w",
-                          "_blank"
+                          "_blank",
                         )
                       }
                       variant="outline"
@@ -220,7 +220,7 @@ function Footer() {
         </div>
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 text-center md:flex-row">
           <p className="text-sm text-muted-foreground">
-            © 2025 Argentina Reanima. Todos los derechos reservados.
+            © 2026 Argentina Reanima. Todos los derechos reservados.
           </p>
           {/* <nav className="flex gap-4 text-sm">
             <Link href="#" className="transition-colors hover:text-gray-600">

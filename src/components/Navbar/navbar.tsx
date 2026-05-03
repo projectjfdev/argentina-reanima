@@ -242,7 +242,7 @@ const Navbar = ({
                             <HeartPulse className="size-5 shrink-0" />
                             <div>
                               <div className="text-sm font-semibold">
-                                Filiales
+                                Filiales y convenios
                               </div>
                               <p className="text-sm leading-snug text-muted-foreground">
                                 Sedes regionales que ofrecen capacitación en

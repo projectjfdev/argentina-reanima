@@ -1,13 +1,13 @@
 import TransitionSmoot from "@/components/Carousel/TransitionSmoot";
+import { Titleh1 } from "@/components/Texts/Titleh1";
 import React from "react";
 
 const SergioMarcos = () => {
   return (
     <div className="flex flex-col gap-7 md:gap-16 mt-28">
       <div className="container mx-auto">
-        <h2 className="text-3xl font-medium md:text-4xl lg:text-5xl mx-4 md:mx-0">
-          Homenaje a nuestro compañero e instructor
-        </h2>
+        <Titleh1 title="Homenaje a nuestro compañero e instructor" />
+
         <div className="mt-6 text-lg md:text-xl leading-7 text-muted-foreground mx-4 md:mx-0 space-y-4">
           <p>
             Sergio Marcos fue parte de Argentina Reanima desde el primer día.
@@ -148,15 +148,16 @@ const SergioMarcos = () => {
           </div>
         </div>
       </div>
-      <div className="bg-gradient-to-tl from-secondary to-white py-10">
+      <div className="bg-linear-to-tl from-secondary to-white py-10">
         <TransitionSmoot />
       </div>
       <div className="container mx-auto mb-10">
-        <h3 className="text2xl font-medium md:text-3xl lg:text-4xl mx-4 md:mx-0">
-          Compartimos sentidas palabras del Dr. Daniel Corsiglia, enorme
+        <Titleh1
+          title="Compartimos sentidas palabras del Dr. Daniel Corsiglia, enorme
           referente de la RCP en el país, Fundación UDEC y FAC; hacia nuestro
-          compañero Sergio Marcos.
-        </h3>
+          compañero Sergio Marcos."
+        />
+
         <div className="mt-6 text-lg md:text-xl leading-7 text-muted-foreground mx-4 md:mx-0 space-y-4">
           <p>
             Hoy es un día de luto para la Reanimación en nuestro país porque

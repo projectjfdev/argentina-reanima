@@ -67,7 +67,7 @@ export default function Home() {
           // preheaderIcon={<HeartHandshake className="h-4 w-4" />}
           // preheaderText="Instructor de Argentina Reanima"
           heading="En memoria de Sergio Marcos"
-          description="Enorme persona, ser humano increíble e instructor apasionado, enseñó hasta el último momento, incluso mientras daba una batalla larga y digna contra la enfermedad. Nunca perdió las ganas de compartir, de enseñar, de mostrar lo bueno de la vida y de seguir sembrando conciencia para salvar vidas."
+          description="Enorme persona, ser humano increíble e instructor apasionado; enseñó hasta el último momento, incluso mientras daba una batalla larga y digna contra la enfermedad. Nunca perdió las ganas de compartir, de enseñar, de mostrar lo bueno de la vida y de seguir sembrando conciencia para salvar vidas."
           buttonText="Ver homenaje"
           buttonProps={{
             onClick: () => window.open("/homenaje-sergio-marcos"),

@@ -17,7 +17,7 @@ const branches: Branch[] = [
   { name: "Mar del Plata", coords: [-38.0055, -57.5426] },
   { name: "Puerto Iguazú", coords: [-25.5991, -54.5736] },
   { name: "Río Tercero", coords: [-32.1794, -64.1061] },
-  { name: "Lobería", coords: [-38.1671, -58.7898] },
+  // { name: "Lobería", coords: [-38.1671, -58.7898] },
   { name: "La Plata", coords: [-34.9214, -57.9544] },
 ];
 
