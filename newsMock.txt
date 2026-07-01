@@ -1,6 +1,6 @@
 {
     "message": "Todas las noticias",
-    "total": 37,
+    "total": 41,
     "news": [
         {
             "id": 3,
@@ -445,6 +445,54 @@
             "dateNew": "2026-01-14T03:00:00.000Z",
             "createdAt": "2026-01-13T15:42:15.394Z",
             "updatedAt": "2026-01-13T15:42:15.394Z"
+        },
+        {
+            "id": 40,
+            "title": "Pesar por la muerte de un referente de la RCP",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1769083542/images/iwixgvwu3htk0oafyhz7.jpg",
+            "imagePublicId": "images/iwixgvwu3htk0oafyhz7",
+            "description": "Prestigioso diario platense, se suma al reconocimiento hacia nuestro compañero Sergio Marcos. Compartimos la nota con todos ustedes. Gracias diario El Dïa!¡",
+            "redirect": "https://www.eldia.com/nota/2026-1-22-3-29-45-pesar-por-la-muerte-de-un-referente-del-rcp-la-ciudad",
+            "category": "Medios",
+            "dateNew": "2026-01-22T03:00:00.000Z",
+            "createdAt": "2026-01-22T12:05:43.239Z",
+            "updatedAt": "2026-01-22T12:05:43.239Z"
+        },
+        {
+            "id": 41,
+            "title": "Nuevos Instructores FAC",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1771776796/images/eobdcbmlimp6hnsnxx2o.jpg",
+            "imagePublicId": "images/eobdcbmlimp6hnsnxx2o",
+            "description": "Por segundo año consecutivo participamos en la toma del examen práctico para nuevos instructores de la Federación Argentina de Cardiología (FAC).\nJunto al Dr. André Rossi @andrericardorossi, acompañamos este valioso proceso de formación que suma instructores a la red federal de la FAC.",
+            "redirect": "https://www.instagram.com/p/DSAX2Eujsfi/?igsh=N2N4Ym5xcGd1eGw5",
+            "category": "Medios",
+            "dateNew": "2025-12-06T03:00:00.000Z",
+            "createdAt": "2026-02-22T16:13:18.562Z",
+            "updatedAt": "2026-02-22T16:13:18.562Z"
+        },
+        {
+            "id": 42,
+            "title": "“RCP en el semáforo: aprender mientras esperás el verde”",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1774360307/images/fer67nz54pyurs6pnned.jpg",
+            "imagePublicId": "images/fer67nz54pyurs6pnned",
+            "description": "Unos segundos pueden cambiarlo todo: en una esquina de La Plata, la espera se convirtió en aprendizaje y compromiso con la vida.",
+            "redirect": "https://www.instagram.com/p/DWFWmg6jh-g/?igsh=cTZ5NTR2Y292cm41",
+            "category": "Medios",
+            "dateNew": "2026-03-19T03:00:00.000Z",
+            "createdAt": "2026-03-24T13:51:52.212Z",
+            "updatedAt": "2026-03-24T13:51:52.212Z"
+        },
+        {
+            "id": 43,
+            "title": "Encuentro con la ciencia. UNMP",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1776215160/images/dwappjehguiaoalnk3x1.jpg",
+            "imagePublicId": "images/dwappjehguiaoalnk3x1",
+            "description": "Argentina Reanima presente en el encuentro con la ciencia realizado en la Facultad de psicología de la Universidad Nacional de Mar del Plata.\nFacultad de Psicología, proyecto de extensión Nacer entre Palabras, en cabeza de Santiago Gonzalez Goller. Felicitaciones!¡!¡\n",
+            "redirect": "https://www.instagram.com/p/DXCZPx7DvvL/?igsh=cXRpbDZsbTFkaWc4",
+            "category": "Medios",
+            "dateNew": "2026-04-11T03:00:00.000Z",
+            "createdAt": "2026-04-15T01:06:02.030Z",
+            "updatedAt": "2026-04-15T01:06:02.030Z"
         }
     ],
     "status": 200,
