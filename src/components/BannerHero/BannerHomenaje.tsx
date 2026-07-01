@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { cn } from "@/libs/utils";
+import Image from "next/image";
 
 // Interface for component props remains the same for easy integration.
 interface AnimatedFeatureSpotlightProps extends React.HTMLAttributes<HTMLElement> {
@@ -40,15 +41,14 @@ const AnimatedFeatureSpotlight = React.forwardRef<
       <section
         ref={ref}
         className={cn(
-          "container mx-auto p-8 md:p-12 rounded-2xl border overflow-hidden bg-gradient-to-tl from-gray-300 to-white",
+          "container mx-auto overflow-hidden rounded-lg border border-slate-200 bg-white p-6 shadow-sm md:p-10",
           className,
         )}
         aria-labelledby="feature-spotlight-heading"
         {...props}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          {/* Left Column: Animated Text Content */}
-          <div className="flex flex-col space-y-6 text-center md:text-left items-center md:items-start">
+        <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-[1fr_0.9fr] md:gap-12">
+          <div className="flex flex-col items-center space-y-5 text-center md:items-start md:text-left">
             {preheaderText && (
               <div className="flex items-center space-x-2 text-sm font-medium text-muted-foreground animate-in fade-in slide-in-from-top-4 duration-700">
                 {preheaderIcon}
@@ -57,30 +57,31 @@ const AnimatedFeatureSpotlight = React.forwardRef<
             )}
             <h2
               id="feature-spotlight-heading"
-              className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground animate-in fade-in slide-in-from-top-4 duration-700 delay-150"
+              className="text-3xl font-semibold tracking-normal text-slate-950 animate-in fade-in slide-in-from-bottom-3 duration-500 md:text-4xl"
             >
               {heading}
             </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed animate-in fade-in slide-in-from-top-4 duration-700 delay-300">
+            <p className="text-base leading-8 text-slate-600 animate-in fade-in slide-in-from-bottom-3 duration-500 delay-150 md:text-lg">
               {description}
             </p>
             {buttonText && (
-              <div className="animate-in fade-in slide-in-from-top-4 duration-700 delay-400">
-                <Button size="lg" {...buttonProps}>
+              <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 delay-200">
+                <Button size="lg" className="bg-primary text-white hover:bg-primary/90" {...buttonProps}>
                   {buttonText}
                 </Button>
               </div>
             )}
           </div>
 
-          {/* Right Column: Animated Visual */}
-          <div className="relative w-full min-h-[250px] md:min-h-[320px] flex items-center justify-center animate-in fade-in zoom-in-95 duration-700 delay-200">
-            {/* Main Image with both entrance and continuous animations */}
-            <img
+          <div className="relative min-h-[280px] w-full overflow-hidden rounded-lg animate-in fade-in zoom-in-95 duration-500 delay-150 md:min-h-[360px]">
+            <Image
               src={imageUrl}
               alt={imageAlt}
-              className="w-full max-w-md object-contain animate-float rounded-md shadow-lg"
+              fill
+              sizes="(min-width: 768px) 42vw, 100vw"
+              className="object-cover"
             />
+            <div className="absolute inset-0 ring-1 ring-inset ring-black/10" />
           </div>
         </div>
       </section>

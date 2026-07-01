@@ -25,16 +25,16 @@ export const BoxTresHome = () => {
   }, []);
 
   return (
-    <div className="grid grid-cols-1 px-0 container  lg:grid-cols-2 xl:grid-cols-3 justify-center w-full items-center mx-auto gap-4">
+    <div className="container mx-auto grid w-full grid-cols-1 gap-5 px-0 lg:grid-cols-2 xl:grid-cols-3">
       {news?.map((card) => (
         <div
           key={card.id}
-          className=" w-full group/card"
+          className="group/card w-full"
           onClick={() => window.open(card.redirect, "_blank")}
         >
           <div
             className={cn(
-              "cursor-pointer overflow-hidden relative card h-96 rounded-md shadow-xl flex flex-col justify-between p-4 bg-cover"
+              "card relative flex h-[360px] cursor-pointer flex-col justify-between overflow-hidden rounded-lg border border-white/10 bg-cover bg-center p-5 shadow-lg shadow-black/20 transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/30"
             )}
             style={{
               backgroundImage: `url(${
@@ -42,31 +42,31 @@ export const BoxTresHome = () => {
               })`,
             }}
           >
-            <div className="absolute w-full h-full top-0 left-0 bg-black/50 transition duration-300 group-hover/card:bg-black opacity-60" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/20 transition duration-300 group-hover/card:from-slate-950 group-hover/card:via-slate-950/80" />
 
-            <div className="flex flex-row items-center md:space-x-4 z-10 ">
+            <div className="z-10 flex flex-row items-center gap-3">
               <Image
                 height={100}
                 width={100}
                 alt={card.title}
                 src="https://res.cloudinary.com/dtbryiptz/image/upload/v1747751406/logo_compress_gxgwwh.png"
-                className="h-10 w-10 rounded-full border-2 object-cover"
+                className="h-10 w-10 rounded-full border border-white/50 object-cover"
               />
               <div className="flex flex-col">
-                <p className="font-normal text-base text-gray-50 relative z-10">
+                <p className="relative z-10 text-sm font-medium text-white/90">
                   Argentina Reanima
                 </p>
               </div>
             </div>
 
-            <div className="text content z-10">
-              <h1 className="font-bold text-xl md:text-2xl text-gray-50">
+            <div className="content z-10">
+              <h3 className="text-xl font-semibold leading-tight text-white md:text-2xl">
                 {card.title}
-              </h1>
+              </h3>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
-                    <p className="font-normal text-sm text-gray-50 my-4 text-start cursor-help">
+                    <p className="my-4 cursor-help text-start text-sm leading-6 text-white/80">
                       {card.description.slice(0, 100)}...
                     </p>
                   </TooltipTrigger>
