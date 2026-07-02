@@ -14,8 +14,8 @@ La landing se organiza en cinco bloques principales:
 1. Hero institucional con imagen de fondo, overlay oscuro leve, titulo principal, bajada y CTA `Donar ahora`.
 2. Seccion de campana con etiqueta `Campana en curso`, lugar, monto recaudado, objetivo, barra de progreso y mensaje sobre instalacion/capacitacion.
 3. Bloque visual del DEA con `public/images/dea.png`, mostrando avance parcial en color.
-4. Seccion de lugar, transparencia, estadisticas y CTA final.
-5. Modal para informar una donacion realizada por transferencia bancaria.
+4. Seccion de lugar con timeline explicativa del proceso de donacion.
+5. CTA final como card clickeable completa que abre el modal de donacion.
 
 El diseno es mobile first y usa grillas responsivas para pasar de una columna en mobile a dos columnas en tablet/desktop.
 
@@ -23,16 +23,20 @@ El diseno es mobile first y usa grillas responsivas para pasar de una columna en
 
 Estos datos quedaron fijos para la primera version:
 
-- Progreso: `62%`
+- Progreso: `64%`
 - Total recaudado: `$1.250.000`
 - Objetivo: `$2.000.000`
 - Lugar: `Club / Escuela / Espacio publico`
-- Cantidad de donantes: `128 personas`
-- Ultima actualizacion: `01/07/2026`
 - Mensajes de transparencia: `100% destinado a compra de DEA` y `Publicamos factura y entrega`
 - Datos bancarios de ejemplo: Banco, Alias, CBU, Cuenta Corriente en Pesos, Razon Social y CUIT.
 
-El boton `Donar ahora` del hero apunta a la seccion final de la misma pagina. El boton final `Donar ahora` abre un modal informativo; no inicia pagos ni conecta con ninguna pasarela.
+El boton `Donar ahora` del hero apunta a la seccion final de la misma pagina. El CTA final fue reemplazado por una card completa con fondo primary, texto `Quiero donar` y enlace visual `Quiero donar ->`; toda la superficie abre el modal informativo. No inicia pagos ni conecta con ninguna pasarela.
+
+## CTA final clickeable
+
+La seccion final ya no usa un boton interno. La card completa funciona como accion principal para abrir el modal de donacion, manteniendo la misma logica existente. En desktop muestra el contenido principal a la izquierda y el texto `Quiero donar ->` a la derecha; en mobile se apila en una sola columna.
+
+La interaccion usa transiciones breves y explicitas de `transform` y `box-shadow`: en hover la card se eleva levemente, aumenta apenas la sombra y el texto de avance se desplaza unos pixeles hacia la derecha. En `active` aplica una escala sutil para dar feedback de presion.
 
 ## Modal de donacion por transferencia
 
@@ -43,15 +47,27 @@ El modal usa el `Dialog` existente de `src/components/ui/dialog.tsx`, con clases
 - Tarjeta destacada con datos bancarios de ejemplo.
 - Boton para copiar Alias.
 - Boton para copiar CBU.
+- Selector inicial entre donacion publica y donacion anonima, con donacion anonima seleccionada por defecto.
 - Formulario con Nombre, Apellido, Email y comprobante de pago.
 - Input `file` limitado a `image/*` y `application/pdf`.
 - Visualizacion del nombre del archivo seleccionado.
 
-La validacion es solo de cliente: comprueba que los campos y el archivo esten completos. Al enviar, muestra un toast con Sonner:
+La validacion es solo de cliente: comprueba que el comprobante este adjunto y, si la donacion es publica, que Nombre y Apellido esten completos. El Email es opcional. Al enviar, muestra un toast con Sonner:
 
 `¡Muchas gracias por tu donación! Recibimos tu comprobante y lo revisaremos a la brevedad.`
 
 No se envia informacion al backend, no se guardan archivos y no se conecta ninguna API.
+
+### Seleccion de visibilidad de la donacion
+
+Antes de los campos del formulario, el modal muestra la pregunta `Queres que tu nombre aparezca?` y dos tarjetas seleccionables:
+
+- `Si, quiero aparecer en el listado.`
+- `Prefiero que mi aporte sea anonimo.`
+
+Solo una opcion puede estar activa. La opcion anonima queda seleccionada por defecto cada vez que se abre el modal. La tarjeta activa se destaca con color primario, icono circular y check visual. El cambio entre donacion anonima y publica se resuelve en cliente: no se guarda esta preferencia ni se envia a un backend.
+
+Cuando la donacion es anonima, el formulario oculta Nombre y Apellido y conserva Email opcional y comprobante de pago. Cuando la donacion es publica, muestra Nombre, Apellido, Email opcional y comprobante de pago. La aparicion de los campos publicos usa una transicion breve de opacidad, altura y desplazamiento, sin agregar dependencias nuevas.
 
 ### Correccion de overflow horizontal
 
@@ -59,11 +75,28 @@ El modal presentaba scroll horizontal porque el `DialogContent` heredaba dimensi
 
 Se corrigio limitando el modal con `w-[calc(100vw-2rem)]`, `max-w-[calc(100vw-2rem)]`, `box-border` y `overflow-x-hidden`. La grilla interna usa columnas `minmax(0, ...)`, y las columnas, inputs, botones, labels y filas bancarias recibieron `min-w-0`. Los datos bancarios largos usan `break-all` para no desbordar en mobile.
 
+Tambien se corrigio un overflow horizontal que aparecia al intentar enviar el formulario sin adjuntar comprobante. El `input[type=file]` ya no usa `sr-only`: queda posicionado de forma absoluta y transparente dentro del area del dropzone, con `w-full`, `max-w-full`, `min-w-0` y sin participar del flujo visual. Esto permite que la validacion nativa del navegador muestre el mensaje de archivo requerido sin empujar el ancho del formulario ni generar espacio blanco lateral.
+
 ## Visual del DEA parcialmente coloreado
 
-La imagen base del DEA se renderiza en escala de grises con `next/image`. Encima se renderiza la misma imagen a color, recortada con `clip-path` hasta el `62%` del ancho. Una linea vertical en el mismo porcentaje marca el limite entre lo alcanzado y lo pendiente.
+La imagen base del DEA se renderiza en escala de grises con `next/image`. Encima se renderiza la misma imagen a color, recortada con `clip-path` hasta el `64%` del ancho. Una linea vertical en el mismo porcentaje marca el limite entre lo alcanzado y lo pendiente.
 
 La parte en color representa el avance logrado por la campana. La parte en blanco y negro representa lo que falta completar.
+
+## Timeline del proceso de donacion
+
+En la seccion ubicada a la derecha de la imagen `Este lugar hoy no tiene DEA`, los `statCards` fueron reemplazados por una timeline vertical explicativa titulada `¿Como funciona tu aporte?`.
+
+La timeline resume seis pasos del proceso:
+
+- Elegimos una institucion.
+- Realizas tu aporte.
+- Elegis como aparecer.
+- Verificamos la donacion.
+- Instalamos el DEA.
+- Capacitamos gratuitamente.
+
+Cada paso incluye icono circular de Lucide, titulo y descripcion breve. Los iconos estan conectados por una linea vertical y la tarjeta mantiene el ancho aproximado del bloque anterior. La interaccion usa microtransiciones sutiles de color, borde y transform, con soporte para `motion-reduce`, sin agregar dependencias nuevas.
 
 ## Pendientes para version dinamica
 

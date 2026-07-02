@@ -10,21 +10,24 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   Banknote,
-  CalendarDays,
+  Building2,
   CheckCircle2,
   Clipboard,
+  ClipboardCheck,
   Copy,
-  FileText,
+  Eye,
+  GraduationCap,
+  HandCoins,
   Heart,
+  HeartPulse,
   MapPin,
-  ReceiptText,
-  ShieldCheck,
+  Shield,
   Target,
-  Users,
+  UserRound,
 } from "lucide-react";
 import Image from "next/image";
 import {
@@ -35,10 +38,9 @@ import {
 } from "react";
 import { Toaster, toast } from "sonner";
 
-const progress = 62;
+const progress = 64;
 const raised = "$1.250.000";
 const goal = "$2.000.000";
-const updateDate = "01/07/2026";
 const bankData = {
   banco: "Banco Ejemplo",
   alias: "ARGENTINA.REANIMA.DEA",
@@ -48,27 +50,52 @@ const bankData = {
   cuit: "30-00000000-0",
 };
 
-const statCards = [
+type DonationVisibility = "public" | "anonymous";
+
+const donationSteps = [
   {
-    icon: ReceiptText,
-    label: "Total recaudado",
-    value: raised,
+    icon: Building2,
+    title: "Elegimos una institución",
+    description:
+      "Seleccionamos una institución, club, escuela o espacio público que actualmente no cuenta con un DEA.",
   },
   {
-    icon: CalendarDays,
-    label: "Ultima actualizacion",
-    value: updateDate,
+    icon: HandCoins,
+    title: "Realizás tu aporte",
+    description:
+      "Podés colaborar mediante transferencia bancaria. Cada aporte, por pequeño que sea, nos acerca al objetivo.",
   },
   {
-    icon: Users,
-    label: "Cantidad de donantes",
-    value: "128 personas",
+    icon: Eye,
+    title: "Elegís cómo aparecer",
+    description:
+      "Podés decidir si tu donación figura públicamente en el listado de donantes o permanece de forma anónima.",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Verificamos la donación",
+    description:
+      "Nuestro equipo revisa manualmente el comprobante para garantizar la transparencia de la campaña.",
+  },
+  {
+    icon: HeartPulse,
+    title: "Instalamos el DEA",
+    description:
+      "Al alcanzar el objetivo realizamos la compra, instalación del DEA y publicamos la documentación correspondiente.",
+  },
+  {
+    icon: GraduationCap,
+    title: "Capacitamos gratuitamente",
+    description:
+      "Además de instalar el DEA, brindamos una capacitación gratuita en RCP y uso del DEA para la institución beneficiada.",
   },
 ];
 
 export default function DonarPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState("");
+  const [donationVisibility, setDonationVisibility] =
+    useState<DonationVisibility>("anonymous");
 
   const copyToClipboard = async (label: string, value: string) => {
     try {
@@ -85,15 +112,14 @@ export default function DonarPage() {
     const form = event.currentTarget;
     const formData = new FormData(form);
     const receipt = formData.get("receipt");
+    const isPublicDonation = donationVisibility === "public";
 
     if (
-      !formData.get("name") ||
-      !formData.get("lastname") ||
-      !formData.get("email") ||
+      (isPublicDonation && (!formData.get("name") || !formData.get("lastname"))) ||
       !(receipt instanceof File) ||
       receipt.size === 0
     ) {
-      toast.error("Completa todos los campos para enviar el comprobante.");
+      toast.error("Completa los campos requeridos para enviar el comprobante.");
       return;
     }
 
@@ -103,6 +129,7 @@ export default function DonarPage() {
     });
     form.reset();
     setSelectedFileName("");
+    setDonationVisibility("anonymous");
     setIsDialogOpen(false);
   };
 
@@ -288,68 +315,58 @@ export default function DonarPage() {
             </div>
           </div>
 
-          <div className="grid gap-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {statCards.map((card) => (
-                <div
-                  key={card.label}
-                  className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
-                >
-                  <card.icon className="mb-5 h-7 w-7 text-primary" />
-                  <p className="text-sm text-slate-500">{card.label}</p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-950">
-                    {card.value}
-                  </p>
-                </div>
-              ))}
-              <a
-                href="#detalle"
-                className="group rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-primary/30 hover:shadow-md"
-              >
-                <ArrowRight className="mb-5 h-7 w-7 text-primary transition group-hover:translate-x-1" />
-                <p className="text-sm font-semibold text-primary">
-                  Ver detalle
-                </p>
-                <p className="mt-2 text-base text-slate-600">
-                  Conoce como vamos avanzando.
-                </p>
-              </a>
-            </div>
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+              Proceso transparente
+            </p>
+            <h2 className="text-3xl font-semibold leading-tight text-slate-950 md:text-4xl">
+              ¿Cómo funciona tu aporte?
+            </h2>
 
-            <div
-              id="detalle"
-              className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2"
-            >
-              <TransparencyItem
-                icon={ShieldCheck}
-                text="100% destinado a compra de DEA"
-              />
-              <TransparencyItem
-                icon={FileText}
-                text="Publicamos factura y entrega"
-              />
+            <div className="mt-8">
+              {donationSteps.map((step, index) => (
+                <DonationTimelineStep
+                  key={step.title}
+                  icon={step.icon}
+                  title={step.title}
+                  description={step.description}
+                  stepNumber={index + 1}
+                  isLast={index === donationSteps.length - 1}
+                />
+              ))}
             </div>
           </div>
         </div>
       </section>
 
       <section id="donar" className="px-4 py-16 md:py-24">
-        <div className="container mx-auto rounded-lg border border-primary/20 bg-primary/5 p-6 md:p-10">
-          <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
-            <div>
-              <Heart className="mb-5 h-10 w-10 text-primary" />
-              <h2 className="text-3xl font-semibold leading-tight text-slate-950 md:text-4xl">
-                No esperes a que pase. Ayudanos a estar preparados.
-              </h2>
+        <div className="container mx-auto">
+          <button
+            type="button"
+            className="group flex w-full cursor-pointer flex-col gap-8 rounded-lg bg-primary p-7 text-left text-white shadow-[0_18px_45px_rgba(44,156,193,0.22)] transition-[box-shadow,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(44,156,193,0.3)] active:scale-[0.99] motion-reduce:transition-none motion-reduce:hover:translate-y-0 md:flex-row md:items-center md:justify-between md:p-10"
+            onClick={() => {
+              setDonationVisibility("anonymous");
+              setIsDialogOpen(true);
+            }}
+          >
+            <div className="flex min-w-0 flex-col gap-5 md:max-w-2xl">
+              <span className="flex h-12 w-12 items-center justify-center rounded-md bg-white/15 text-white shadow-sm">
+                <Heart className="h-6 w-6" />
+              </span>
+              <div>
+                <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
+                  Quiero donar
+                </h2>
+                <p className="mt-3 max-w-xl text-base leading-7 text-white/85 md:text-lg">
+                  Y ser parte de esta comunidad que lucha contra la muerte
+                  súbita.
+                </p>
+              </div>
             </div>
-            <Button
-              size="lg"
-              className="h-12 w-full bg-primary px-8 text-white hover:bg-primary/90 md:w-auto"
-              onClick={() => setIsDialogOpen(true)}
-            >
-              Donar ahora <Heart className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
+            <span className="inline-flex items-center text-base font-semibold text-white transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-1 motion-reduce:transition-none md:text-lg">
+              Quiero donar <ArrowRight className="ml-2 h-5 w-5" />
+            </span>
+          </button>
         </div>
       </section>
 
@@ -358,8 +375,8 @@ export default function DonarPage() {
           className="box-border h-auto max-h-[92svh] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] overflow-x-hidden overflow-y-auto rounded-lg bg-white p-0 sm:max-w-4xl"
           closeButtonClassName="[&_svg]:h-5 [&_svg]:w-5 [&_svg]:bg-transparent [&_svg]:text-slate-700"
         >
-          <div className="grid min-w-0 overflow-x-hidden lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-            <div className="min-w-0 bg-slate-950 p-6 text-white md:p-8">
+          <div className="grid w-full min-w-0 max-w-full overflow-x-hidden lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            <div className="box-border min-w-0 max-w-full overflow-hidden bg-slate-950 p-6 text-white md:p-8">
               <DialogHeader>
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-md bg-primary/20 text-primary">
                   <Heart className="h-6 w-6" />
@@ -374,7 +391,7 @@ export default function DonarPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="mt-8 rounded-lg border border-white/15 bg-white/10 p-5">
+              <div className="mt-8 box-border w-full min-w-0 max-w-full rounded-lg border border-white/15 bg-white/10 p-5">
                 <div className="mb-5 flex items-center gap-3">
                   <Banknote className="h-5 w-5 text-primary" />
                   <h3 className="font-semibold">Datos bancarios</h3>
@@ -390,7 +407,7 @@ export default function DonarPage() {
                   <BankRow label="Razon Social" value={bankData.razonSocial} />
                   <BankRow label="CUIT" value={bankData.cuit} />
                 </div>
-                <div className="mt-5 grid min-w-0 gap-3 sm:grid-cols-2">
+                <div className="mt-5 grid w-full min-w-0 max-w-full gap-3 sm:grid-cols-2">
                   <Button
                     type="button"
                     variant="outline"
@@ -415,7 +432,7 @@ export default function DonarPage() {
 
             <form
               onSubmit={handleSubmitDonation}
-              className="flex min-w-0 flex-col gap-5 overflow-x-hidden p-6 md:p-8"
+              className="box-border flex w-full min-w-0 max-w-full flex-col gap-5 overflow-x-hidden p-6 md:p-8"
             >
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
@@ -430,33 +447,85 @@ export default function DonarPage() {
                 </p>
               </div>
 
-              <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-                <DonationField label="Nombre" htmlFor="donation-name">
-                  <Input
-                    id="donation-name"
-                    name="name"
-                    required
-                    placeholder="Tu nombre"
-                    className="h-11 min-w-0 border-slate-300 bg-slate-50 text-slate-950 focus-visible:ring-primary"
+              <div className="box-border w-full min-w-0 max-w-full rounded-lg border border-slate-200 bg-slate-50/70 p-4 md:p-5">
+                <div>
+                  <h4 className="text-lg font-semibold text-slate-950">
+                    ¿Querés que tu nombre aparezca?
+                  </h4>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Podés elegir cómo mostrar tu aporte.
+                  </p>
+                </div>
+
+                <div className="mt-5 grid w-full min-w-0 max-w-full gap-3 sm:grid-cols-2">
+                  <DonationVisibilityCard
+                    icon={UserRound}
+                    title="Sí, quiero aparecer en el listado."
+                    description="Mi nombre podrá visualizarse en el listado público de donantes."
+                    value="public"
+                    selectedValue={donationVisibility}
+                    onSelect={setDonationVisibility}
                   />
-                </DonationField>
-                <DonationField label="Apellido" htmlFor="donation-lastname">
-                  <Input
-                    id="donation-lastname"
-                    name="lastname"
-                    required
-                    placeholder="Tu apellido"
-                    className="h-11 min-w-0 border-slate-300 bg-slate-50 text-slate-950 focus-visible:ring-primary"
+                  <DonationVisibilityCard
+                    icon={Shield}
+                    title="Prefiero que mi aporte sea anónimo."
+                    description="Mi donación será contabilizada sin mostrar mis datos personales."
+                    value="anonymous"
+                    selectedValue={donationVisibility}
+                    onSelect={setDonationVisibility}
                   />
-                </DonationField>
+                </div>
               </div>
 
-              <DonationField label="Email" htmlFor="donation-email">
+              <AnimatePresence initial={false}>
+                {donationVisibility === "public" && (
+                  <motion.div
+                    key="public-donor-fields"
+                    initial={{ opacity: 0, height: 0, transform: "translateY(-6px)" }}
+                    animate={{ opacity: 1, height: "auto", transform: "translateY(0)" }}
+                    exit={{ opacity: 0, height: 0, transform: "translateY(-6px)" }}
+                    transition={{
+                      duration: 0.22,
+                      ease: [0.23, 1, 0.32, 1],
+                    }}
+                    className="grid w-full min-w-0 max-w-full overflow-hidden"
+                  >
+                    <div className="grid w-full min-w-0 max-w-full gap-4 sm:grid-cols-2">
+                      <DonationField label="Nombre" htmlFor="donation-name">
+                        <Input
+                          id="donation-name"
+                          name="name"
+                          required={donationVisibility === "public"}
+                          placeholder="Tu nombre"
+                          className="h-11 min-w-0 border-slate-300 bg-slate-50 text-slate-950 focus-visible:ring-primary"
+                        />
+                      </DonationField>
+                      <DonationField
+                        label="Apellido"
+                        htmlFor="donation-lastname"
+                      >
+                        <Input
+                          id="donation-lastname"
+                          name="lastname"
+                          required={donationVisibility === "public"}
+                          placeholder="Tu apellido"
+                          className="h-11 min-w-0 border-slate-300 bg-slate-50 text-slate-950 focus-visible:ring-primary"
+                        />
+                      </DonationField>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <DonationField
+                label="Email"
+                htmlFor="donation-email"
+                required={false}
+              >
                 <Input
                   id="donation-email"
                   name="email"
                   type="email"
-                  required
                   placeholder="nombre@email.com"
                   className="h-11 min-w-0 border-slate-300 bg-slate-50 text-slate-950 focus-visible:ring-primary"
                 />
@@ -466,34 +535,37 @@ export default function DonarPage() {
                 label="Adjuntar comprobante de pago"
                 htmlFor="donation-receipt"
               >
-                <label
-                  htmlFor="donation-receipt"
-                  className="box-border flex min-h-28 min-w-0 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-center transition hover:border-primary/60 hover:bg-primary/5"
-                >
-                  <Clipboard className="mb-3 h-7 w-7 text-primary" />
-                  <span className="text-sm font-semibold text-slate-950">
-                    Seleccionar comprobante
-                  </span>
-                  <span className="mt-1 text-xs text-slate-500">
-                    PDF o imagen
-                  </span>
-                  {selectedFileName && (
-                    <span className="mt-3 max-w-full truncate rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700">
-                      {selectedFileName}
+                <div className="relative box-border w-full min-w-0 max-w-full overflow-hidden rounded-lg">
+                  <label
+                    htmlFor="donation-receipt"
+                    className="box-border flex min-h-28 w-full min-w-0 max-w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-center transition hover:border-primary/60 hover:bg-primary/5"
+                  >
+                    <Clipboard className="mb-3 h-7 w-7 text-primary" />
+                    <span className="max-w-full text-sm font-semibold text-slate-950">
+                      Seleccionar comprobante
                     </span>
-                  )}
-                </label>
-                <Input
-                  id="donation-receipt"
-                  name="receipt"
-                  type="file"
-                  required
-                  accept="image/*,application/pdf"
-                  className="sr-only"
-                  onChange={(event) =>
-                    setSelectedFileName(event.target.files?.[0]?.name || "")
-                  }
-                />
+                    <span className="mt-1 max-w-full text-xs text-slate-500">
+                      PDF o imagen
+                    </span>
+                    {selectedFileName && (
+                      <span className="mt-3 max-w-full truncate rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700">
+                        {selectedFileName}
+                      </span>
+                    )}
+                  </label>
+                  <Input
+                    id="donation-receipt"
+                    name="receipt"
+                    type="file"
+                    required
+                    accept="image/*,application/pdf"
+                    tabIndex={-1}
+                    className="pointer-events-none absolute inset-0 h-full w-full min-w-0 max-w-full opacity-0"
+                    onChange={(event) =>
+                      setSelectedFileName(event.target.files?.[0]?.name || "")
+                    }
+                  />
+                </div>
               </DonationField>
 
               <Button
@@ -533,31 +605,125 @@ const DonationField = ({
   label,
   htmlFor,
   children,
+  required = true,
 }: {
   label: string;
   htmlFor: string;
   children: ReactNode;
+  required?: boolean;
 }) => (
-  <div className="grid min-w-0 gap-2">
+  <div className="grid w-full min-w-0 max-w-full gap-2">
     <Label htmlFor={htmlFor} className="text-sm font-semibold text-slate-800">
       {label}
-      <span className="ml-1 text-primary">*</span>
+      {required ? (
+        <span className="ml-1 text-primary">*</span>
+      ) : (
+        <span className="ml-2 text-xs font-medium text-slate-500">
+          opcional
+        </span>
+      )}
     </Label>
     {children}
   </div>
 );
 
-const TransparencyItem = ({
+const DonationVisibilityCard = ({
   icon: Icon,
-  text,
+  title,
+  description,
+  value,
+  selectedValue,
+  onSelect,
 }: {
   icon: ComponentType<{ className?: string }>;
-  text: string;
+  title: string;
+  description: string;
+  value: DonationVisibility;
+  selectedValue: DonationVisibility;
+  onSelect: (value: DonationVisibility) => void;
+}) => {
+  const isSelected = selectedValue === value;
+
+  return (
+    <button
+      type="button"
+      aria-pressed={isSelected}
+      onClick={() => onSelect(value)}
+      className={`group relative box-border w-full min-w-0 max-w-full rounded-lg border p-4 text-left transition-[background-color,border-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.98] motion-reduce:transition-none ${
+        isSelected
+          ? "border-primary bg-primary/10 shadow-[0_10px_30px_rgba(44,156,193,0.14)]"
+          : "border-slate-200 bg-white hover:border-primary/35 hover:bg-white hover:shadow-sm"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-[background-color,border-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.03] motion-reduce:transition-none ${
+            isSelected
+              ? "border-primary bg-primary text-white"
+              : "border-slate-200 bg-slate-50 text-primary"
+          }`}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-start gap-3">
+            <p className="text-sm font-semibold leading-5 text-slate-950">
+              {title}
+            </p>
+            <span
+              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-[background-color,border-color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none ${
+                isSelected
+                  ? "scale-100 border-primary bg-primary"
+                  : "scale-95 border-slate-300 bg-white"
+              }`}
+              aria-hidden="true"
+            >
+              {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+            </span>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-slate-600">
+            {description}
+          </p>
+        </div>
+      </div>
+    </button>
+  );
+};
+
+const DonationTimelineStep = ({
+  icon: Icon,
+  title,
+  description,
+  stepNumber,
+  isLast,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  stepNumber: number;
+  isLast: boolean;
 }) => (
-  <div className="flex gap-3">
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-      <Icon className="h-5 w-5" />
+  <div className="group relative grid grid-cols-[3rem_1fr] gap-4 pb-7 last:pb-0">
+    {!isLast && (
+      <div
+        className="absolute bottom-0 left-6 top-12 w-px -translate-x-1/2 bg-slate-200"
+        aria-hidden="true"
+      />
+    )}
+    <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm transition-[background-color,border-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:border-primary/35 group-hover:bg-primary group-hover:text-white group-active:scale-[0.97] motion-reduce:transition-none md:group-hover:scale-[1.04]">
+      <Icon className="h-5 w-5 transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none md:group-hover:scale-105" />
     </div>
-    <p className="text-sm font-semibold leading-6 text-slate-800">{text}</p>
+    <div className="rounded-lg border border-transparent p-1 transition-[border-color,background-color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:border-primary/10 group-hover:bg-primary/[0.03] group-active:scale-[0.99] motion-reduce:transition-none md:group-hover:translate-x-1">
+      <div className="mb-2 flex items-center gap-3">
+        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+          Paso {stepNumber}
+        </span>
+        <span className="h-px flex-1 bg-slate-100" aria-hidden="true" />
+      </div>
+      <h3 className="text-lg font-semibold leading-snug text-slate-950">
+        {title}
+      </h3>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+    </div>
   </div>
 );
