@@ -1,8 +1,8 @@
 "use client";
 
 import { AnimatedLogos } from "@/components/AnimatedCarousel/AnimatedLogos";
-import BannerHero from "@/components/BannerHero/BannerHero";
 import { AnimatedFeatureSpotlight } from "@/components/BannerHero/BannerHomenaje";
+import { HomeHero } from "@/components/BannerHero/HomeHero";
 import { BoxTresHome } from "@/components/Box3Home/BoxTresHome";
 import {
   features,
@@ -15,13 +15,12 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ArrowRight, HeartPulse, MapPinned, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 const pillars = [
   {
     icon: HeartPulse,
     title: "Respuesta ante emergencias",
-    text: "Formacion practica para actuar con criterio y rapidez.",
+    text: "Formacóon práctica para actuar con criterio y rapidez.",
   },
   {
     icon: ShieldCheck,
@@ -36,27 +35,9 @@ const pillars = [
 ];
 
 export default function Home() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   return (
     <main className="flex flex-col bg-white text-slate-950">
-      <BannerHero
-        src="/images/4.jpeg"
-        srcMobile="/images/9.jpeg"
-        imgClassname={
-          isMobile ? "object-cover object-center" : "scale-105 object-cover"
-        }
-      />
+      <HomeHero />
 
       <section className="container mx-auto -mt-12 px-4 pb-14 md:pb-20">
         <div className="relative grid gap-6 rounded-lg border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/8 md:grid-cols-3 md:p-7">

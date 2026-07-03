@@ -66,20 +66,25 @@ const AnimatedFeatureSpotlight = React.forwardRef<
             </p>
             {buttonText && (
               <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 delay-200">
-                <Button size="lg" className="bg-primary text-white hover:bg-primary/90" {...buttonProps}>
+                <Button
+                  size="lg"
+                  className="bg-primary text-white hover:bg-primary/90"
+                  {...buttonProps}
+                >
                   {buttonText}
                 </Button>
               </div>
             )}
           </div>
 
-          <div className="relative min-h-[280px] w-full overflow-hidden rounded-lg animate-in fade-in zoom-in-95 duration-500 delay-150 md:min-h-[360px]">
+          <div className="relative w-full overflow-hidden rounded-lg animate-in fade-in zoom-in-95 duration-500 delay-150 ">
             <Image
               src={imageUrl}
               alt={imageAlt}
-              fill
-              sizes="(min-width: 768px) 42vw, 100vw"
-              className="object-cover"
+              width={1920}
+              height={1344}
+              priority
+              className="aspect-[1.35] w-full object-cover md:block"
             />
             <div className="absolute inset-0 ring-1 ring-inset ring-black/10" />
           </div>
