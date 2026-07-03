@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "../ui/button";
 import { Titleh1 } from "../Texts/Titleh1";
-import { User, Users, Video } from "lucide-react";
+import { Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface TextStyle {
@@ -16,7 +16,7 @@ interface ButtonStyle {
   color?: string;
   borderRadius?: string;
   hoverColor?: string;
-  hoverForeground?: string; // NEW: color of text on hover
+  hoverForeground?: string;
 }
 interface SlideContent {
   title: string;
@@ -52,7 +52,6 @@ export const DicedHeroSection: React.FC<DicedHeroSectionProps> = ({
   subMainTextStyle,
   componentBorderRadius = "0px",
   backgroundColor,
-  separatorColor = "#005baa",
   maxContentWidth = "1536px",
   mobileBreakpoint = 1000,
   fontFamily = "inherit",
@@ -134,35 +133,16 @@ export const DicedHeroSection: React.FC<DicedHeroSectionProps> = ({
               textAlign: isMobile
                 ? "center"
                 : isRTLCheck(mainText)
-                ? "right"
-                : "left",
+                  ? "right"
+                  : "left",
               fontSize: mainTextStyle?.fontSize,
             }}
           >
-            <motion.span className="flex justify-start">
+            <motion.span className="flex justify-start mb-4">
               <Titleh1 title="Tu compromiso es necesario" />
             </motion.span>
           </motion.div>
-          <motion.hr
-            initial={{ width: 0 }}
-            animate={{ width: "6.25rem" }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            style={{
-              height: "0.25rem",
-              background: separatorColor,
-              border: "none",
-              margin: isMobile
-                ? "1.125rem auto 1.875rem"
-                : isRTLCheck(mainText)
-                ? "1.125rem 0 1.875rem auto"
-                : "1.125rem 0 1.875rem",
-              alignSelf: isMobile
-                ? "center"
-                : isRTLCheck(mainText)
-                ? "flex-end"
-                : "flex-start",
-            }}
-          />
+
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -187,14 +167,13 @@ export const DicedHeroSection: React.FC<DicedHeroSectionProps> = ({
             justifyContent: isMobile
               ? "center"
               : isRTL
-              ? "flex-end"
-              : "flex-start",
+                ? "flex-end"
+                : "flex-start",
           }}
         >
           <Button
             size="lg"
             className="gap-4 cursor-pointer"
-            // variant="outline"
             onClick={() => router.push("/quienes-somos")}
           >
             Nuestra historia <Users className="w-4 h-4" />
@@ -266,15 +245,16 @@ export const DicedHeroSection: React.FC<DicedHeroSectionProps> = ({
             --y: 5px;
           }
           .top-right {
-            --_m: /calc(2 * var(--r)) calc(2 * var(--r)) radial-gradient(#000
-                  70%, #0000 72%);
+            --_m: /calc(2 * var(--r)) calc(2 * var(--r))
+              radial-gradient(#000 70%, #0000 72%);
             --_g: conic-gradient(
               at calc(100% - var(--r)) var(--r),
               #0000 25%,
               #000 0
             );
             --_d: (var(--s) + var(--r));
-            mask: calc(100% - var(--_d) - var(--x)) 0 var(--_m),
+            mask:
+              calc(100% - var(--_d) - var(--x)) 0 var(--_m),
               100% calc(var(--_d) + var(--y)) var(--_m),
               radial-gradient(
                   var(--s) at 100% 0,
@@ -287,11 +267,12 @@ export const DicedHeroSection: React.FC<DicedHeroSectionProps> = ({
             mask-repeat: no-repeat;
           }
           .top-left {
-            --_m: /calc(2 * var(--r)) calc(2 * var(--r)) radial-gradient(#000
-                  70%, #0000 72%);
+            --_m: /calc(2 * var(--r)) calc(2 * var(--r))
+              radial-gradient(#000 70%, #0000 72%);
             --_g: conic-gradient(at var(--r) var(--r), #000 75%, #0000 0);
             --_d: (var(--s) + var(--r));
-            mask: calc(var(--_d) + var(--x)) 0 var(--_m),
+            mask:
+              calc(var(--_d) + var(--x)) 0 var(--_m),
               0 calc(var(--_d) + var(--y)) var(--_m),
               radial-gradient(var(--s) at 0 0, #0000 99%, #000 calc(100% + 1px))
                 calc(var(--r) + var(--x)) calc(var(--r) + var(--y)),
@@ -300,15 +281,16 @@ export const DicedHeroSection: React.FC<DicedHeroSectionProps> = ({
             mask-repeat: no-repeat;
           }
           .bottom-left {
-            --_m: /calc(2 * var(--r)) calc(2 * var(--r)) radial-gradient(#000
-                  70%, #0000 72%);
+            --_m: /calc(2 * var(--r)) calc(2 * var(--r))
+              radial-gradient(#000 70%, #0000 72%);
             --_g: conic-gradient(
               from 180deg at var(--r) calc(100% - var(--r)),
               #0000 25%,
               #000 0
             );
             --_d: (var(--s) + var(--r));
-            mask: calc(var(--_d) + var(--x)) 100% var(--_m),
+            mask:
+              calc(var(--_d) + var(--x)) 100% var(--_m),
               0 calc(100% - var(--_d) - var(--y)) var(--_m),
               radial-gradient(
                   var(--s) at 0 100%,
@@ -321,15 +303,16 @@ export const DicedHeroSection: React.FC<DicedHeroSectionProps> = ({
             mask-repeat: no-repeat;
           }
           .bottom-right {
-            --_m: /calc(2 * var(--r)) calc(2 * var(--r)) radial-gradient(#000
-                  70%, #0000 72%);
+            --_m: /calc(2 * var(--r)) calc(2 * var(--r))
+              radial-gradient(#000 70%, #0000 72%);
             --_g: conic-gradient(
               from 90deg at calc(100% - var(--r)) calc(100% - var(--r)),
               #0000 25%,
               #000 0
             );
             --_d: (var(--s) + var(--r));
-            mask: calc(100% - var(--_d) - var(--x)) 100% var(--_m),
+            mask:
+              calc(100% - var(--_d) - var(--x)) 100% var(--_m),
               100% calc(100% - var(--_d) - var(--y)) var(--_m),
               radial-gradient(
                   var(--s) at 100% 100%,

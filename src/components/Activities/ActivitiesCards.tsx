@@ -72,13 +72,6 @@ const ActivitiesCards = ({
             >
               <div className="grid gap-y-6 sm:grid-cols-10 sm:gap-x-5 sm:gap-y-0 md:items-center md:gap-x-8 lg:gap-x-12">
                 <div className="sm:col-span-5">
-                  <div className="mb-4 md:mb-6">
-                    <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wider text-muted-foreground md:gap-5 lg:gap-6">
-                      {post.tags?.map((tag) => (
-                        <span key={tag}>{tag}</span>
-                      ))}
-                    </div>
-                  </div>
                   <h3 className="text-xl font-semibold md:text-2xl lg:text-3xl">
                     <div
                       onClick={handleModalOpenCanuelas}
@@ -98,12 +91,8 @@ const ActivitiesCards = ({
                     </span>
                   </div>
                   <div className="mt-6 flex items-center space-x-2 md:mt-8">
-                    <Button
-                      variant={"ghost"}
-                      onClick={handleModalOpenCanuelas}
-                      className="inline-flex items-center font-semibold hover:underline md:text-base cursor-pointer"
-                    >
-                      <span>Ver galería</span>
+                    <Button onClick={handleModalOpenCanuelas}>
+                      Ver galería
                       <ArrowRight className="ml-2 size-4 transition-transform" />
                     </Button>
                   </div>
@@ -136,13 +125,6 @@ const ActivitiesCards = ({
             >
               <div className="grid gap-y-6 sm:grid-cols-10 sm:gap-x-5 sm:gap-y-0 md:items-center md:gap-x-8 lg:gap-x-12">
                 <div className="sm:col-span-5">
-                  <div className="mb-4 md:mb-6">
-                    <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wider text-muted-foreground md:gap-5 lg:gap-6">
-                      {post.tags?.map((tag) => (
-                        <span key={tag}>{tag}</span>
-                      ))}
-                    </div>
-                  </div>
                   <h3 className="text-xl font-semibold md:text-2xl lg:text-3xl">
                     <div
                       onClick={handleOpenRio}
@@ -162,12 +144,8 @@ const ActivitiesCards = ({
                     </span>
                   </div>
                   <div className="mt-6 flex items-center space-x-2 md:mt-8">
-                    <Button
-                      variant={"ghost"}
-                      onClick={handleOpenRio}
-                      className="inline-flex items-center font-semibold hover:underline md:text-base cursor-pointer"
-                    >
-                      <span>Ver galería</span>
+                    <Button onClick={handleOpenRio}>
+                      Ver galería
                       <ArrowRight className="ml-2 size-4 transition-transform" />
                     </Button>
                   </div>
@@ -200,13 +178,6 @@ const ActivitiesCards = ({
             >
               <div className="grid gap-y-6 sm:grid-cols-10 sm:gap-x-5 sm:gap-y-0 md:items-center md:gap-x-8 lg:gap-x-12">
                 <div className="sm:col-span-5">
-                  <div className="mb-4 md:mb-6">
-                    <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wider text-muted-foreground md:gap-5 lg:gap-6">
-                      {post.tags?.map((tag) => (
-                        <span key={tag}>{tag}</span>
-                      ))}
-                    </div>
-                  </div>
                   <h3 className="text-xl font-semibold md:text-2xl lg:text-3xl">
                     <div
                       onClick={handleOpenMdq}
@@ -226,12 +197,8 @@ const ActivitiesCards = ({
                     </span>
                   </div>
                   <div className="mt-6 flex items-center space-x-2 md:mt-8">
-                    <Button
-                      variant={"ghost"}
-                      onClick={handleOpenMdq}
-                      className="inline-flex items-center font-semibold hover:underline md:text-base cursor-pointer"
-                    >
-                      <span>Ver galería</span>
+                    <Button onClick={handleOpenMdq}>
+                      Ver galería
                       <ArrowRight className="ml-2 size-4 transition-transform" />
                     </Button>
                   </div>
@@ -264,13 +231,6 @@ const ActivitiesCards = ({
             >
               <div className="grid gap-y-6 sm:grid-cols-10 sm:gap-x-5 sm:gap-y-0 md:items-center md:gap-x-8 lg:gap-x-12">
                 <div className="sm:col-span-5">
-                  <div className="mb-4 md:mb-6">
-                    <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wider text-muted-foreground md:gap-5 lg:gap-6">
-                      {post.tags?.map((tag) => (
-                        <span key={tag}>{tag}</span>
-                      ))}
-                    </div>
-                  </div>
                   <h3 className="text-xl font-semibold md:text-2xl lg:text-3xl">
                     <div
                       onClick={handleOpenUshuaia}
@@ -290,18 +250,13 @@ const ActivitiesCards = ({
                     </span>
                   </div>
                   <div className="mt-6 flex items-center space-x-2 md:mt-8">
-                    <Button
-                      variant={"ghost"}
-                      onClick={handleOpenUshuaia}
-                      className="inline-flex items-center font-semibold hover:underline md:text-base cursor-pointer"
-                    >
-                      <span>Ver galería</span>
+                    <Button onClick={handleOpenUshuaia}>
+                      Ver galería
                       <ArrowRight className="ml-2 size-4 transition-transform" />
                     </Button>
                   </div>
                 </div>
                 <div className="sm:col-span-5 order-first">
-                  {/* <a href={post.url} target="_blank" className="block"> */}
                   <div className="aspect-[16/9] h-full overflow-clip rounded-lg border border-border">
                     <button onClick={handleOpenUshuaia}>
                       <Image
@@ -313,7 +268,6 @@ const ActivitiesCards = ({
                       />
                     </button>
                   </div>
-                  {/* </a> */}
                 </div>
               </div>
             </Card>

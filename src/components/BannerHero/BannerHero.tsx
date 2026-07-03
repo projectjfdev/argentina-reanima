@@ -34,10 +34,11 @@ export default function BannerHero({
   }, []);
 
   const selectedSrc = isMobile ? srcMobile : src || "";
+  const hasContent = Boolean(title || secondTitle || description);
 
   return (
-    <div className="relative overflow-hidden min-h-screen flex items-center justify-center w-full">
-      <div className="absolute inset-0 -z-10">
+    <section className="relative isolate flex min-h-[92svh] w-full items-end overflow-hidden bg-slate-950 pt-20">
+      <div className="absolute inset-0 z-0">
         <Image
           src={selectedSrc}
           alt="Argentina Reanima"
@@ -46,24 +47,33 @@ export default function BannerHero({
           quality={100}
           priority
         />
-        <div className="absolute inset-0 bg-black/40 w-full h-full" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/10 via-transparent to-slate-950/62" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white via-white/35 to-transparent" />
       </div>
 
-      <div className="absolute container text-center text-white w-full">
-        <BlurFade delay={0.25} inView>
-          <h1 className="text-5xl md:text-7xl font-bold mb-4 font-oswald ">
-            {title}
-          </h1>
-          <h2 className="text-5xl md:text-7xl font-bold mb-4 font-oswald ">
-            {secondTitle}
-          </h2>
-        </BlurFade>
-        <BlurFade delay={0.25 * 2} inView>
-          <p className="text-xl md:text-3xl italic whitespace-pre-line break-words w-full mx-auto max-w-3xl text-center">
-            {description}
-          </p>
-        </BlurFade>
-      </div>
-    </div>
+      {hasContent && (
+        <div className="container relative z-10 mx-auto px-4 pb-14 pt-36 md:pb-20 md:pt-48">
+          <BlurFade delay={0.18} inView>
+            <div className="max-w-3xl rounded-lg border border-white/20 bg-slate-950/65 p-5 text-white shadow-2xl shadow-black/20 backdrop-blur-md md:p-7">
+              {title && (
+                <h1 className="text-3xl font-semibold leading-tight md:text-5xl">
+                  {title}
+                </h1>
+              )}
+              {secondTitle && (
+                <h2 className="mt-3 text-2xl font-semibold leading-tight text-white/90 md:text-4xl">
+                  {secondTitle}
+                </h2>
+              )}
+              {description && (
+                <p className="mt-4 max-w-2xl text-base leading-7 text-white/80 md:text-lg md:leading-8">
+                  {description}
+                </p>
+              )}
+            </div>
+          </BlurFade>
+        </div>
+      )}
+    </section>
   );
 }

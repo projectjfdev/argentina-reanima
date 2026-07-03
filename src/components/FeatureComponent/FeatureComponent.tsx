@@ -1,8 +1,10 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+
 import { cn } from "@/libs/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check } from "lucide-react";
+import Image from "next/image";
+import React, { useEffect, useState } from "react";
 import { Titleh1 } from "../Texts/Titleh1";
 
 interface Feature {
@@ -23,16 +25,16 @@ interface FeatureStepsProps {
 export const features = [
   {
     step: "Step 1",
-    title: "Aprendé lo esencial",
+    title: "Aprende lo esencial",
     content:
-      "Flexible y accesible: capacitaciones que se adaptan a vos. Aprendé cuándo y dónde quieras, a tu propio ritmo.",
+      "Flexible y accesible: capacitaciones que se adaptan a vos. Aprende cuando y donde quieras, a tu propio ritmo.",
     image: "/images/2.jpeg",
   },
   {
     step: "Step 2",
-    title: "Formación combinada",
+    title: "Formacion combinada",
     content:
-      "En Argentina Reanima ofrecemos cursos con modalidades mixtas para una formación completa, práctica y flexible.",
+      "En Argentina Reanima ofrecemos cursos con modalidades mixtas para una formacion completa, practica y flexible.",
     image:
       "https://res.cloudinary.com/dtbryiptz/image/upload/v1747443444/step2_mdfnqi.jpg",
   },
@@ -40,7 +42,7 @@ export const features = [
     step: "Step 3",
     title: "RCP y uso de DEA al alcance de todos",
     content:
-      "Adquirí los conocimientos necesarios para actuar ante una emergencia. Aprendé a realizar RCP y a utilizar desfibriladores externos automáticos (DEA) con seguridad y confianza. Lo anterior aplicado a adultos, niños y lactantes.",
+      "Adquiri los conocimientos necesarios para actuar ante una emergencia. Aprende a realizar RCP y a utilizar desfibriladores externos automaticos (DEA) con seguridad y confianza. Lo anterior aplicado a adultos, ninos y lactantes.",
     image: "/images/5.jpeg",
   },
 ];
@@ -50,6 +52,7 @@ export function FeatureSteps({
   className,
   title,
   autoPlayInterval = 3000,
+  imageHeight = "h-[420px]",
 }: FeatureStepsProps) {
   const [currentFeature, setCurrentFeature] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -70,38 +73,51 @@ export function FeatureSteps({
   return (
     <div className={cn(className)}>
       <div className="container mx-auto w-full">
-        <Titleh1 title={title || ""} className="mb-4" />
+        <div className="mb-8 max-w-3xl">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+            Formacion
+          </p>
+          <Titleh1
+            title={title || ""}
+            className="items-start [&>h1]:text-left"
+          />
+        </div>
 
-        <div className="flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-10">
-          <div className="order-2 md:order-1 space-y-8">
+        <div className="flex flex-col gap-8 md:grid md:grid-cols-2 md:gap-12">
+          <div className="order-2 space-y-5 md:order-1">
             {features.map((feature, index) => (
               <motion.div
-                key={index}
-                className="flex items-center gap-6 md:gap-8"
-                initial={{ opacity: 0.3 }}
-                animate={{ opacity: index === currentFeature ? 1 : 0.3 }}
-                transition={{ duration: 0.5 }}
+                key={feature.step}
+                className={cn(
+                  "flex gap-5 rounded-lg border p-5 transition-colors",
+                  index === currentFeature
+                    ? "border-primary/30 bg-primary/5"
+                    : "border-slate-200 bg-white"
+                )}
+                initial={{ opacity: 0.5 }}
+                animate={{ opacity: index === currentFeature ? 1 : 0.72 }}
+                transition={{ duration: 0.35 }}
               >
-                <motion.div
+                <div
                   className={cn(
-                    "w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2",
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-md border text-sm",
                     index === currentFeature
-                      ? "bg-primary border-primary text-primary-foreground scale-110"
-                      : "bg-muted border-muted-foreground"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-slate-200 bg-slate-50 text-slate-600"
                   )}
                 >
                   {index <= currentFeature ? (
-                    <span className="text-lg font-bold">✓</span>
+                    <Check className="h-4 w-4" />
                   ) : (
-                    <span className="text-lg font-semibold">{index + 1}</span>
+                    <span className="text-sm font-semibold">{index + 1}</span>
                   )}
-                </motion.div>
+                </div>
 
                 <div className="flex-1">
-                  <h3 className="text-xl md:text-2xl font-semibold">
+                  <h3 className="text-lg font-semibold text-slate-950 md:text-xl">
                     {feature.title || feature.step}
                   </h3>
-                  <p className="text-sm md:text-lg text-muted-foreground">
+                  <p className="mt-2 text-sm leading-6 text-slate-600 md:text-base">
                     {feature.content}
                   </p>
                 </div>
@@ -111,7 +127,8 @@ export function FeatureSteps({
 
           <div
             className={cn(
-              "order-1 md:order-2 relative h-[200px] md:h-[300px] lg:h-[400px] overflow-hidden rounded-lg"
+              "relative order-1 overflow-hidden rounded-lg md:order-2",
+              imageHeight
             )}
           >
             <AnimatePresence mode="wait">
@@ -119,21 +136,21 @@ export function FeatureSteps({
                 (feature, index) =>
                   index === currentFeature && (
                     <motion.div
-                      key={index}
-                      className="absolute inset-0 rounded-lg overflow-hidden"
-                      initial={{ y: 100, opacity: 0, rotateX: -20 }}
-                      animate={{ y: 0, opacity: 1, rotateX: 0 }}
-                      exit={{ y: -100, opacity: 0, rotateX: 20 }}
-                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                      key={feature.step}
+                      className="absolute inset-0 overflow-hidden rounded-lg"
+                      initial={{ opacity: 0, scale: 1.02 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.99 }}
+                      transition={{ duration: 0.45, ease: "easeOut" }}
                     >
                       <Image
                         src={feature.image}
-                        alt={feature.step}
-                        className="w-full h-full object-cover transition-transform transform"
+                        alt={feature.title || feature.step}
+                        className="h-full w-full object-cover"
                         width={1000}
                         height={500}
                       />
-                      <div className="absolute bottom-0 left-0 right-0 h-2/3 bg-gradient-to-t from-background via-background/1 to-transparent" />
+                      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-slate-950/70 to-transparent" />
                     </motion.div>
                   )
               )}

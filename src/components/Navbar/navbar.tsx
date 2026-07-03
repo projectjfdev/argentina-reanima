@@ -1,13 +1,28 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+// import { DonationBanner } from "@/components/DonationBanner/DonationBanner";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuList,
+} from "@/components/ui/navigation-menu";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   ActivityIcon,
+  ChevronDown,
   Headset,
   HeartHandshake,
   HeartPulse,
   Home,
   Images,
-  Library,
   Menu,
   Music,
   Network,
@@ -15,61 +30,72 @@ import {
   Pen,
   Scale,
   Users,
+  type LucideIcon,
 } from "lucide-react";
-import Link from "next/link";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { JSX, useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState, type ReactNode } from "react";
 
-interface MenuItem {
-  url: string;
+interface MenuLink {
+  label: string;
+  href: string;
+  icon: LucideIcon;
   description?: string;
-  icon?: JSX.Element;
-  items?: MenuItem[];
 }
 
-interface Navbar1Props {
+interface NavbarProps {
   logo?: {
     url: string;
     src: string;
     alt: string;
   };
-  menu?: MenuItem[];
-  mobileExtraLinks?: {
-    name: string;
-    url: string;
-  }[];
-  auth?: {
-    login: {
-      text: string;
-      url: string;
-    };
-    signup: {
-      text: string;
-      url: string;
-    };
-  };
 }
+
+const primaryLinks: MenuLink[] = [
+  { label: "Inicio", href: "/", icon: Home },
+  { label: "Noticias", href: "/noticias", icon: NewspaperIcon },
+  { label: "Marco Normativo", href: "/marco-normativo", icon: Scale },
+  { label: "Actividades", href: "/actividades", icon: ActivityIcon },
+  { label: "Videos", href: "/capacitaciones", icon: Pen },
+];
+
+const moreLinks: MenuLink[] = [
+  {
+    label: "La RCP y el cuidado emocional",
+    href: "/rcp-y-cuidado-emocional",
+    icon: HeartHandshake,
+    description: "Protocolo de intervencion y cuidado emocional.",
+  },
+  {
+    label: "Filiales y convenios",
+    href: "/filiales",
+    icon: HeartPulse,
+    description: "Sedes regionales, capacitaciones y convenios.",
+  },
+  {
+    label: "Nuestra musica",
+    href: "/nuestra-musica",
+    icon: Music,
+    description: "Canciones y materiales de la organizacion.",
+  },
+  {
+    label: "Galeria de imagenes",
+    href: "/galeria",
+    icon: Images,
+    description: "Actividades, cursos y encuentros en imagenes.",
+  },
+  {
+    label: "Redes Sociales",
+    href: "/redes-sociales",
+    icon: Network,
+    description: "Contenido organizado por categorias.",
+  },
+];
+
+const secondaryLinks: MenuLink[] = [
+  { label: "Quienes somos?", href: "/quienes-somos", icon: Users },
+  { label: "Contacto", href: "/contacto", icon: Headset },
+];
 
 const Navbar = ({
   logo = {
@@ -77,425 +103,237 @@ const Navbar = ({
     src: "/logo/logo.png",
     alt: "argentinareanima",
   },
-}: Navbar1Props) => {
+}: NavbarProps) => {
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-
-  function DropdownWithoutIcon(props: any) {
-    return (
-      <a
-        href={props.href} // Establecer href utilizando la propiedad href del componente
-        className="menu-item bg-none "
-        onClick={() => props.goToMenu}
-      >
-        {props.children}
-        <span className="icon-right">{props.rightIcon}</span>
-      </a>
-    );
-  }
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
-      if (currentScrollY > lastScrollY && currentScrollY > 50) {
-        // Scrolling down
-        setShowNavbar(false);
-      } else {
-        // Scrolling up
-        setShowNavbar(true);
-      }
-
+      setShowNavbar(!(currentScrollY > lastScrollY && currentScrollY > 50));
       setLastScrollY(currentScrollY);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
   return (
-    <section
-      className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
+    <header
+      className={`fixed left-0 right-0 top-0 z-50 border-b border-slate-200/70 bg-white/94 shadow-[0_8px_24px_rgba(15,23,42,0.06)] backdrop-blur-md transition-transform duration-300 ${
         showNavbar ? "translate-y-0" : "-translate-y-full"
-      } bg-white py-4 px-10`}
+      }`}
     >
-      {/* <section className="py-4 w-full bg-white px-10"> */}
-      <div className="w-full">
-        <nav className="hidden justify-between lg:flex w-full">
-          <div className="flex items-center gap-6">
-            <Link href={logo.url} className="flex items-center gap-2">
-              <Image
-                width={200}
-                height={200}
-                src={logo.src}
-                className="img-logo transform transition-transform duration-300 hover:scale-105 w-18 cursor-pointer"
-                alt={logo.alt}
-              />
-            </Link>
-          </div>
-          <div className="flex gap-2">
+      <div className="mx-auto w-full px-4 md:px-6 lg:px-10">
+        <nav className="hidden h-20 items-center justify-between lg:flex">
+          <Link
+            href={logo.url}
+            className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            aria-label="Argentina Reanima - inicio"
+          >
+            <Image
+              width={96}
+              height={96}
+              src={logo.src}
+              className="h-16 w-16 object-contain transition-transform duration-200 hover:scale-[1.03]"
+              alt={logo.alt}
+              priority
+            />
+          </Link>
+
+          <div className="flex items-center gap-1">
             <NavigationMenu>
-              <NavigationMenuList>
-                {/* Inicio */}
-                <NavigationMenuItem>
-                  <Link
-                    href="/"
-                    // inline-flex h-10 w-max items-center relative justify-center rounded-md bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-accent-foreground
-                    className="relative inline-flex items-center px-4 py-2 text-sm font-medium  hover:bg-muted text-muted-foreground hover:text-accent-foreground transition-colors"
-                  >
-                    <span className="after:content-[''] after:absolute after:left-0 after:-bottom-2 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full relative">
-                      Inicio
-                    </span>
-                  </Link>
-                </NavigationMenuItem>
-
-                {/* Noticias  asdas t se */}
-
-                <NavigationMenuItem>
-                  <Link
-                    href="/noticias"
-                    // inline-flex h-10 w-max items-center relative justify-center rounded-md bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-accent-foreground
-                    className="relative inline-flex items-center px-4 py-2 text-sm font-medium  hover:bg-muted text-muted-foreground hover:text-accent-foreground transition-colors"
-                  >
-                    <span className="after:content-[''] after:absolute after:left-0 after:-bottom-2 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full relative">
-                      Noticias
-                    </span>
-                  </Link>
-                </NavigationMenuItem>
-                {/* Jornadas y actividades */}
-                <NavigationMenuItem className="text-muted-foreground">
-                  <div className="group">
-                    <Link
-                      className=" inline-flex h-10 w-max items-center relative justify-center rounded-md bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-accent-foreground"
-                      href="/marco-normativo"
-                    >
-                      <span className="after:content-[''] after:absolute after:left-0 after:-bottom-2 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full relative">
-                        Marco Normativo
-                      </span>
-                    </Link>
-                  </div>
-                </NavigationMenuItem>
-
-                {/* Jornadas y actividades */}
-                <NavigationMenuItem className="text-muted-foreground">
-                  <div className="group">
-                    <Link
-                      className=" inline-flex h-10 w-max items-center relative justify-center rounded-md bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-accent-foreground"
-                      href="/actividades"
-                    >
-                      <span className="after:content-[''] after:absolute after:left-0 after:-bottom-2 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full relative">
-                        Actividades
-                      </span>
-                    </Link>
-                  </div>
-                </NavigationMenuItem>
-
-                {/* Cursos gratuitos */}
-
-                <NavigationMenuItem className="text-muted-foreground">
-                  <div className="group">
-                    <Link
-                      className=" inline-flex h-10 w-max items-center relative justify-center rounded-md bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-accent-foreground"
-                      href="/capacitaciones"
-                    >
-                      <span className="after:content-[''] after:absolute after:left-0 after:-bottom-2 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full relative">
-                        Videos
-                      </span>
-                    </Link>
-                  </div>
-                </NavigationMenuItem>
-
-                {/* sM */}
-
-                <NavigationMenu>
-                  <NavigationMenuItem className="text-muted-foreground ">
-                    <NavigationMenuTrigger className="cursor-pointer">
-                      <span className="after:content-[''] after:absolute after:left-0 after:-bottom-2 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full relative">
-                        Más
-                      </span>
-                    </NavigationMenuTrigger>
-
-                    <NavigationMenuContent>
-                      <ul className="w-80 p-3">
-                        <li>
-                          <Link
-                            href="/rcp-y-cuidado-emocional"
-                            className="flex select-none gap-4 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-muted hover:text-accent-foreground"
-                          >
-                            <HeartHandshake className="size-5 shrink-0" />
-                            <div>
-                              <div className="text-sm font-semibold">
-                                La RCP y el cuidado emocional
-                              </div>
-                              <p className="text-sm leading-snug text-muted-foreground">
-                                El protocolo de intervención incluye los
-                                cuidados emocionales
-                              </p>
-                            </div>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href="/filiales"
-                            className="flex select-none gap-4 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-muted hover:text-accent-foreground"
-                          >
-                            <HeartPulse className="size-5 shrink-0" />
-                            <div>
-                              <div className="text-sm font-semibold">
-                                Filiales y convenios
-                              </div>
-                              <p className="text-sm leading-snug text-muted-foreground">
-                                Sedes regionales que ofrecen capacitación en
-                                RCP, DEA y maniobra de Heimlich
-                              </p>
-                            </div>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href="/nuestra-musica"
-                            className="flex select-none gap-4 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-muted hover:text-accent-foreground"
-                          >
-                            <Music className="size-5 shrink-0" />
-                            <div>
-                              <div className="text-sm font-semibold">
-                                Nuestra música
-                              </div>
-                              <p className="text-sm leading-snug text-muted-foreground">
-                                Escuchá las últimas canciones
-                              </p>
-                            </div>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            className="flex select-none gap-4 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-muted hover:text-accent-foreground"
-                            href="/galeria"
-                          >
-                            <Images className="size-5 shrink-0" />
-                            <div>
-                              <div className="text-sm font-semibold">
-                                Galeria de Imagenes
-                              </div>
-                              <p className="text-sm leading-snug text-muted-foreground">
-                                Explora nuestra galeria de imagenes.
-                              </p>
-                            </div>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            className="flex select-none gap-4 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-muted hover:text-accent-foreground"
-                            href="/redes-sociales"
-                          >
-                            <Network className="size-5 shrink-0" />
-                            <div>
-                              <div className="text-sm font-semibold">
-                                Redes Sociales
-                              </div>
-                              <p className="text-sm leading-snug text-muted-foreground">
-                                Encuentra fácilmente el contenido que buscas por
-                                categorías.
-                              </p>
-                            </div>
-                          </Link>
-                        </li>
-                      </ul>
-                    </NavigationMenuContent>
+              <NavigationMenuList className="gap-1">
+                {primaryLinks.map((item) => (
+                  <NavigationMenuItem key={item.href}>
+                    <DesktopNavLink href={item.href}>
+                      {item.label}
+                    </DesktopNavLink>
                   </NavigationMenuItem>
-                </NavigationMenu>
+                ))}
 
-                {/* Quienes somos */}
-                <NavigationMenuItem>
-                  <Link
-                    href="/quienes-somos"
-                    // inline-flex h-10 w-max items-center relative justify-center rounded-md bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-accent-foreground
-                    className="relative inline-flex items-center px-4 py-2 text-sm font-medium  hover:bg-muted text-muted-foreground hover:text-accent-foreground transition-colors"
-                  >
-                    <span className="after:content-[''] after:absolute after:left-0 after:-bottom-2 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full relative">
-                      ¿Quiénes somos?
-                    </span>
-                  </Link>
+                <NavigationMenuItem className="relative">
+                  <div className="group/more">
+                    <button
+                      type="button"
+                      className="inline-flex h-10 items-center rounded-md px-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    >
+                      Más
+                      <ChevronDown className="ml-2 h-4 w-4 text-slate-400 transition-transform duration-200 group-hover/more:rotate-180" />
+                    </button>
+                    <div className="invisible absolute left-0 top-full z-50 pt-3 opacity-0 transition duration-150 group-hover/more:visible group-hover/more:opacity-100 group-focus-within/more:visible group-focus-within/more:opacity-100">
+                      <ul className="grid w-[360px] gap-1 rounded-lg border border-slate-200 bg-white p-3 shadow-xl shadow-slate-900/10">
+                        {moreLinks.map((item) => (
+                          <li key={item.href}>
+                            <Link
+                              href={item.href}
+                              className="flex gap-3 rounded-md p-3 outline-none transition-colors hover:bg-slate-50 focus:bg-slate-50"
+                            >
+                              <item.icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                              <span>
+                                <span className="block text-sm font-semibold text-slate-950">
+                                  {item.label}
+                                </span>
+                                {item.description && (
+                                  <span className="mt-1 block text-sm leading-5 text-slate-500">
+                                    {item.description}
+                                  </span>
+                                )}
+                              </span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
                 </NavigationMenuItem>
 
-                {/* Blog */}
-                <NavigationMenuItem className="text-muted-foreground">
-                  <Link
-                    className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-accent-foreground"
-                    href="/contacto"
-                  >
-                    <span className="after:content-[''] after:absolute after:left-0 after:-bottom-2 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full relative">
-                      {" "}
-                      Contacto
-                    </span>
-                  </Link>
-                </NavigationMenuItem>
+                {secondaryLinks.map((item) => (
+                  <NavigationMenuItem key={item.href}>
+                    <DesktopNavLink href={item.href}>
+                      {item.label}
+                    </DesktopNavLink>
+                  </NavigationMenuItem>
+                ))}
               </NavigationMenuList>
             </NavigationMenu>
           </div>
         </nav>
 
-        {/* Mobile Navigation */}
-        <div className="block lg:hidden">
-          <div className="flex items-center justify-between">
-            <Link href={logo.url} className="flex items-center gap-2">
-              <Image
-                width={150}
-                height={150}
-                src={logo.src}
-                className="w-12"
-                alt={logo.alt}
-              />
-            </Link>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Menu className="size-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="overflow-y-auto px-0">
-                <SheetHeader className="pl-6">
-                  <SheetTitle>
-                    <Link href={logo.url} className="flex items-center gap-2">
+        <div className="flex h-16 items-center justify-between lg:hidden">
+          <Link
+            href={logo.url}
+            className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            aria-label="Argentina Reanima - inicio"
+          >
+            <Image
+              width={72}
+              height={72}
+              src={logo.src}
+              className="h-12 w-12 object-contain"
+              alt={logo.alt}
+              priority
+            />
+          </Link>
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-11 w-11 rounded-md border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50"
+                aria-label="Abrir menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-[min(92vw,420px)] overflow-y-auto border-l border-slate-200 bg-white p-0 sm:max-w-md">
+              <SheetHeader className="border-b border-slate-200 px-5 py-5 text-left">
+                <SheetTitle>
+                  <SheetClose asChild>
+                    <Link href={logo.url} className="flex items-center gap-3">
                       <Image
-                        width={150}
-                        height={150}
+                        width={72}
+                        height={72}
                         src={logo.src}
-                        className="w-14"
+                        className="h-12 w-12 object-contain"
                         alt={logo.alt}
                       />
+                      <span className="text-base font-semibold text-slate-950">
+                        Argentina Reanima
+                      </span>
                     </Link>
-                  </SheetTitle>
-                </SheetHeader>
+                  </SheetClose>
+                </SheetTitle>
+              </SheetHeader>
 
-                <div className="my-6 flex flex-col gap-6">
-                  <div className="border-t ">
-                    <div className="flex flex-col justify-start"></div>
-                  </div>
-                  <Accordion
-                    type="single"
-                    collapsible
-                    className="flex w-full flex-col gap-4"
-                  >
-                    {/* Aquí van los elementos del Accordion */}
+              <div className="px-4 py-5">
+                <MobileGroup title="Navegacion principal">
+                  {primaryLinks.map((item) => (
+                    <MobileNavLink key={item.href} item={item} />
+                  ))}
+                </MobileGroup>
 
-                    <DropdownWithoutIcon href="/">
-                      <div className="flex items-center py-3 px-4 dark:hover:bg-gray-800 hover:bg-gray-100 transition-colors w-full dark:hover:text-white">
-                        <Home className="mr-2" />
-                        <span className="text-lg">Inicio</span>
-                      </div>
-                    </DropdownWithoutIcon>
+                <MobileGroup title="Mas secciones" className="mt-6">
+                  {moreLinks.map((item) => (
+                    <MobileNavLink key={item.href} item={item} compact />
+                  ))}
+                </MobileGroup>
 
-                    <DropdownWithoutIcon href="/noticias">
-                      <div className="flex items-center py-3 px-4 dark:hover:bg-gray-800 hover:bg-gray-100 transition-colors w-full dark:hover:text-white">
-                        <NewspaperIcon className="mr-2" />
-                        <span className="text-lg">Noticias</span>
-                      </div>
-                    </DropdownWithoutIcon>
-
-                    <DropdownWithoutIcon href="/marco-normativo">
-                      <div className="flex items-center py-3 px-4 dark:hover:bg-gray-800 hover:bg-gray-100 transition-colors w-full dark:hover:text-white">
-                        <Scale className="mr-2" />
-                        <span className="text-lg">Marco Normativo</span>
-                      </div>
-                    </DropdownWithoutIcon>
-
-                    <DropdownWithoutIcon href="/actividades">
-                      <div className="flex items-center py-3 px-4 dark:hover:bg-gray-800 hover:bg-gray-100 transition-colors w-full dark:hover:text-white">
-                        <ActivityIcon className="mr-2" />
-                        <span className="text-lg">Actividades</span>
-                      </div>
-                    </DropdownWithoutIcon>
-
-                    <DropdownWithoutIcon href="/capacitaciones">
-                      <div className="flex items-center py-3 px-4 dark:hover:bg-gray-800 hover:bg-gray-100 transition-colors w-full dark:hover:text-white">
-                        <Pen className="mr-2" />
-                        <span className="text-lg">Capacitaciones </span>
-                      </div>
-                    </DropdownWithoutIcon>
-
-                    <Accordion
-                      type="single"
-                      collapsible
-                      className="w-full px-4 "
-                    >
-                      <AccordionItem
-                        value={`item-1}`}
-                        className="border border-none"
-                      >
-                        <AccordionTrigger className="dark:hover:bg-gray-800 hover:bg-gray-100 hover:no-underline">
-                          <div className="flex items-center gap-2 text-lg font-normal">
-                            <span>
-                              <Library className="mr-2" />
-                            </span>
-                            Más
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <DropdownWithoutIcon href="/filiales">
-                            <div className="ml-2 flex items-center py-3  dark:hover:bg-gray-800 hover:bg-gray-100 transition-colors w-full dark:hover:text-white">
-                              <HeartPulse className="mr-2" />
-
-                              <span className="text-lg">Filiales</span>
-                            </div>
-                          </DropdownWithoutIcon>
-                          <DropdownWithoutIcon href="/nuestra-musica">
-                            <div className="ml-2 flex items-center py-3  dark:hover:bg-gray-800 hover:bg-gray-100 transition-colors w-full dark:hover:text-white">
-                              <Music className="mr-2" />
-
-                              <span className="text-lg">Nuestra música</span>
-                            </div>
-                          </DropdownWithoutIcon>
-                          <DropdownWithoutIcon href="/rcp-y-cuidado-emocional">
-                            <div className="ml-2 flex items-center py-3  dark:hover:bg-gray-800 hover:bg-gray-100 transition-colors w-full dark:hover:text-white">
-                              <HeartHandshake className="mr-2" />
-
-                              <span className="text-lg">
-                                La RCP y el cuidado emocional
-                              </span>
-                            </div>
-                          </DropdownWithoutIcon>
-                          <DropdownWithoutIcon href="/galeria">
-                            <div className="ml-2  flex items-center py-3  dark:hover:bg-gray-800 hover:bg-gray-100 transition-colors w-full dark:hover:text-white">
-                              <Images className="mr-2 size-5 shrink-0" />
-                              <span className="text-lg">
-                                Galeria de Imagenes
-                              </span>
-                            </div>
-                          </DropdownWithoutIcon>
-
-                          <DropdownWithoutIcon href="/redes-sociales">
-                            <div className="ml-2  flex items-center py-3  dark:hover:bg-gray-800 hover:bg-gray-100 transition-colors w-full dark:hover:text-white">
-                              <Network className=" mr-2 size-5 shrink-0" />
-                              <span className="text-lg">Redes Sociales</span>
-                            </div>
-                          </DropdownWithoutIcon>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-
-                    <DropdownWithoutIcon href="/quienes-somos">
-                      <div className="flex items-center py-3 px-4 dark:hover:bg-gray-800 hover:bg-gray-100 transition-colors w-full dark:hover:text-white">
-                        <Users className="mr-2" />
-                        <span className="text-lg">¿Quiénes somos?</span>
-                      </div>
-                    </DropdownWithoutIcon>
-
-                    <DropdownWithoutIcon href="/contacto">
-                      <div className="flex items-center py-3 px-4 dark:hover:bg-gray-800 hover:bg-gray-100 transition-colors w-full dark:hover:text-white">
-                        <Headset className="mr-2" />
-                        <span className="text-lg">Contacto</span>
-                      </div>
-                    </DropdownWithoutIcon>
-                  </Accordion>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+                <MobileGroup title="Institucional" className="mt-6">
+                  {secondaryLinks.map((item) => (
+                    <MobileNavLink key={item.href} item={item} />
+                  ))}
+                </MobileGroup>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
-    </section>
+      {/* <DonationBanner /> */}
+    </header>
   );
 };
+
+const DesktopNavLink = ({
+  href,
+  children,
+}: {
+  href: string;
+  children: ReactNode;
+}) => (
+  <Link
+    href={href}
+    className="relative inline-flex h-10 items-center rounded-md px-3 text-sm font-medium text-slate-600 transition-colors after:absolute after:inset-x-3 after:-bottom-0.5 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-primary after:transition-transform after:duration-200 hover:bg-slate-100 hover:text-slate-950 hover:after:scale-x-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+  >
+    {children}
+  </Link>
+);
+
+const MobileGroup = ({
+  title,
+  className = "",
+  children,
+}: {
+  title: string;
+  className?: string;
+  children: ReactNode;
+}) => (
+  <section className={className}>
+    <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+      {title}
+    </p>
+    <div className="grid gap-1">{children}</div>
+  </section>
+);
+
+const MobileNavLink = ({
+  item,
+  compact = false,
+}: {
+  item: MenuLink;
+  compact?: boolean;
+}) => (
+  <SheetClose asChild>
+    <Link
+      href={item.href}
+      className="group flex min-h-12 items-center gap-3 rounded-md px-3 py-3 text-slate-800 transition-colors hover:bg-primary/10 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+    >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+        <item.icon className="h-5 w-5" />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-base font-semibold leading-5">
+          {item.label}
+        </span>
+        {!compact && item.description && (
+          <span className="mt-1 block text-sm leading-5 text-slate-500">
+            {item.description}
+          </span>
+        )}
+      </span>
+    </Link>
+  </SheetClose>
+);
 
 export { Navbar };

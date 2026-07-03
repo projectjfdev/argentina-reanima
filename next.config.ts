@@ -6,7 +6,9 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "20mb",
     },
-    // reactRefresh: false,
+  },
+  turbopack: {
+    root: process.cwd(),
   },
   typescript: {
     // !! WARN !!
@@ -16,9 +18,6 @@ const nextConfig: NextConfig = {
     // ignoreBuildErrors: true,
   },
   reactStrictMode: true,
-  devIndicators: {
-    buildActivity: true,
-  },
   images: {
     unoptimized: true,
     remotePatterns: [
