@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { DonationBanner } from "@/components/DonationBanner/DonationBanner";
+// import { DonationBanner } from "@/components/DonationBanner/DonationBanner";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -146,7 +146,9 @@ const Navbar = ({
               <NavigationMenuList className="gap-1">
                 {primaryLinks.map((item) => (
                   <NavigationMenuItem key={item.href}>
-                    <DesktopNavLink href={item.href}>{item.label}</DesktopNavLink>
+                    <DesktopNavLink href={item.href}>
+                      {item.label}
+                    </DesktopNavLink>
                   </NavigationMenuItem>
                 ))}
 
@@ -161,26 +163,26 @@ const Navbar = ({
                     </button>
                     <div className="invisible absolute left-0 top-full z-50 pt-3 opacity-0 transition duration-150 group-hover/more:visible group-hover/more:opacity-100 group-focus-within/more:visible group-focus-within/more:opacity-100">
                       <ul className="grid w-[360px] gap-1 rounded-lg border border-slate-200 bg-white p-3 shadow-xl shadow-slate-900/10">
-                      {moreLinks.map((item) => (
-                        <li key={item.href}>
-                          <Link
-                            href={item.href}
-                            className="flex gap-3 rounded-md p-3 outline-none transition-colors hover:bg-slate-50 focus:bg-slate-50"
-                          >
-                            <item.icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                            <span>
-                              <span className="block text-sm font-semibold text-slate-950">
-                                {item.label}
-                              </span>
-                              {item.description && (
-                                <span className="mt-1 block text-sm leading-5 text-slate-500">
-                                  {item.description}
+                        {moreLinks.map((item) => (
+                          <li key={item.href}>
+                            <Link
+                              href={item.href}
+                              className="flex gap-3 rounded-md p-3 outline-none transition-colors hover:bg-slate-50 focus:bg-slate-50"
+                            >
+                              <item.icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                              <span>
+                                <span className="block text-sm font-semibold text-slate-950">
+                                  {item.label}
                                 </span>
-                              )}
-                            </span>
-                          </Link>
-                        </li>
-                      ))}
+                                {item.description && (
+                                  <span className="mt-1 block text-sm leading-5 text-slate-500">
+                                    {item.description}
+                                  </span>
+                                )}
+                              </span>
+                            </Link>
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   </div>
@@ -188,7 +190,9 @@ const Navbar = ({
 
                 {secondaryLinks.map((item) => (
                   <NavigationMenuItem key={item.href}>
-                    <DesktopNavLink href={item.href}>{item.label}</DesktopNavLink>
+                    <DesktopNavLink href={item.href}>
+                      {item.label}
+                    </DesktopNavLink>
                   </NavigationMenuItem>
                 ))}
               </NavigationMenuList>
@@ -266,7 +270,7 @@ const Navbar = ({
           </Sheet>
         </div>
       </div>
-      <DonationBanner />
+      {/* <DonationBanner /> */}
     </header>
   );
 };
