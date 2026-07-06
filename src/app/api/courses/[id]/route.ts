@@ -1,4 +1,5 @@
 import { Prisma } from "@/generated/prisma";
+import { requireAdminSession } from "@/libs/auth/requireAdminSession";
 import { prisma } from "@/libs/db";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -41,6 +42,9 @@ export async function GET(request: NextRequest, context: any) {
 }
 
 export async function PUT(request: NextRequest, context: any) {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
+
   const id = Number(context.params.id);
   if (isNaN(id)) {
     return NextResponse.json({ error: "ID inválido" }, { status: 400 });
@@ -89,6 +93,9 @@ export async function PUT(request: NextRequest, context: any) {
 }
 
 export async function DELETE(request: NextRequest, context: any) {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
+
   const id = Number(context.params.id);
   if (isNaN(id)) {
     return NextResponse.json({ error: "ID inválido" }, { status: 400 });

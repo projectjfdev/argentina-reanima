@@ -1,4 +1,5 @@
 import { Prisma } from "@/generated/prisma";
+import { requireAdminSession } from "@/libs/auth/requireAdminSession";
 import cloudinary from "@/libs/cloudinary";
 import { prisma } from "@/libs/db";
 import { revalidatePath } from "next/cache";
@@ -69,6 +70,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
   try {
+    const authError = await requireAdminSession();
+    if (authError) return authError;
+
     const {
       title,
       description,

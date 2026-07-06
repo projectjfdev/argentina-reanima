@@ -1,4 +1,5 @@
 import { Prisma } from "@/generated/prisma";
+import { requireAdminSession } from "@/libs/auth/requireAdminSession";
 import cloudinary from "@/libs/cloudinary";
 import { prisma } from "@/libs/db";
 import { NextRequest, NextResponse } from "next/server";
@@ -46,6 +47,9 @@ export async function GET(request: NextRequest, context: any) {
 
 // DELETE /api/news/[id]
 export async function DELETE(request: NextRequest, context: any) {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
+
   const id = Number(context.params.id);
 
   if (isNaN(id)) {
@@ -95,6 +99,9 @@ export async function DELETE(request: NextRequest, context: any) {
 
 // PUT /api/news/[id]
 export async function PUT(request: NextRequest, context: any) {
+  const authError = await requireAdminSession();
+  if (authError) return authError;
+
   const id = Number(context.params.id);
 
   if (isNaN(id)) {

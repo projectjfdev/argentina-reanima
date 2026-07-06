@@ -1,5 +1,12 @@
-import authMiddleware from "next-auth/middleware";
+import { withAuth } from "next-auth/middleware";
 
-export const proxy = authMiddleware;
+export const proxy = withAuth({
+  callbacks: {
+    authorized: ({ token }) => token?.role === "ADMIN",
+  },
+  pages: {
+    signIn: "/auth/login",
+  },
+});
 
 export const config = { matcher: ["/dashboard/:path*"] };

@@ -67,7 +67,7 @@ Sin necesidad de usar --name, ya que la migración ya fue creada.
 2 - Luego de que Franco realice el punto 1:
 
 * Antes de hacer un pull en la base de datos necesitamos resetear nuestra base de datos local con  npx prisma migrate reset
-* si ya tenemos datos reales de produccion no uysar el migrate reset por que se pierden los datos 
+* si ya tenemos datos reales de produccion no uysar el migrate reset por que se pierden los datos
 
 * Si tenemos datos de produccion es mejor usar -  npx prisma migrate resolve --applied "nombre-de-la-migración"
 
@@ -97,7 +97,7 @@ npx prisma db push
 
 ---------------------------
 
-TODO: 
+TODO:
 
-Meter esta info sobre el marco normativo, no se si en una LP nueva o ya existentes
-https://drive.google.com/drive/u/4/folders/1W9G_CDp-jPCfmzswNhWv174Qv4Hem4Z-
+Agregar RESEND_API_KEY a Vercel
+Cambiar configuracion en produccion, pegarla a la url de deploy https://console.cloud.google.com/apis/credentials?authuser=3&project=argentina-reanima

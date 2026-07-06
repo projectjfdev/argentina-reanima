@@ -1,58 +1,127 @@
+import {
+  createVerificationToken,
+  hashVerificationToken,
+} from "@/libs/auth/emailVerification";
 import { prisma } from "@/libs/db";
-import { NextResponse } from "next/server";
+import { sendConfirmEmail } from "@/libs/email/resend";
 import bcrypt from "bcrypt";
+import { NextResponse } from "next/server";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_MIN_LENGTH = 8;
+const VERIFICATION_TOKEN_HOURS = 24;
 
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    // const emailFound = await prisma.user.findUnique({
-    //   where: {
-    //     email: data.email,
-    //   },
-    // });
 
-    // if (emailFound) {
-    //   return NextResponse.json(
-    //     { message: "El email ya existe" },
-    //     { status: 409 }
-    //   );
-    // }
+    const name = typeof data.name === "string" ? data.name.trim() : "";
+    const email =
+      typeof data.email === "string" ? data.email.trim().toLowerCase() : "";
+    const password = typeof data.password === "string" ? data.password : "";
 
-    // const usernameFound = await prisma.user.findUnique({
-    //   where: {
-    //     username: data.username,
-    //   },
-    // });
+    if (!name) {
+      return NextResponse.json(
+        { message: "El nombre es obligatorio", success: false },
+        { status: 400 },
+      );
+    }
 
-    // if (usernameFound) {
-    //   return NextResponse.json(
-    //     { message: "El username ya existe" },
-    //     { status: 409 }
-    //   );
-    // }
-    // const hashPassword = await bcrypt.hash(data.password, 10);
-    // const newUser = await prisma.user.create({
-    //   data: {
-    //     username: data.username,
-    //     email: data.email,
-    //     password: hashPassword,
-    //   },
-    // });
+    if (!EMAIL_REGEX.test(email)) {
+      return NextResponse.json(
+        { message: "El email no es valido", success: false },
+        { status: 400 },
+      );
+    }
 
-    // const { password: _, ...user } = newUser;
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      return NextResponse.json(
+        {
+          message: `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`,
+          success: false,
+        },
+        { status: 400 },
+      );
+    }
 
-    return NextResponse.json({
-      message: "No tenés permisos para crear un usuario",
-      // user,
-      status: 401,
-      success: false,
+    const emailFound = await prisma.user.findUnique({
+      where: {
+        email,
+      },
     });
+
+    if (emailFound) {
+      return NextResponse.json(
+        { message: "El email ya existe", success: false },
+        { status: 409 },
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const verificationToken = createVerificationToken();
+    const tokenHash = hashVerificationToken(verificationToken);
+    const expiresAt = new Date(
+      Date.now() + VERIFICATION_TOKEN_HOURS * 60 * 60 * 1000,
+    );
+
+    const newUser = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          name,
+          email,
+          password: passwordHash,
+          role: "USER",
+          emailVerified: null,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          emailVerified: true,
+        },
+      });
+
+      await tx.emailVerificationToken.create({
+        data: {
+            tokenHash,
+          userId: user.id,
+            expiresAt,
+        },
+      });
+
+      return user;
+    });
+
+    try {
+      await sendConfirmEmail({
+        email: newUser.email,
+        name: newUser.name,
+        token: verificationToken,
+      });
+    } catch (emailError) {
+      await prisma.user.delete({
+        where: { id: newUser.id },
+      });
+
+      throw emailError;
+    }
+
+    return NextResponse.json(
+      {
+        message:
+          "Te enviamos un email de confirmacion. Revisa tu correo para activar la cuenta.",
+        user: newUser,
+        success: true,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("Error in /api/auth/register:", error);
 
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
+      { error: "Internal Server Error", success: false },
+      { status: 500 },
     );
   }
 }

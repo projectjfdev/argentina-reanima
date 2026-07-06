@@ -4,6 +4,12 @@ import { ICreateNewsBase64, IUpdateNote } from "@/interfaces/news";
 import { createContext, useState, useContext, useCallback } from "react";
 import { News } from "@/generated/prisma";
 
+function assertOkResponse(res: Response, data: any) {
+  if (res.ok) return;
+
+  throw new Error(data?.error || data?.message || "Error en la solicitud");
+}
+
 export const NewsContext = createContext<{
   news: News[];
   loadNews: (category: string, search: string, page: number) => Promise<void>;
@@ -65,6 +71,7 @@ export const NewsProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     const newNews = await res.json();
+    assertOkResponse(res, newNews);
     console.log("newNews news context", newNews);
     setNews([...news, newNews.news]);
   }
@@ -75,6 +82,7 @@ export const NewsProvider = ({ children }: { children: React.ReactNode }) => {
       method: "DELETE",
     });
     const data = await res.json();
+    assertOkResponse(res, data);
     setNews(news.filter((n) => n.id !== id));
   }
 
@@ -87,6 +95,7 @@ export const NewsProvider = ({ children }: { children: React.ReactNode }) => {
       },
     });
     const editedNews = await res.json();
+    assertOkResponse(res, editedNews);
     setNews(
       news.map((singleNews) =>
         singleNews.id === id ? editedNews.updatedNews : singleNews

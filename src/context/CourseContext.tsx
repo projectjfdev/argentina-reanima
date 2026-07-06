@@ -3,6 +3,12 @@
 import { createContext, useCallback, useContext, useState } from "react";
 import { ICourse, ICreateCourse, IUpdateCourse } from "@/interfaces/courses";
 
+function assertOkResponse(res: Response, data: any) {
+  if (res.ok) return;
+
+  throw new Error(data?.error || data?.message || "Error en la solicitud");
+}
+
 export const CourseContext = createContext<{
   courses: ICourse[];
   loadCourses: (
@@ -65,6 +71,7 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
       },
     });
     const data = await res.json();
+    assertOkResponse(res, data);
     setCourses([...courses, data]);
   }
 
@@ -73,6 +80,7 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
       method: "DELETE",
     });
     const data = await res.json();
+    assertOkResponse(res, data);
     console.log(data);
 
     setCourses(courses.filter((c) => c.id !== id));
@@ -87,6 +95,7 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
       },
     });
     const data = await res.json();
+    assertOkResponse(res, data);
     console.log(data);
 
     setCourses(courses.map((c) => (c.id === id ? data.updatedCourse : c)));

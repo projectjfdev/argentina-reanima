@@ -1,20 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
-import { Eye, EyeOff, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
-import { DotMap } from "@/components/Login/DotMap";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { signIn, SignInResponse } from "next-auth/react";
+import { AuthVisualPanel } from "@/components/Login/AuthVisualPanel";
 import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { getSession, signIn, SignInResponse } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
-// Helper function to merge class names
 const cn = (...classes: string[]) => {
   return classes.filter(Boolean).join(" ");
 };
 
-// Custom Button Component
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?: "default" | "outline";
@@ -32,7 +31,7 @@ const Button = ({
 
   const variantStyles = {
     default:
-      "bg-primary bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700",
+      "bg-primary bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700",
     outline:
       "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
   };
@@ -57,6 +56,7 @@ const SignInCard = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [errorMessage, setErrorMessage] = useState<SignInResponse>();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const router = useRouter();
   const {
@@ -65,28 +65,52 @@ const SignInCard = () => {
     formState: { errors },
   } = useForm<FormData>();
 
+  const redirectByRole = async () => {
+    const session = await getSession();
+
+    if (session?.user.role === "ADMIN") {
+      router.push("/dashboard");
+      return;
+    }
+
+    if (session?.user.role === "USER") {
+      router.push("/");
+    }
+  };
+
+  useEffect(() => {
+    redirectByRole();
+  }, []);
+
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
+    setErrorMessage(undefined);
     try {
       const res = await signIn("credentials", {
         email: data.email,
         password: data.password,
         redirect: false,
       });
-      console.log(res);
-
       if (res?.error) {
         setErrorMessage(res);
         return;
-      } else {
-        router.push("/dashboard");
       }
-      setIsLoading(false);
+
+      await redirectByRole();
     } catch (error) {
-      alert("Algo salió mal, consulte al programador");
+      alert(
+        "Algo salió mal. Por favor, inténtelo de nuevo. Si el problema persiste, contacte al administrador del sistema."
+      );
       console.error(error);
+    } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    setErrorMessage(undefined);
+    await signIn("google", { callbackUrl: "/auth/login" });
   };
 
   return (
@@ -95,47 +119,10 @@ const SignInCard = () => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-4xl overflow-hidden rounded-2xl flex bg-white shadow-xl"
+        className="w-full max-w-4xl overflow-hidden rounded-2xl flex items-stretch bg-white shadow-xl"
       >
-        {/* Left side - Map */}
-        <div className="hidden md:block w-1/2 h-[600px] relative overflow-hidden border-r border-gray-100">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100">
-            <DotMap />
+        <AuthVisualPanel description="Accedé a tu cuenta para consultar tu información y certificados." />
 
-            {/* Logo and text overlay */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 z-10">
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-                className="mb-6"
-              >
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200">
-                  <ArrowRight className="text-white h-6 w-6" />
-                </div>
-              </motion.div>
-              <motion.h2
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-                className="text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"
-              >
-                Argentina Reanima
-              </motion.h2>
-              <motion.p
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-                className="text-sm text-center text-gray-600 max-w-xs"
-              >
-                Acceda a su panel administrativo y gestione la informacion de su
-                página web
-              </motion.p>
-            </div>
-          </div>
-        </div>
-
-        {/* Right side - Sign In Form */}
         <div className="w-full md:w-1/2 p-8 md:p-10 flex flex-col justify-center bg-white">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -148,6 +135,25 @@ const SignInCard = () => {
             <p className="text-gray-500 mb-8">Acceda a su cuenta</p>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGoogleSignIn}
+                disabled={isGoogleLoading || isLoading}
+                className="w-full border-gray-200 bg-white py-2 text-gray-800 hover:bg-gray-50"
+              >
+                <span className="flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 text-xs font-semibold text-gray-700">
+                  G
+                </span>
+                {isGoogleLoading ? "Conectando..." : "Continuar con Google"}
+              </Button>
+
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-gray-200" />
+                <span className="text-xs text-gray-400">o</span>
+                <div className="h-px flex-1 bg-gray-200" />
+              </div>
+
               <div>
                 <label
                   htmlFor="email"
@@ -171,7 +177,6 @@ const SignInCard = () => {
                 </p>
               )}
 
-              {/* Password */}
               <div>
                 <label
                   htmlFor="password"
@@ -218,7 +223,7 @@ const SignInCard = () => {
                 <Button
                   type="submit"
                   className={cn(
-                    "cursor-pointer w-full bg-gradient-to-r relative overflow-hidden from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-2 rounded-lg transition-all duration-300",
+                    "cursor-pointer w-full bg-gradient-to-r relative overflow-hidden from-primary to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 rounded-lg transition-all duration-300",
                     isHovered ? "shadow-lg shadow-blue-200" : ""
                   )}
                 >
@@ -238,6 +243,15 @@ const SignInCard = () => {
                   )}
                 </Button>
               </motion.div>
+              <p className="pt-1 text-center text-sm text-gray-500">
+                Todavía no tenés una cuenta?{" "}
+                <Link
+                  href="/auth/register"
+                  className="font-semibold text-primary underline-offset-4 transition-colors hover:text-primary/80 hover:underline"
+                >
+                  Registrate
+                </Link>
+              </p>
               <div>
                 {errorMessage?.error && (
                   <p className="text-red-500 text-sm mt-2">
@@ -255,7 +269,7 @@ const SignInCard = () => {
 
 const LoginPage = () => {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 p-4">
       <SignInCard />
     </div>
   );

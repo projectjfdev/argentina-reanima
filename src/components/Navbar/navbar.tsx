@@ -18,6 +18,7 @@ import {
 import {
   ActivityIcon,
   ChevronDown,
+  LogIn,
   Headset,
   HeartHandshake,
   HeartPulse,
@@ -32,9 +33,11 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import type { Session } from "next-auth";
+import { getSession, signOut } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 interface MenuLink {
   label: string;
@@ -106,6 +109,8 @@ const Navbar = ({
 }: NavbarProps) => {
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -117,6 +122,26 @@ const Navbar = ({
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getSession()
+      .then((currentSession) => {
+        if (isMounted) {
+          setSession(currentSession);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsSessionLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <header
@@ -141,7 +166,7 @@ const Navbar = ({
             />
           </Link>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <NavigationMenu>
               <NavigationMenuList className="gap-1">
                 {primaryLinks.map((item) => (
@@ -197,6 +222,7 @@ const Navbar = ({
                 ))}
               </NavigationMenuList>
             </NavigationMenu>
+            <ProfileMenu session={session} isLoading={isSessionLoading} />
           </div>
         </nav>
 
@@ -216,17 +242,19 @@ const Navbar = ({
             />
           </Link>
 
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-11 w-11 rounded-md border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50"
-                aria-label="Abrir menu"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
+          <div className="flex items-center gap-2">
+            <ProfileMenu session={session} isLoading={isSessionLoading} />
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-11 w-11 rounded-md border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50"
+                  aria-label="Abrir menu"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
             <SheetContent className="w-[min(92vw,420px)] overflow-y-auto border-l border-slate-200 bg-white p-0 sm:max-w-md">
               <SheetHeader className="border-b border-slate-200 px-5 py-5 text-left">
                 <SheetTitle>
@@ -267,11 +295,104 @@ const Navbar = ({
                 </MobileGroup>
               </div>
             </SheetContent>
-          </Sheet>
+            </Sheet>
+          </div>
         </div>
       </div>
       {/* <DonationBanner /> */}
     </header>
+  );
+};
+
+const ProfileMenu = ({
+  session,
+  isLoading,
+}: {
+  session: Session | null;
+  isLoading: boolean;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const displayName = session?.user?.name || session?.user?.email || "Usuario";
+  const initial = displayName.trim().charAt(0).toUpperCase() || "U";
+
+  const handleSignOut = async () => {
+    setIsOpen(false);
+    await signOut({ callbackUrl: "/" });
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div
+        className="h-10 w-10 shrink-0 rounded-full border border-slate-200 bg-slate-100"
+        aria-hidden="true"
+      />
+    );
+  }
+
+  if (!session) {
+    return (
+      <Button
+        asChild
+        className="h-10 shrink-0 px-3 text-sm md:px-4"
+        aria-label="Iniciar sesion"
+      >
+        <Link href="/auth/login">
+          <LogIn className="h-4 w-4" />
+          <span className="hidden sm:inline">Iniciar sesion</span>
+        </Link>
+      </Button>
+    );
+  }
+
+  return (
+    <div ref={menuRef} className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-[box-shadow,transform] duration-150 ease-out hover:shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        aria-label="Abrir menu de perfil"
+        aria-expanded={isOpen}
+      >
+        {initial}
+      </button>
+
+      <div
+        className={`absolute right-0 top-full z-50 mt-3 w-44 origin-top-right rounded-lg border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-900/10 transition-[opacity,transform,visibility] duration-150 ease-out ${
+          isOpen
+            ? "visible translate-y-0 scale-100 opacity-100"
+            : "invisible -translate-y-1 scale-[0.98] opacity-0"
+        }`}
+      >
+        <button
+          type="button"
+          className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          Mi Perfil
+        </button>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          Cerrar sesion
+        </button>
+      </div>
+    </div>
   );
 };
 

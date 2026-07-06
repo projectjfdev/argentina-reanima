@@ -1,4 +1,5 @@
 import { Prisma } from "@/generated/prisma";
+import { requireAdminSession } from "@/libs/auth/requireAdminSession";
 import { prisma } from "@/libs/db";
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
@@ -62,6 +63,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(req: Request) {
   try {
+    const authError = await requireAdminSession();
+    if (authError) return authError;
+
     const body = await req.json();
     const { title, category, lessons } = body;
 
@@ -100,6 +104,9 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    const authError = await requireAdminSession();
+    if (authError) return authError;
+
     const body = await req.json();
     const { id, title, category, lessons } = body;
 

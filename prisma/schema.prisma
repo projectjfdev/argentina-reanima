@@ -14,41 +14,62 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  USER
+}
+
 model User {
-  id Int @id @default(autoincrement())
-  email String @unique
-  username String @unique
-  password String
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  name          String
+  username      String?   @unique
+  password      String?
+  role          Role      @default(USER)
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  verificationTokens EmailVerificationToken[]
+}
+
+model EmailVerificationToken {
+  id        Int       @id @default(autoincrement())
+  tokenHash String    @unique
+  userId    Int
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model News {
+  id            Int       @id @default(autoincrement())
+  title         String
+  imageUrl      String?
+  imagePublicId String?
+  description   String
+  redirect      String
+  category      String
+  dateNew       DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Course {
+  id        Int      @id @default(autoincrement())
+  title     String
+  category  String
+  lessons   Lesson[] // Relación 1 a N
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model News {
-  id Int @id @default(autoincrement())
-  title       String
-  imageUrl    String?
-  imagePublicId String?
-  description String
-  redirect    String
-  category    String
-  dateNew     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Course {
-  id        Int       @id @default(autoincrement())
-  title     String
-  category  String
-  lessons   Lesson[]  // Relación 1 a N
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
 model Lesson {
-  id        Int      @id @default(autoincrement())
-  title     String
-  href      String
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId  Int
+  id       Int    @id @default(autoincrement())
+  title    String
+  href     String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId Int
 }
