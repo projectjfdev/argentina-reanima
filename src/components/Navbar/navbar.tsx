@@ -34,7 +34,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { Session } from "next-auth";
-import { getSession, signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -109,8 +109,8 @@ const Navbar = ({
 }: NavbarProps) => {
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isSessionLoading, setIsSessionLoading] = useState(true);
+  const { data: session, status } = useSession();
+  const isSessionLoading = status === "loading";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -122,26 +122,6 @@ const Navbar = ({
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    getSession()
-      .then((currentSession) => {
-        if (isMounted) {
-          setSession(currentSession);
-        }
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsSessionLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   return (
     <header

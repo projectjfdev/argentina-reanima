@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { NewsProvider } from "@/context/NewsContext";
 import { CourseProvider } from "@/context/CourseContext";
+import { NextAuthProvider } from "@/components/Auth/NextAuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,9 +60,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NewsProvider>
-          <CourseProvider>{children}</CourseProvider>
-        </NewsProvider>
+        <NextAuthProvider>
+          <NewsProvider>
+            <CourseProvider>{children}</CourseProvider>
+          </NewsProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );

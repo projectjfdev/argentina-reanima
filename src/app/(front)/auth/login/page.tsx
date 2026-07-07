@@ -4,7 +4,7 @@ import { AuthVisualPanel } from "@/components/Login/AuthVisualPanel";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
-import { getSession, signIn, SignInResponse } from "next-auth/react";
+import { getSession, signIn, SignInResponse, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -59,6 +59,7 @@ const SignInCard = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const router = useRouter();
+  const { update } = useSession();
   const {
     register,
     handleSubmit,
@@ -67,13 +68,14 @@ const SignInCard = () => {
 
   const redirectByRole = async () => {
     const session = await getSession();
-
     if (session?.user.role === "ADMIN") {
+      router.refresh();
       router.push("/dashboard");
       return;
     }
 
     if (session?.user.role === "USER") {
+      router.refresh();
       router.push("/");
     }
   };
@@ -96,10 +98,11 @@ const SignInCard = () => {
         return;
       }
 
+      await update();
       await redirectByRole();
     } catch (error) {
       alert(
-        "Algo salió mal. Por favor, inténtelo de nuevo. Si el problema persiste, contacte al administrador del sistema."
+        "Algo salió mal. Por favor, inténtelo de nuevo. Si el problema persiste, contacte al administrador del sistema.",
       );
       console.error(error);
     } finally {
@@ -213,6 +216,15 @@ const SignInCard = () => {
                 </p>
               )}
 
+              <div className="text-right">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm font-semibold text-primary underline-offset-4 transition-colors hover:text-primary/80 hover:underline"
+                >
+                  Olvidaste tu contraseña?
+                </Link>
+              </div>
+
               <motion.div
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
@@ -224,7 +236,7 @@ const SignInCard = () => {
                   type="submit"
                   className={cn(
                     "cursor-pointer w-full bg-gradient-to-r relative overflow-hidden from-primary to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 rounded-lg transition-all duration-300",
-                    isHovered ? "shadow-lg shadow-blue-200" : ""
+                    isHovered ? "shadow-lg shadow-blue-200" : "",
                   )}
                 >
                   <span className="flex items-center justify-center">

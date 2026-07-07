@@ -31,9 +31,21 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   verificationTokens EmailVerificationToken[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model EmailVerificationToken {
+  id        Int       @id @default(autoincrement())
+  tokenHash String    @unique
+  userId    Int
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetToken {
   id        Int       @id @default(autoincrement())
   tokenHash String    @unique
   userId    Int
