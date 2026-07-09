@@ -235,46 +235,46 @@ const Navbar = ({
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-            <SheetContent className="w-[min(92vw,420px)] overflow-y-auto border-l border-slate-200 bg-white p-0 sm:max-w-md">
-              <SheetHeader className="border-b border-slate-200 px-5 py-5 text-left">
-                <SheetTitle>
-                  <SheetClose asChild>
-                    <Link href={logo.url} className="flex items-center gap-3">
-                      <Image
-                        width={72}
-                        height={72}
-                        src={logo.src}
-                        className="h-12 w-12 object-contain"
-                        alt={logo.alt}
-                      />
-                      <span className="text-base font-semibold text-slate-950">
-                        Argentina Reanima
-                      </span>
-                    </Link>
-                  </SheetClose>
-                </SheetTitle>
-              </SheetHeader>
+              <SheetContent className="w-[min(92vw,420px)] overflow-y-auto border-l border-slate-200 bg-white p-0 sm:max-w-md">
+                <SheetHeader className="border-b border-slate-200 px-5 py-5 text-left">
+                  <SheetTitle>
+                    <SheetClose asChild>
+                      <Link href={logo.url} className="flex items-center gap-3">
+                        <Image
+                          width={72}
+                          height={72}
+                          src={logo.src}
+                          className="h-12 w-12 object-contain"
+                          alt={logo.alt}
+                        />
+                        <span className="text-base font-semibold text-slate-950">
+                          Argentina Reanima
+                        </span>
+                      </Link>
+                    </SheetClose>
+                  </SheetTitle>
+                </SheetHeader>
 
-              <div className="px-4 py-5">
-                <MobileGroup title="Navegacion principal">
-                  {primaryLinks.map((item) => (
-                    <MobileNavLink key={item.href} item={item} />
-                  ))}
-                </MobileGroup>
+                <div className="px-4 py-5">
+                  <MobileGroup title="Navegacion principal">
+                    {primaryLinks.map((item) => (
+                      <MobileNavLink key={item.href} item={item} />
+                    ))}
+                  </MobileGroup>
 
-                <MobileGroup title="Mas secciones" className="mt-6">
-                  {moreLinks.map((item) => (
-                    <MobileNavLink key={item.href} item={item} compact />
-                  ))}
-                </MobileGroup>
+                  <MobileGroup title="Mas secciones" className="mt-6">
+                    {moreLinks.map((item) => (
+                      <MobileNavLink key={item.href} item={item} compact />
+                    ))}
+                  </MobileGroup>
 
-                <MobileGroup title="Institucional" className="mt-6">
-                  {secondaryLinks.map((item) => (
-                    <MobileNavLink key={item.href} item={item} />
-                  ))}
-                </MobileGroup>
-              </div>
-            </SheetContent>
+                  <MobileGroup title="Institucional" className="mt-6">
+                    {secondaryLinks.map((item) => (
+                      <MobileNavLink key={item.href} item={item} />
+                    ))}
+                  </MobileGroup>
+                </div>
+              </SheetContent>
             </Sheet>
           </div>
         </div>
@@ -303,10 +303,7 @@ const ProfileMenu = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node)
-      ) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -358,18 +355,19 @@ const ProfileMenu = ({
             : "invisible -translate-y-1 scale-[0.98] opacity-0"
         }`}
       >
-        <button
-          type="button"
+        <Link
+          href="/mi-perfil"
+          onClick={() => setIsOpen(false)}
           className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Mi Perfil
-        </button>
+        </Link>
         <button
           type="button"
           onClick={handleSignOut}
-          className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         >
-          Cerrar sesion
+          Cerrar sesión
         </button>
       </div>
     </div>

@@ -19,6 +19,11 @@ enum Role {
   USER
 }
 
+enum CertificateStatus {
+  ACTIVE
+  DELETED
+}
+
 model User {
   id            Int       @id @default(autoincrement())
   email         String    @unique
@@ -32,6 +37,31 @@ model User {
 
   verificationTokens EmailVerificationToken[]
   passwordResetTokens PasswordResetToken[]
+  certificates        Certificate[]
+}
+
+model Certificate {
+  id                       Int               @id @default(autoincrement())
+  publicId                 String            @unique
+  recipientName            String
+  recipientEmail           String
+  recipientEmailNormalized String
+  recipientDni             String
+  certificateText          String            @db.Text
+  footerText               String            @db.Text
+  serialNumber             String            @unique
+  status                   CertificateStatus @default(ACTIVE)
+  userId                   Int?
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+  deletedAt                DateTime?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([recipientEmailNormalized])
+  @@index([recipientDni])
+  @@index([userId])
+  @@index([status])
 }
 
 model EmailVerificationToken {

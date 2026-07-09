@@ -3,6 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcrypt";
 import { prisma } from "@/libs/db";
+import {
+  linkCertificatesToUserByEmail,
+  normalizeCertificateEmail,
+} from "@/libs/certificates";
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -21,7 +25,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email and password are required");
         }
 
-        const email = credentials.email.trim().toLowerCase();
+        const email = normalizeCertificateEmail(credentials.email);
 
         const userFound = await prisma.user.findUnique({
           where: {
@@ -74,7 +78,7 @@ export const authOptions: NextAuthOptions = {
         return true;
       }
 
-      const email = user.email?.trim().toLowerCase();
+      const email = user.email ? normalizeCertificateEmail(user.email) : "";
 
       if (!email) {
         return false;
@@ -101,6 +105,8 @@ export const authOptions: NextAuthOptions = {
               })
             : existingUser;
 
+        await linkCertificatesToUserByEmail(prisma, dbUser.id, dbUser.email);
+
         user.id = dbUser.id.toString();
         user.name = dbUser.name;
         user.email = dbUser.email;
@@ -110,14 +116,24 @@ export const authOptions: NextAuthOptions = {
         return true;
       }
 
-      const dbUser = await prisma.user.create({
-        data: {
-          name: user.name || email,
-          email,
-          password: null,
-          role: "USER",
-          emailVerified: googleEmailVerified ? new Date() : null,
-        },
+      const dbUser = await prisma.$transaction(async (tx) => {
+        const createdUser = await tx.user.create({
+          data: {
+            name: user.name || email,
+            email,
+            password: null,
+            role: "USER",
+            emailVerified: googleEmailVerified ? new Date() : null,
+          },
+        });
+
+        await linkCertificatesToUserByEmail(
+          tx,
+          createdUser.id,
+          createdUser.email,
+        );
+
+        return createdUser;
       });
 
       user.id = dbUser.id.toString();

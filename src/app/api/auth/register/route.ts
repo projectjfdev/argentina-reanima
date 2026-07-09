@@ -2,6 +2,10 @@ import {
   createVerificationToken,
   hashVerificationToken,
 } from "@/libs/auth/emailVerification";
+import {
+  linkCertificatesToUserByEmail,
+  normalizeCertificateEmail,
+} from "@/libs/certificates";
 import { prisma } from "@/libs/db";
 import { sendConfirmEmail } from "@/libs/email/resend";
 import bcrypt from "bcrypt";
@@ -17,7 +21,9 @@ export async function POST(request: Request) {
 
     const name = typeof data.name === "string" ? data.name.trim() : "";
     const email =
-      typeof data.email === "string" ? data.email.trim().toLowerCase() : "";
+      typeof data.email === "string"
+        ? normalizeCertificateEmail(data.email)
+        : "";
     const password = typeof data.password === "string" ? data.password : "";
 
     if (!name) {
@@ -84,11 +90,13 @@ export async function POST(request: Request) {
 
       await tx.emailVerificationToken.create({
         data: {
-            tokenHash,
+          tokenHash,
           userId: user.id,
-            expiresAt,
+          expiresAt,
         },
       });
+
+      await linkCertificatesToUserByEmail(tx, user.id, user.email);
 
       return user;
     });
