@@ -53,7 +53,7 @@ export function HomeHero() {
                 width={1920}
                 height={1344}
                 priority
-                className="aspect-[1.35] w-full object-cover md:block"
+                className="aspect-[1.35] h-auto w-full object-cover md:block"
               />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0)_55%,rgba(255,255,255,0.16))]" />
             </div>

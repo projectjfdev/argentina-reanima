@@ -1,5 +1,13 @@
 import { SignOutMenuButton } from "@/components/Buttons/SignOutMenuButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { authOptions } from "@/libs/authOptions";
 import { normalizeCertificateEmail } from "@/libs/certificates";
 import { prisma } from "@/libs/db";
@@ -113,7 +121,7 @@ export default async function MiPerfilPage() {
                       <UserRound className="h-4 w-4 text-primary" />
                       Nombre y apellido
                     </dt>
-                    <dd className="mt-2 break-words text-base font-semibold text-slate-950">
+                    <dd className="mt-2 wrap-break-words text-base font-semibold text-slate-950">
                       {userName}
                     </dd>
                   </div>
@@ -122,7 +130,7 @@ export default async function MiPerfilPage() {
                       <Mail className="h-4 w-4 text-primary" />
                       Email
                     </dt>
-                    <dd className="mt-2 break-words text-base font-semibold text-slate-950">
+                    <dd className="mt-2 wrap-break-words text-base font-semibold text-slate-950">
                       {userEmail}
                     </dd>
                   </div>
@@ -190,12 +198,47 @@ export default async function MiPerfilPage() {
                       <FileText className="h-8 w-8" aria-hidden="true" />
                     </div>
                     <h2 className="mt-5 text-lg font-bold tracking-normal text-slate-950">
-                      Aun no tenes certificados
+                      Aún no tenés certificados
                     </h2>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       Cuando Argentina Reanima te otorgue un certificado,
-                      aparecera aca para que puedas consultarlo.
+                      aparecerá aca para que puedas consultarlo.
                     </p>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button
+                          type="button"
+                          className="cursor-pointer mt-2 text-sm font-bold leading-6 text-primary underline transition-colors hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                        >
+                          ¿Cómo obtener un certificado?
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent className="h-auto max-h-[90vh] w-[calc(100vw-2rem)] max-w-lg overflow-y-auto rounded-lg bg-white p-6 sm:p-8">
+                        <DialogHeader>
+                          <DialogTitle className="text-xl font-bold tracking-normal text-slate-950">
+                            ¿Cómo obtener un certificado?
+                          </DialogTitle>
+                          <DialogDescription className="mt-3 text-left text-sm leading-6 text-slate-600">
+                            Para obtener un certificado, tenés que completar una
+                            capacitación o actividad habilitada por Argentina
+                            Reanima. Una vez emitido, el certificado aparecerá
+                            automáticamente en esta sección de tu perfil.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <p className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">
+                          ¿Querés obtener un certificado pero todavía no
+                          realizaste una capacitación?{" "}
+                          <Link
+                            href="/contacto"
+                            className="font-semibold underline underline-offset-2 transition hover:text-emerald-900"
+                          >
+                            Contactate con nosotros
+                          </Link>{" "}
+                          para conocer las próximas capacitaciones y actividades
+                          disponibles.
+                        </p>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 )}
               </CardContent>

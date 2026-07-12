@@ -44,7 +44,6 @@ export default function BannerHero({
           alt="Argentina Reanima"
           fill
           className={`${imgClassname}`}
-          quality={100}
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/10 via-transparent to-slate-950/62" />

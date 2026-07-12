@@ -147,8 +147,8 @@ export function FeatureSteps({
                         src={feature.image}
                         alt={feature.title || feature.step}
                         className="h-full w-full object-cover"
-                        width={1000}
-                        height={500}
+                        fill
+                        sizes="(min-width: 768px) 50vw, 100vw"
                       />
                       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-slate-950/70 to-transparent" />
                     </motion.div>

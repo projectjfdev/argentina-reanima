@@ -43,7 +43,7 @@ function GalleryScroll({ images }: GalleryScrollProps) {
                 <Image
                   src={imgSrc}
                   alt={`Image from gallery index:${index}`}
-                  className="size-full rounded-lg object-contain h-full"
+                  className="size-full rounded-lg object-contain"
                   width={100}
                   height={100}
                   style={{ objectFit: "contain" }}

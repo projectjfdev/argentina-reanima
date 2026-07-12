@@ -84,7 +84,7 @@ const AnimatedFeatureSpotlight = React.forwardRef<
               width={1920}
               height={1344}
               priority
-              className="aspect-[1.35] w-full object-cover md:block"
+              className="aspect-[1.35] h-auto w-full object-cover md:block"
             />
             <div className="absolute inset-0 ring-1 ring-inset ring-black/10" />
           </div>
