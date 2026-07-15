@@ -25,7 +25,10 @@ export async function GET(
         recipientDni: true,
         certificateText: true,
         footerText: true,
+        templateKey: true,
         serialNumber: true,
+        instructorSignatureEnabled: true,
+        instructorKey: true,
         status: true,
       },
     });

@@ -1,4 +1,3 @@
-import { Prisma } from "@/generated/prisma";
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
 import {
   getPublicCertificateUrl,
@@ -25,18 +24,6 @@ function serializeCertificate<
     updatedAt: certificate.updatedAt.toISOString(),
     publicUrl: getPublicCertificateUrl(certificate.publicId),
   };
-}
-
-function isUniqueConstraintError(error: unknown, field: string): boolean {
-  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
-    return false;
-  }
-
-  return (
-    error.code === "P2002" &&
-    Array.isArray(error.meta?.target) &&
-    error.meta.target.includes(field)
-  );
 }
 
 export async function GET(
@@ -118,18 +105,6 @@ export async function PUT(
       );
     }
 
-    const existingSerialNumber = await prisma.certificate.findUnique({
-      where: { serialNumber: validation.data.serialNumber },
-      select: { publicId: true },
-    });
-
-    if (existingSerialNumber && existingSerialNumber.publicId !== publicId) {
-      return NextResponse.json(
-        { message: "El numero de serie ya existe", success: false },
-        { status: 409 },
-      );
-    }
-
     const user = await prisma.user.findUnique({
       where: { email: validation.data.recipientEmailNormalized },
       select: { id: true },
@@ -159,13 +134,6 @@ export async function PUT(
     });
   } catch (error) {
     console.error("Error in PUT /api/certificates/[publicId]:", error);
-
-    if (isUniqueConstraintError(error, "serialNumber")) {
-      return NextResponse.json(
-        { message: "El numero de serie ya existe", success: false },
-        { status: 409 },
-      );
-    }
 
     return NextResponse.json(
       { error: "Error interno del servidor", success: false },

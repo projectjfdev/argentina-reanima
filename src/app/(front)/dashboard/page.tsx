@@ -4,7 +4,7 @@ import { SidebarContent } from "@/components/Dashboard/SidebarContent";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/libs/utils";
-import { Newspaper, School } from "lucide-react";
+import { GraduationCap, Newspaper, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 
@@ -23,8 +23,16 @@ function DashboardPage() {
       href: "/dashboard/cursos",
       description:
         "Creá y gestioná tus videos para ofrecer contenido de calidad a tus usuarios.",
-      icon: <School />,
+      icon: <Video />,
       cta: "Crear Video",
+    },
+    {
+      title: "Certificados",
+      href: "/dashboard/certificados",
+      description:
+        "Creá y gestioná tus certificados para reconocer el progreso de tus usuarios.",
+      icon: <GraduationCap />,
+      cta: "Crear Certificado",
     },
   ];
   return (
@@ -62,7 +70,7 @@ const Feature = ({
       className={cn(
         "flex flex-col   gap-1  py-7 relative group/feature dark:border-neutral-800 cursor-pointer",
         (index === 0 || index === 4) && "lg:border-l dark:border-neutral-800",
-        index < 4 && " dark:border-neutral-800"
+        index < 4 && " dark:border-neutral-800",
       )}
     >
       {index < 4 && (

@@ -4,15 +4,39 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  CERTIFICATE_RECIPIENT_NAME_PLACEHOLDER,
+  CERTIFICATE_INSTRUCTORS,
+  CERTIFICATE_TEMPLATES,
+  DEFAULT_CERTIFICATE_TEMPLATE_KEY,
+  DEFAULT_CERTIFICATE_TEXT_TEMPLATE,
+  certificateTextHasRecipientNamePlaceholder,
+  getCertificateTemplateByKey,
+  renderCertificateTextTemplate,
+  type CertificateInstructorKey,
+  type CertificateTemplateKey,
+} from "@/libs/certificates";
 import { cn } from "@/libs/utils";
 import {
+  AlertCircle,
+  CheckCircle2,
   Edit3,
   ExternalLink,
   FileBadge,
+  FileSpreadsheet,
   RotateCcw,
   Search,
   Trash2,
+  UserRound,
+  type LucideIcon,
 } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -29,10 +53,49 @@ type CertificateFormValues = {
   recipientDni: string;
   certificateText: string;
   footerText: string;
-  serialNumber: string;
+  templateKey: CertificateTemplateKey;
+  instructorSignatureEnabled: boolean;
+  instructorKey: CertificateInstructorKey;
 };
 
-type CertificateListItem = CertificateFormValues & {
+type CertificateMode = "single" | "bulk";
+
+type BulkPreviewRow = {
+  rowNumber: number;
+  recipientName: string;
+  recipientEmail: string;
+  recipientEmailNormalized: string;
+};
+
+type BulkImportError = {
+  rowNumber: number;
+  field: "Nombre" | "Email";
+  message: string;
+};
+
+type BulkValidationResult = {
+  message?: string;
+  rowCount?: number;
+  validRowCount?: number;
+  errorCount?: number;
+  createdCount?: number;
+  serialRange?: {
+    from: string;
+    to: string;
+  };
+  missingColumns?: string[];
+  errors?: BulkImportError[];
+  previewRows?: BulkPreviewRow[];
+  success: boolean;
+};
+
+type CertificateListItem = Omit<
+  CertificateFormValues,
+  "instructorKey" | "recipientDni"
+> & {
+  instructorKey: CertificateInstructorKey | null;
+  recipientDni: string | null;
+  serialNumber: string;
   publicId: string;
   recipientEmailNormalized: string;
   status: "ACTIVE" | "DELETED";
@@ -48,19 +111,32 @@ const EMPTY_FORM_VALUES: CertificateFormValues = {
   recipientName: "",
   recipientEmail: "",
   recipientDni: "",
-  certificateText: "",
+  certificateText: DEFAULT_CERTIFICATE_TEXT_TEMPLATE,
   footerText: "",
-  serialNumber: "",
+  templateKey: DEFAULT_CERTIFICATE_TEMPLATE_KEY,
+  instructorSignatureEnabled: false,
+  instructorKey: CERTIFICATE_INSTRUCTORS[0].key,
 };
 
 function getTextPreview(value: string) {
   return value.length > 160 ? `${value.slice(0, 160)}...` : value;
 }
 
+function getTemplateName(templateKey: string) {
+  return getCertificateTemplateByKey(templateKey)?.name ?? "Plantilla 1";
+}
+
 export function CertificatesDashboard() {
   const [certificates, setCertificates] = useState<CertificateListItem[]>([]);
   const [selectedCertificate, setSelectedCertificate] =
     useState<CertificateListItem | null>(null);
+  const [certificateMode, setCertificateMode] =
+    useState<CertificateMode>("single");
+  const [bulkFile, setBulkFile] = useState<File | null>(null);
+  const [bulkFileName, setBulkFileName] = useState("");
+  const [bulkValidation, setBulkValidation] =
+    useState<BulkValidationResult | null>(null);
+  const [isValidatingBulkFile, setIsValidatingBulkFile] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -72,56 +148,82 @@ export function CertificatesDashboard() {
     register,
     handleSubmit,
     reset,
+    setValue,
     watch,
     formState: { errors },
   } = useForm<CertificateFormValues>({
     defaultValues: EMPTY_FORM_VALUES,
+    shouldUnregister: true,
   });
 
   const watchedValues = watch();
+  const bulkPreviewRecipientName =
+    bulkValidation?.previewRows?.[0]?.recipientName || "Nombre de ejemplo";
   const previewData: CertificatePreviewData = useMemo(
     () => ({
       ...watchedValues,
+      recipientName:
+        certificateMode === "bulk"
+          ? bulkPreviewRecipientName
+          : watchedValues.recipientName,
+      recipientEmail:
+        certificateMode === "bulk"
+          ? "participantes@archivo.xlsx"
+          : watchedValues.recipientEmail,
+      recipientDni:
+        certificateMode === "bulk" ? null : watchedValues.recipientDni,
+      serialNumber: selectedCertificate?.serialNumber,
       publicId: selectedCertificate?.publicId,
       publicUrl: selectedCertificate?.publicUrl,
     }),
     [
+      bulkPreviewRecipientName,
+      certificateMode,
       selectedCertificate?.publicId,
       selectedCertificate?.publicUrl,
+      selectedCertificate?.serialNumber,
       watchedValues,
     ],
   );
 
-  const loadCertificates = useCallback(async () => {
-    setIsLoadingList(true);
+  const loadCertificates = useCallback(
+    async (pageOverride?: number) => {
+      setIsLoadingList(true);
 
-    try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        pageSize: "6",
-        status: "ACTIVE",
-      });
+      try {
+        const pageToLoad = pageOverride ?? currentPage;
+        const params = new URLSearchParams({
+          page: pageToLoad.toString(),
+          pageSize: "6",
+          status: "ACTIVE",
+        });
 
-      if (debouncedSearch.trim()) {
-        params.set("search", debouncedSearch.trim());
+        if (debouncedSearch.trim()) {
+          params.set("search", debouncedSearch.trim());
+        }
+
+        const response = await fetch(`/api/certificates?${params.toString()}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || data.error || "Error al cargar");
+        }
+
+        if (pageOverride) {
+          setCurrentPage(pageOverride);
+        }
+
+        setCertificates(data.certificates || []);
+        setTotalPages(Math.max(data.totalPages || 1, 1));
+      } catch (error) {
+        console.error(error);
+        toast.error("No se pudieron cargar los certificados");
+      } finally {
+        setIsLoadingList(false);
       }
-
-      const response = await fetch(`/api/certificates?${params.toString()}`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || data.error || "Error al cargar");
-      }
-
-      setCertificates(data.certificates || []);
-      setTotalPages(Math.max(data.totalPages || 1, 1));
-    } catch (error) {
-      console.error(error);
-      toast.error("No se pudieron cargar los certificados");
-    } finally {
-      setIsLoadingList(false);
-    }
-  }, [currentPage, debouncedSearch]);
+    },
+    [currentPage, debouncedSearch],
+  );
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -137,22 +239,152 @@ export function CertificatesDashboard() {
 
   const handleResetForm = () => {
     setSelectedCertificate(null);
+    setCertificateMode("single");
+    setBulkFile(null);
+    setBulkFileName("");
+    setBulkValidation(null);
     reset(EMPTY_FORM_VALUES);
   };
 
   const handleSelectCertificate = (certificate: CertificateListItem) => {
     setSelectedCertificate(certificate);
+    setCertificateMode("single");
+    setBulkFile(null);
+    setBulkFileName("");
+    setBulkValidation(null);
     reset({
       recipientName: certificate.recipientName,
       recipientEmail: certificate.recipientEmail,
-      recipientDni: certificate.recipientDni,
+      recipientDni: certificate.recipientDni ?? "",
       certificateText: certificate.certificateText,
       footerText: certificate.footerText,
-      serialNumber: certificate.serialNumber,
+      templateKey: certificate.templateKey ?? DEFAULT_CERTIFICATE_TEMPLATE_KEY,
+      instructorSignatureEnabled:
+        certificate.instructorSignatureEnabled ?? false,
+      instructorKey:
+        certificate.instructorKey ?? CERTIFICATE_INSTRUCTORS[0].key,
     });
   };
 
+  const handleValidateBulkFile = useCallback(
+    async (file = bulkFile) => {
+      if (!file) {
+        toast.error("Selecciona un archivo .xlsx");
+        return;
+      }
+
+      setIsValidatingBulkFile(true);
+
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch("/api/certificates/bulk", {
+          method: "POST",
+          body: formData,
+        });
+        const data = (await response.json()) as BulkValidationResult;
+
+        setBulkValidation(data);
+
+        if (!response.ok && !data.errors && !data.missingColumns) {
+          throw new Error(data.message || "No se pudo validar el archivo");
+        }
+
+        if (data.success) {
+          toast.success("Archivo validado correctamente");
+        } else {
+          toast.warning(data.message || "El archivo tiene errores");
+        }
+      } catch (error) {
+        console.error(error);
+        setBulkValidation(null);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "No se pudo validar el archivo",
+        );
+      } finally {
+        setIsValidatingBulkFile(false);
+      }
+    },
+    [bulkFile],
+  );
+
+  const handleBulkFileChange = (file: File | null) => {
+    setBulkFile(file);
+    setBulkFileName(file?.name ?? "");
+    setBulkValidation(null);
+
+    if (file) {
+      void handleValidateBulkFile(file);
+    }
+  };
+
+  const handleCreateBulkCertificates = async (
+    values: CertificateFormValues,
+  ) => {
+    if (!bulkFile) {
+      toast.error("Selecciona un archivo .xlsx");
+      return;
+    }
+
+    if (bulkValidation && !bulkValidation.success) {
+      toast.error("Corregi los errores del archivo antes de crear el lote");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("intent", "create");
+      formData.append("file", bulkFile);
+      formData.append("certificateText", values.certificateText);
+      formData.append("footerText", values.footerText);
+      formData.append("templateKey", values.templateKey);
+      formData.append(
+        "instructorSignatureEnabled",
+        String(values.instructorSignatureEnabled),
+      );
+      formData.append("instructorKey", values.instructorKey);
+
+      const response = await fetch("/api/certificates/bulk", {
+        method: "POST",
+        body: formData,
+      });
+      const data = (await response.json()) as BulkValidationResult;
+
+      if (!response.ok) {
+        setBulkValidation(data);
+        throw new Error(data.message || "No se pudo crear el lote");
+      }
+
+      toast.success(
+        data.serialRange
+          ? `${data.createdCount} certificados creados (${data.serialRange.from} a ${data.serialRange.to})`
+          : `${data.createdCount} certificados creados`,
+      );
+      handleResetForm();
+      await loadCertificates(1);
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "No se pudo crear el lote de certificados",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const onSubmit = async (values: CertificateFormValues) => {
+    if (certificateMode === "bulk") {
+      await handleCreateBulkCertificates(values);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -178,7 +410,7 @@ export function CertificatesDashboard() {
         selectedCertificate ? "Certificado actualizado" : "Certificado creado",
       );
       handleResetForm();
-      await loadCertificates();
+      await loadCertificates(1);
     } catch (error) {
       console.error(error);
       toast.error(
@@ -286,44 +518,119 @@ export function CertificatesDashboard() {
             )}
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2">
-            <Field label="Nombre" error={errors.recipientName?.message}>
-              <Input
-                {...register("recipientName", {
-                  required: "El nombre es obligatorio",
-                })}
-                placeholder="Nombre completo"
-              />
-            </Field>
-
-            <Field label="Email" error={errors.recipientEmail?.message}>
-              <Input
-                type="email"
-                {...register("recipientEmail", {
-                  required: "El email es obligatorio",
-                })}
-                placeholder="persona@email.com"
-              />
-            </Field>
-
-            <Field label="DNI" error={errors.recipientDni?.message}>
-              <Input
-                {...register("recipientDni", {
-                  required: "El DNI es obligatorio",
-                })}
-                placeholder="00.000.000"
-              />
-            </Field>
-
-            <Field label="Numero de serie" error={errors.serialNumber?.message}>
-              <Input
-                {...register("serialNumber", {
-                  required: "El numero de serie es obligatorio",
-                })}
-                placeholder="AR-2026-0001"
-              />
-            </Field>
+          <div className="mb-4 grid grid-cols-2 rounded-lg border border-neutral-200 bg-neutral-50 p-1">
+            <ModeButton
+              active={certificateMode === "single"}
+              icon={UserRound}
+              label="Individual"
+              onClick={() => setCertificateMode("single")}
+            />
+            <ModeButton
+              active={certificateMode === "bulk"}
+              disabled={Boolean(selectedCertificate)}
+              icon={FileSpreadsheet}
+              label="Excel"
+              onClick={() => {
+                setCertificateMode("bulk");
+                setBulkFile(null);
+                setBulkFileName("");
+                setBulkValidation(null);
+                reset({
+                  ...watchedValues,
+                  recipientName: "",
+                  recipientEmail: "",
+                  recipientDni: "",
+                });
+              }}
+            />
           </div>
+
+          {certificateMode === "single" ? (
+            <div className="grid gap-3 md:grid-cols-2">
+              <Field label="Nombre" error={errors.recipientName?.message}>
+                <Input
+                  {...register("recipientName", {
+                    required: "El nombre es obligatorio",
+                  })}
+                  placeholder="Nombre completo"
+                />
+              </Field>
+
+              <Field label="Email" error={errors.recipientEmail?.message}>
+                <Input
+                  type="email"
+                  {...register("recipientEmail", {
+                    required: "El email es obligatorio",
+                  })}
+                  placeholder="persona@email.com"
+                />
+              </Field>
+
+              <Field
+                label="DNI (Opcional)"
+                error={errors.recipientDni?.message}
+              >
+                <Input {...register("recipientDni")} placeholder="00.000.000" />
+              </Field>
+            </div>
+          ) : (
+            <Field label="Archivo Excel">
+              <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-4 py-5 text-center transition-colors hover:border-emerald-300 hover:bg-emerald-50/60">
+                <FileSpreadsheet className="h-6 w-6 text-emerald-700" />
+                <span className="text-sm font-medium text-neutral-900">
+                  {bulkFileName || "Seleccionar archivo .xlsx"}
+                </span>
+                <span className="text-xs text-neutral-500">
+                  Columnas esperadas: Email y Nombre
+                </span>
+                <input
+                  type="file"
+                  accept=".xlsx"
+                  className="sr-only"
+                  onChange={(event) =>
+                    handleBulkFileChange(event.target.files?.[0] ?? null)
+                  }
+                />
+              </label>
+              <BulkValidationSummary
+                result={bulkValidation}
+                isLoading={isValidatingBulkFile}
+              />
+            </Field>
+          )}
+
+          <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
+            {selectedCertificate
+              ? `Número de serie: ${selectedCertificate.serialNumber}`
+              : "El número de serie se asigna automaticamente al guardar."}
+          </p>
+
+          <Field
+            label="Plantilla"
+            error={errors.templateKey?.message}
+            className="mt-3"
+          >
+            <Select
+              value={watchedValues.templateKey}
+              onValueChange={(value) =>
+                setValue("templateKey", value as CertificateTemplateKey, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona una plantilla" />
+              </SelectTrigger>
+              <SelectContent>
+                {CERTIFICATE_TEMPLATES.map((template) => (
+                  <SelectItem key={template.key} value={template.key}>
+                    {template.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
 
           <Field
             label="Texto principal del certificado"
@@ -334,9 +641,15 @@ export function CertificatesDashboard() {
               rows={6}
               {...register("certificateText", {
                 required: "El texto principal es obligatorio",
+                validate: (value) =>
+                  certificateTextHasRecipientNamePlaceholder(value) ||
+                  `El texto debe conservar ${CERTIFICATE_RECIPIENT_NAME_PLACEHOLDER}`,
               })}
               placeholder="Se deja constancia que..."
             />
+            <p className="mt-1 text-xs text-neutral-500">
+              El nombre del participante se insertara automaticamente.
+            </p>
           </Field>
 
           <Field
@@ -353,14 +666,69 @@ export function CertificatesDashboard() {
             />
           </Field>
 
+          <div className="mt-3 rounded-md border border-neutral-200 p-3">
+            <label className="flex items-start gap-3 text-sm text-neutral-700">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
+                {...register("instructorSignatureEnabled")}
+              />
+              <span>
+                <span className="block font-medium text-neutral-900">
+                  Agregar firma de instructor
+                </span>
+                <span className="mt-0.5 block text-xs text-neutral-500">
+                  La firma y el nombre se toman automaticamente del instructor
+                  seleccionado.
+                </span>
+              </span>
+            </label>
+
+            <Field
+              label="Instructor"
+              error={errors.instructorKey?.message}
+              className="mt-3"
+            >
+              <Select
+                value={watchedValues.instructorKey}
+                onValueChange={(value) =>
+                  setValue("instructorKey", value as CertificateInstructorKey, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+                disabled={!watchedValues.instructorSignatureEnabled}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un instructor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CERTIFICATE_INSTRUCTORS.map((instructor) => (
+                    <SelectItem key={instructor.key} value={instructor.key}>
+                      {instructor.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
+
           <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-            <Button type="submit" disabled={isSubmitting} className="gap-2">
+            <Button
+              type="submit"
+              disabled={isSubmitting || isValidatingBulkFile}
+              className="gap-2"
+            >
               <FileBadge className="h-4 w-4" />
-              {isSubmitting
-                ? "Guardando..."
+              {isSubmitting || isValidatingBulkFile
+                ? certificateMode === "bulk"
+                  ? "Validando..."
+                  : "Guardando..."
                 : selectedCertificate
                   ? "Guardar cambios"
-                  : "Crear certificado"}
+                  : certificateMode === "bulk"
+                    ? "Crear lote"
+                    : "Crear certificado"}
             </Button>
             <Button
               type="button"
@@ -407,7 +775,7 @@ export function CertificatesDashboard() {
                 setCurrentPage(1);
               }}
               className="pl-9"
-              placeholder="Buscar por nombre, DNI, texto o serie"
+              placeholder="Buscar por nombre, email, texto o serie"
             />
           </div>
         </div>
@@ -442,6 +810,12 @@ export function CertificatesDashboard() {
                     >
                       Activo
                     </Badge>
+                    <Badge
+                      variant="outline"
+                      className="border-neutral-200 bg-neutral-50 text-neutral-700"
+                    >
+                      {getTemplateName(certificate.templateKey)}
+                    </Badge>
                     {certificate.user && (
                       <Badge
                         variant="outline"
@@ -452,12 +826,19 @@ export function CertificatesDashboard() {
                     )}
                   </div>
                   <p className="mt-1 line-clamp-2 text-sm text-neutral-700">
-                    {getTextPreview(certificate.certificateText)}
+                    {getTextPreview(
+                      renderCertificateTextTemplate(
+                        certificate.certificateText,
+                        certificate.recipientName,
+                      ),
+                    )}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-500">
                     <span>{certificate.recipientEmailNormalized}</span>
-                    <span>DNI {certificate.recipientDni}</span>
-                    <span>Serie {certificate.serialNumber}</span>
+                    {certificate.recipientDni && (
+                      <span>DNI {certificate.recipientDni}</span>
+                    )}
+                    <span>Número de serie: {certificate.serialNumber}</span>
                   </div>
                 </div>
 
@@ -530,6 +911,121 @@ export function CertificatesDashboard() {
 
       <Toaster />
     </div>
+  );
+}
+
+function BulkValidationSummary({
+  result,
+  isLoading,
+}: {
+  result: BulkValidationResult | null;
+  isLoading: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="mt-3 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-600">
+        Validando archivo...
+      </div>
+    );
+  }
+
+  if (!result) return null;
+
+  if (result.missingColumns?.length) {
+    return (
+      <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+        <div className="flex items-center gap-2 font-semibold">
+          <AlertCircle className="h-4 w-4" />
+          Faltan columnas obligatorias
+        </div>
+        <p className="mt-1 text-xs">
+          Agrega: {result.missingColumns.join(", ")}.
+        </p>
+      </div>
+    );
+  }
+
+  if (result.errors?.length) {
+    return (
+      <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+        <div className="flex items-center gap-2 font-semibold">
+          <AlertCircle className="h-4 w-4" />
+          {result.errorCount} errores en {result.rowCount} filas
+        </div>
+        <ul className="mt-2 grid gap-1 text-xs">
+          {result.errors.slice(0, 8).map((error, index) => (
+            <li key={`${error.rowNumber}-${error.field}-${index}`}>
+              Fila {error.rowNumber}, {error.field}: {error.message}
+            </li>
+          ))}
+        </ul>
+        {result.errors.length > 8 && (
+          <p className="mt-2 text-xs">
+            Y {result.errors.length - 8} errores mas.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+      <div className="flex items-center gap-2 font-semibold">
+        <CheckCircle2 className="h-4 w-4" />
+        {result.validRowCount} filas validas
+      </div>
+      {result.previewRows && result.previewRows.length > 0 && (
+        <div className="mt-2 overflow-hidden rounded-md border border-emerald-200 bg-white">
+          <div className="grid grid-cols-[64px_1fr_1fr] gap-2 border-b border-emerald-100 px-2 py-1.5 text-xs font-semibold text-emerald-900">
+            <span>Fila</span>
+            <span>Nombre</span>
+            <span>Email</span>
+          </div>
+          {result.previewRows.map((row) => (
+            <div
+              key={row.rowNumber}
+              className="grid grid-cols-[64px_1fr_1fr] gap-2 px-2 py-1.5 text-xs text-neutral-700"
+            >
+              <span>{row.rowNumber}</span>
+              <span className="truncate">{row.recipientName}</span>
+              <span className="truncate">{row.recipientEmailNormalized}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ModeButton({
+  active,
+  disabled,
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  disabled?: boolean;
+  icon: LucideIcon;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50",
+        active
+          ? "bg-white text-neutral-950 shadow-sm"
+          : "text-neutral-600 hover:bg-white/70 hover:text-neutral-950",
+      )}
+    >
+      <Icon className="h-4 w-4" aria-hidden="true" />
+      {label}
+    </button>
   );
 }
 

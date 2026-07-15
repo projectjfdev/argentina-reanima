@@ -4,6 +4,7 @@ import {
   CertificatePreview,
   type CertificatePreviewData,
 } from "@/components/Dashboard/Certificates/CertificatePreview";
+import { renderCertificateTextTemplate } from "@/libs/certificates";
 import { exportCertificatePreviewToPng } from "@/libs/certificates/exportCertificatePreviewToPng";
 import {
   Copy,
@@ -21,7 +22,7 @@ import { Toaster, toast } from "sonner";
 type CertificateValidationContentProps = {
   certificate: CertificatePreviewData & {
     recipientName: string;
-    recipientDni: string;
+    recipientDni: string | null;
     certificateText: string;
     serialNumber: string;
     publicId: string;
@@ -35,7 +36,11 @@ export function CertificateValidationContent({
   const [isExporting, setIsExporting] = useState(false);
   const [hasCopiedLink, setHasCopiedLink] = useState(false);
   const shareUrl = certificate.publicUrl || "";
-  const shareText = `Mira mi certificado de Argentina Reanima: ${certificate.certificateText}`;
+  const renderedCertificateText = renderCertificateTextTemplate(
+    certificate.certificateText,
+    certificate.recipientName,
+  );
+  const shareText = `Mira mi certificado de Argentina Reanima: ${renderedCertificateText}`;
   const encodedShareUrl = encodeURIComponent(shareUrl);
   const encodedShareText = encodeURIComponent(shareText);
   const shareLinks = [
@@ -119,11 +124,13 @@ export function CertificateValidationContent({
             <ValidationItem label="Nombre">
               {certificate.recipientName}
             </ValidationItem>
-            <ValidationItem label="DNI">
-              {certificate.recipientDni}
-            </ValidationItem>
+            {certificate.recipientDni && (
+              <ValidationItem label="DNI">
+                {certificate.recipientDni}
+              </ValidationItem>
+            )}
             <ValidationItem label="Certificación">
-              {certificate.certificateText}
+              {renderedCertificateText}
             </ValidationItem>
             <ValidationItem label="Número de serie">
               {certificate.serialNumber}

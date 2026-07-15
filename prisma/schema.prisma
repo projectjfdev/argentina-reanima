@@ -35,26 +35,29 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  verificationTokens EmailVerificationToken[]
+  verificationTokens  EmailVerificationToken[]
   passwordResetTokens PasswordResetToken[]
   certificates        Certificate[]
 }
 
 model Certificate {
-  id                       Int               @id @default(autoincrement())
-  publicId                 String            @unique
-  recipientName            String
-  recipientEmail           String
-  recipientEmailNormalized String
-  recipientDni             String
-  certificateText          String            @db.Text
-  footerText               String            @db.Text
-  serialNumber             String            @unique
-  status                   CertificateStatus @default(ACTIVE)
-  userId                   Int?
-  createdAt                DateTime          @default(now())
-  updatedAt                DateTime          @updatedAt
-  deletedAt                DateTime?
+  id                         Int               @id @default(autoincrement())
+  publicId                   String            @unique
+  recipientName              String
+  recipientEmail             String
+  recipientEmailNormalized   String
+  recipientDni               String?
+  certificateText            String            @db.Text
+  footerText                 String            @db.Text
+  serialNumber               String            @unique
+  templateKey                String            @default("template_1") @db.VarChar(40)
+  instructorSignatureEnabled Boolean           @default(false)
+  instructorKey              String?           @db.VarChar(80)
+  status                     CertificateStatus @default(ACTIVE)
+  userId                     Int?
+  createdAt                  DateTime          @default(now())
+  updatedAt                  DateTime          @updatedAt
+  deletedAt                  DateTime?
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 

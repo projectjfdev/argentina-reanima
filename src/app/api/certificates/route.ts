@@ -1,7 +1,8 @@
 import { CertificateStatus, Prisma } from "@/generated/prisma";
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
 import {
-  generateCertificatePublicId,
+  generateNextCertificateSerialNumbers,
+  generateUniqueCertificatePublicId,
   getPublicCertificateUrl,
   validateCertificatePayload,
 } from "@/libs/certificates";
@@ -9,23 +10,6 @@ import { prisma } from "@/libs/db";
 import { NextRequest, NextResponse } from "next/server";
 
 const DEFAULT_PAGE_SIZE = 10;
-const MAX_PUBLIC_ID_ATTEMPTS = 5;
-
-async function createUniquePublicId(): Promise<string> {
-  for (let attempt = 0; attempt < MAX_PUBLIC_ID_ATTEMPTS; attempt += 1) {
-    const publicId = generateCertificatePublicId();
-    const existingCertificate = await prisma.certificate.findUnique({
-      where: { publicId },
-      select: { id: true },
-    });
-
-    if (!existingCertificate) {
-      return publicId;
-    }
-  }
-
-  throw new Error("No se pudo generar un publicId unico");
-}
 
 function getStatusFilter(status: string | null): CertificateStatus | undefined {
   if (status === CertificateStatus.ACTIVE) return CertificateStatus.ACTIVE;
@@ -181,44 +165,32 @@ export async function POST(request: Request) {
       );
     }
 
-    const existingSerialNumber = await prisma.certificate.findUnique({
-      where: { serialNumber: validation.data.serialNumber },
+    const user = await prisma.user.findUnique({
+      where: { email: validation.data.recipientEmailNormalized },
       select: { id: true },
     });
 
-    if (existingSerialNumber) {
-      return NextResponse.json(
-        {
-          message: "El numero de serie ya existe",
-          success: false,
+    const certificate = await prisma.$transaction(async (tx) => {
+      const publicId = await generateUniqueCertificatePublicId(tx);
+      const [serialNumber] = await generateNextCertificateSerialNumbers(tx, 1);
+
+      return tx.certificate.create({
+        data: {
+          ...validation.data,
+          publicId,
+          serialNumber,
+          userId: user?.id ?? null,
         },
-        { status: 409 },
-      );
-    }
-
-    const [publicId, user] = await Promise.all([
-      createUniquePublicId(),
-      prisma.user.findUnique({
-        where: { email: validation.data.recipientEmailNormalized },
-        select: { id: true },
-      }),
-    ]);
-
-    const certificate = await prisma.certificate.create({
-      data: {
-        ...validation.data,
-        publicId,
-        userId: user?.id ?? null,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
+      });
     });
 
     return NextResponse.json(

@@ -29,7 +29,10 @@ export default async function ValidateCertificatePage({
       recipientDni: true,
       certificateText: true,
       footerText: true,
+      templateKey: true,
       serialNumber: true,
+      instructorSignatureEnabled: true,
+      instructorKey: true,
       status: true,
     },
   });

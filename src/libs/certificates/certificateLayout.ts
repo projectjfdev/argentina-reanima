@@ -10,18 +10,40 @@ export const CERTIFICATE_DYNAMIC_LAYOUT = {
     widthPercent: 60,
   },
   certificateText: {
-    leftPercent: 15,
+    leftPercent: 11,
     topPercent: 38,
-    widthPercent: 64,
+    widthPercent: 80,
   },
   footerText: {
-    leftPercent: 11,
-    bottomPercent: 14,
-    widthPercent: 56,
+    leftPercent: 16,
+    bottomPercent: 12,
+    widthPercent: 68,
+  },
+  instructorSignature: {
+    leftPercent: 21,
+    bottomPercent: 26,
+    widthPercent: 18,
+    heightPercent: 8,
+  },
+  instructorLabel: {
+    leftPercent: 17,
+    bottomPercent: 20,
+    widthPercent: 26,
+  },
+  presidentSignature: {
+    leftPercent: 60,
+    bottomPercent: 26,
+    widthPercent: 18,
+    heightPercent: 8,
+  },
+  presidentLabel: {
+    leftPercent: 56,
+    bottomPercent: 20,
+    widthPercent: 26,
   },
   institutionalText: {
     leftPercent: 19,
-    bottomPercent: 4,
+    bottomPercent: 6,
     widthPercent: 56,
   },
   qr: {
@@ -49,6 +71,14 @@ export const CERTIFICATE_PREVIEW_TEXT_STYLE = {
   footerText: {
     fontSize: "clamp(5px, 0.8vw, 10px)",
     lineHeight: 1.35,
+  },
+  signatureName: {
+    fontSize: "clamp(6px, 1vw, 12px)",
+    lineHeight: 1.15,
+  },
+  signatureRole: {
+    fontSize: "clamp(5px, 0.8vw, 10px)",
+    lineHeight: 1.15,
   },
   serialNumber: {
     fontSize: "clamp(5px, 0.85vw, 10px)",

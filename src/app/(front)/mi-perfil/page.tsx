@@ -9,7 +9,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { authOptions } from "@/libs/authOptions";
-import { normalizeCertificateEmail } from "@/libs/certificates";
+import {
+  normalizeCertificateEmail,
+  renderCertificateTextTemplate,
+} from "@/libs/certificates";
 import { prisma } from "@/libs/db";
 import {
   Award,
@@ -51,6 +54,7 @@ export default async function MiPerfilPage() {
             publicId: true,
             recipientName: true,
             certificateText: true,
+            templateKey: true,
             serialNumber: true,
           },
           orderBy: { createdAt: "desc" },
@@ -173,7 +177,10 @@ export default async function MiPerfilPage() {
                             Emitido para {certificate.recipientName}
                           </p>
                           <p className="mt-2 line-clamp-2 text-sm text-slate-600">
-                            {certificate.certificateText}
+                            {renderCertificateTextTemplate(
+                              certificate.certificateText,
+                              certificate.recipientName,
+                            )}
                           </p>
                           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
                             <span>Serie {certificate.serialNumber}</span>
