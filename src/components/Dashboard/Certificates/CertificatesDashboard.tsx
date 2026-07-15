@@ -157,6 +157,10 @@ export function CertificatesDashboard() {
   });
 
   const watchedValues = watch();
+  const selectedTemplateKey =
+    watchedValues.templateKey ?? DEFAULT_CERTIFICATE_TEMPLATE_KEY;
+  const selectedInstructorKey =
+    watchedValues.instructorKey ?? CERTIFICATE_INSTRUCTORS[0].key;
   const bulkPreviewRecipientName =
     bulkValidation?.previewRows?.[0]?.recipientName || "Nombre de ejemplo";
   const previewData: CertificatePreviewData = useMemo(
@@ -611,7 +615,7 @@ export function CertificatesDashboard() {
             className="mt-3"
           >
             <Select
-              value={watchedValues.templateKey}
+              value={selectedTemplateKey}
               onValueChange={(value) =>
                 setValue("templateKey", value as CertificateTemplateKey, {
                   shouldDirty: true,
@@ -690,7 +694,7 @@ export function CertificatesDashboard() {
               className="mt-3"
             >
               <Select
-                value={watchedValues.instructorKey}
+                value={selectedInstructorKey}
                 onValueChange={(value) =>
                   setValue("instructorKey", value as CertificateInstructorKey, {
                     shouldDirty: true,
