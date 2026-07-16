@@ -1,5 +1,6 @@
 import {
   Award,
+  HeartHandshake,
   LayoutDashboard,
   LogOut,
   Newspaper,
@@ -42,6 +43,13 @@ export function SidebarContent({ children }: { children: React.ReactNode }) {
       href: "/dashboard/certificados",
       icon: (
         <Award className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Campanas DEA",
+      href: "/dashboard/campanas-dea",
+      icon: (
+        <HeartHandshake className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
   ];

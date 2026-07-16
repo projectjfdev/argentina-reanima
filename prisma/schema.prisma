@@ -24,6 +24,18 @@ enum CertificateStatus {
   DELETED
 }
 
+enum DonationCampaignStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum DonationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id            Int       @id @default(autoincrement())
   email         String    @unique
@@ -100,6 +112,51 @@ model News {
   dateNew       DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model DonationCampaign {
+  id                 Int                    @id @default(autoincrement())
+  institutionName    String
+  locality           String
+  address            String
+  placeImageUrl      String
+  placeImagePublicId String
+  goalAmount         Decimal                @db.Decimal(14, 2)
+  status             DonationCampaignStatus @default(ACTIVE)
+  completedAt        DateTime?
+  archivedAt         DateTime?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+
+  donations Donation[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Donation {
+  id                  Int            @id @default(autoincrement())
+  campaignId          Int
+  amount              Decimal?       @db.Decimal(14, 2)
+  isAnonymous         Boolean        @default(true)
+  firstName           String?
+  lastName            String?
+  email               String?
+  status              DonationStatus @default(PENDING)
+  receiptUrl          String?
+  receiptPublicId     String
+  receiptResourceType String
+  receiptOriginalName String?
+  receiptBytes        Int?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  reviewedAt          DateTime?
+
+  campaign DonationCampaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+
+  @@index([campaignId, status, createdAt])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Course {

@@ -34,12 +34,12 @@ export function HomeHero() {
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
-                <Link href="/capacitaciones">
-                  Ver capacitaciones <ArrowRight className="ml-2 h-4 w-4" />
+                <Link href="/quienes-somos">
+                  Conocé la historia <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/quienes-somos">Conocer la historia</Link>
+                <Link href="/donar">Ayudá a instalar un DEA</Link>
               </Button>
             </div>
           </div>

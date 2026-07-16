@@ -4,7 +4,7 @@ import { SidebarContent } from "@/components/Dashboard/SidebarContent";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/libs/utils";
-import { GraduationCap, Newspaper, Video } from "lucide-react";
+import { GraduationCap, HeartHandshake, Newspaper, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 
@@ -33,6 +33,14 @@ function DashboardPage() {
         "Creá y gestioná tus certificados para reconocer el progreso de tus usuarios.",
       icon: <GraduationCap />,
       cta: "Crear Certificado",
+    },
+    {
+      title: "Campañas DEA",
+      href: "/dashboard/campanas-dea",
+      description:
+        "Gestiona campañas, revisa comprobantes y aprueba donaciones verificadas.",
+      icon: <HeartHandshake />,
+      cta: "Gestionar Donaciones",
     },
   ];
   return (

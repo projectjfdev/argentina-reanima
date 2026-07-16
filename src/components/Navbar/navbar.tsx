@@ -96,7 +96,7 @@ const moreLinks: MenuLink[] = [
 ];
 
 const secondaryLinks: MenuLink[] = [
-  { label: "Quienes somos?", href: "/quienes-somos", icon: Users },
+  { label: "¿Quiénes somos?", href: "/quienes-somos", icon: Users },
   { label: "Contacto", href: "/contacto", icon: Headset },
 ];
 
