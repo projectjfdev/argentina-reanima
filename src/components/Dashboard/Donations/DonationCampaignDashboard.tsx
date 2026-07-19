@@ -2,6 +2,13 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -19,8 +26,10 @@ import {
   FileImage,
   HeartHandshake,
   ImagePlus,
+  MoreVertical,
   Pencil,
   RefreshCcw,
+  RotateCcw,
   Search,
   ShieldCheck,
   X,
@@ -110,13 +119,45 @@ function formatMoney(value: string | null | undefined) {
     : value;
 }
 
+function parseMoneyForPreview(value: string | null | undefined) {
+  if (!value) return null;
+  const cleanValue = value.trim().replace(/\s/g, "").replace(/^\$/, "");
+  const lastCommaIndex = cleanValue.lastIndexOf(",");
+  const lastDotIndex = cleanValue.lastIndexOf(".");
+  let normalizedValue = cleanValue;
+
+  if (lastCommaIndex >= 0 && lastDotIndex >= 0) {
+    const decimalSeparator = lastCommaIndex > lastDotIndex ? "," : ".";
+    const thousandsSeparator = decimalSeparator === "," ? "." : ",";
+    normalizedValue = cleanValue
+      .replaceAll(thousandsSeparator, "")
+      .replace(decimalSeparator, ".");
+  } else if (lastCommaIndex >= 0) {
+    normalizedValue = cleanValue.replaceAll(".", "").replace(",", ".");
+  } else {
+    const dotParts = cleanValue.split(".");
+    if (dotParts.length > 2) {
+      const lastPart = dotParts[dotParts.length - 1];
+      normalizedValue =
+        lastPart.length <= 2
+          ? `${dotParts.slice(0, -1).join("")}.${lastPart}`
+          : dotParts.join("");
+    } else if (dotParts.length === 2 && dotParts[1].length === 3) {
+      normalizedValue = dotParts.join("");
+    }
+  }
+
+  const numericValue = Number(normalizedValue);
+  return Number.isFinite(numericValue) ? numericValue : null;
+}
+
 function formatDate(value: string | null) {
   if (!value) return "-";
   return dateFormatter.format(new Date(value));
 }
 
 function getDonorName(donation: Donation) {
-  if (donation.isAnonymous) return "Anonimo";
+  if (donation.isAnonymous) return "Anónimo";
   return [donation.firstName, donation.lastName].filter(Boolean).join(" ");
 }
 
@@ -174,6 +215,9 @@ export function DonationCampaignDashboard() {
   const [activeDonationAction, setActiveDonationAction] = useState<
     number | null
   >(null);
+  const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
+  const [editingAmount, setEditingAmount] = useState("");
+  const [openActionMenuId, setOpenActionMenuId] = useState<number | null>(null);
 
   const activeCampaign = useMemo(
     () => campaigns.find((campaign) => campaign.status === "ACTIVE") ?? null,
@@ -380,6 +424,11 @@ export function DonationCampaignDashboard() {
     );
     if (amount === null) return;
 
+    const confirmed = window.confirm(
+      `Confirmas que el comprobante corresponde a una donacion de ${formatMoney(amount)}?`,
+    );
+    if (!confirmed) return;
+
     setActiveDonationAction(donation.id);
     try {
       const response = await fetch(
@@ -409,7 +458,11 @@ export function DonationCampaignDashboard() {
   };
 
   const rejectDonation = async (donation: Donation) => {
-    if (!window.confirm(`Rechazar la donacion de ${getDonorName(donation)}?`)) {
+    if (
+      !window.confirm(
+        "Confirmas que queres rechazar esta donacion? Podras reabrirla mas adelante.",
+      )
+    ) {
       return;
     }
 
@@ -431,6 +484,84 @@ export function DonationCampaignDashboard() {
       console.error(error);
       toast.error(
         error instanceof Error ? error.message : "No se pudo rechazar",
+      );
+    } finally {
+      setActiveDonationAction(null);
+    }
+  };
+
+  const reopenDonation = async (donation: Donation) => {
+    const confirmed = window.confirm(
+      donation.status === "APPROVED"
+        ? `Confirmas que queres reabrir esta donacion? Se quitara el monto ${formatMoney(donation.amount)} del progreso hasta que vuelva a aprobarse.`
+        : "Confirmas que queres reabrir esta donacion rechazada para revisarla nuevamente?",
+    );
+    if (!confirmed) return;
+
+    setOpenActionMenuId(null);
+    setActiveDonationAction(donation.id);
+    try {
+      const response = await fetch(
+        `/api/admin/donations/${donation.id}/reopen`,
+        { method: "POST" },
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || "No se pudo reabrir");
+      }
+
+      toast.success("Donacion reabierta");
+      await refreshAll();
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error instanceof Error ? error.message : "No se pudo reabrir",
+      );
+    } finally {
+      setActiveDonationAction(null);
+    }
+  };
+
+  const openEditAmountDialog = (donation: Donation) => {
+    setOpenActionMenuId(null);
+    setEditingDonation(donation);
+    setEditingAmount(donation.amount ?? "");
+  };
+
+  const updateDonationAmount = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingDonation) return;
+
+    const confirmed = window.confirm(
+      `El monto registrado cambiara de ${formatMoney(editingDonation.amount)} a ${formatMoney(editingAmount)} y se actualizara el progreso de la campana.`,
+    );
+    if (!confirmed) return;
+
+    setActiveDonationAction(editingDonation.id);
+    try {
+      const response = await fetch(
+        `/api/admin/donations/${editingDonation.id}/amount`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: editingAmount }),
+        },
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || "No se pudo actualizar");
+      }
+
+      toast.success("Monto actualizado");
+      setEditingDonation(null);
+      setEditingAmount("");
+      await refreshAll();
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error instanceof Error ? error.message : "No se pudo actualizar",
       );
     } finally {
       setActiveDonationAction(null);
@@ -799,9 +930,17 @@ export function DonationCampaignDashboard() {
                     key={donation.id}
                     donation={donation}
                     isBusy={activeDonationAction === donation.id}
+                    isMenuOpen={openActionMenuId === donation.id}
                     onApprove={() => approveDonation(donation)}
                     onReject={() => rejectDonation(donation)}
                     onReceipt={() => openReceipt(donation)}
+                    onReopen={() => reopenDonation(donation)}
+                    onEditAmount={() => openEditAmountDialog(donation)}
+                    onToggleMenu={() =>
+                      setOpenActionMenuId((current) =>
+                        current === donation.id ? null : donation.id,
+                      )
+                    }
                   />
                 ))
               )}
@@ -814,6 +953,23 @@ export function DonationCampaignDashboard() {
           onPageChange={setDonationPage}
         />
       </section>
+
+      <EditDonationAmountDialog
+        donation={editingDonation}
+        amount={editingAmount}
+        isBusy={
+          editingDonation !== null && activeDonationAction === editingDonation.id
+        }
+        onAmountChange={setEditingAmount}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingDonation(null);
+            setEditingAmount("");
+          }
+        }}
+        onReceipt={editingDonation ? () => openReceipt(editingDonation) : undefined}
+        onSubmit={updateDonationAmount}
+      />
 
       <Toaster />
     </div>
@@ -899,7 +1055,7 @@ function CampaignRow({
             {formatMoney(campaign.progress?.approvedTotal)} /{" "}
             {formatMoney(campaign.goalAmount)}
           </span>
-          <span>{campaign.progress?.percentage ?? 0}% real</span>
+          <span>{campaign.progress?.visualPercentage ?? 0}%</span>
           <span>{campaign.donationCounts?.pending ?? 0} pendientes</span>
         </div>
       </div>
@@ -938,15 +1094,23 @@ function CampaignRow({
 function DonationRow({
   donation,
   isBusy,
+  isMenuOpen,
   onApprove,
   onReject,
   onReceipt,
+  onReopen,
+  onEditAmount,
+  onToggleMenu,
 }: {
   donation: Donation;
   isBusy: boolean;
+  isMenuOpen: boolean;
   onApprove: () => void;
   onReject: () => void;
   onReceipt: () => void;
+  onReopen: () => void;
+  onEditAmount: () => void;
+  onToggleMenu: () => void;
 }) {
   return (
     <tr className="border-b border-neutral-100 last:border-0">
@@ -997,6 +1161,16 @@ function DonationRow({
             <>
               <Button
                 size="sm"
+                variant="outline"
+                className="gap-2"
+                disabled={isBusy}
+                onClick={onReceipt}
+              >
+                <FileImage className="h-4 w-4" />
+                Ver
+              </Button>
+              <Button
+                size="sm"
                 className="gap-2"
                 disabled={isBusy}
                 onClick={onApprove}
@@ -1016,13 +1190,187 @@ function DonationRow({
               </Button>
             </>
           ) : (
-            <span className="text-xs text-neutral-500">
-              Revisada {formatDate(donation.reviewedAt)}
-            </span>
+            <div className="relative flex items-center justify-end gap-2">
+              <span className="text-xs text-neutral-500">
+                Revisada {formatDate(donation.reviewedAt)}
+              </span>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                className="h-8 w-8"
+                disabled={isBusy}
+                onClick={onToggleMenu}
+                aria-label="Acciones de donacion"
+                aria-expanded={isMenuOpen}
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+              {isMenuOpen && (
+                <div className="absolute right-0 top-9 z-20 w-48 overflow-hidden rounded-md border border-neutral-200 bg-white py-1 text-left shadow-lg">
+                  <ActionMenuButton onClick={onReceipt} disabled={isBusy}>
+                    <FileImage className="h-4 w-4" />
+                    Ver comprobante
+                  </ActionMenuButton>
+                  {donation.status === "APPROVED" && (
+                    <ActionMenuButton onClick={onEditAmount} disabled={isBusy}>
+                      <Pencil className="h-4 w-4" />
+                      Editar monto
+                    </ActionMenuButton>
+                  )}
+                  <ActionMenuButton onClick={onReopen} disabled={isBusy}>
+                    <RotateCcw className="h-4 w-4" />
+                    Reabrir revision
+                  </ActionMenuButton>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </td>
     </tr>
+  );
+}
+
+function ActionMenuButton({
+  children,
+  disabled,
+  onClick,
+}: {
+  children: React.ReactNode;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="flex w-full items-center gap-2 px-3 py-2 text-sm text-neutral-700 transition-colors hover:bg-neutral-50 disabled:pointer-events-none disabled:opacity-50"
+    >
+      {children}
+    </button>
+  );
+}
+
+function EditDonationAmountDialog({
+  donation,
+  amount,
+  isBusy,
+  onAmountChange,
+  onOpenChange,
+  onReceipt,
+  onSubmit,
+}: {
+  donation: Donation | null;
+  amount: string;
+  isBusy: boolean;
+  onAmountChange: (amount: string) => void;
+  onOpenChange: (open: boolean) => void;
+  onReceipt?: () => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+}) {
+  const currentAmount = parseMoneyForPreview(donation?.amount);
+  const nextAmount = parseMoneyForPreview(amount);
+  const difference =
+    currentAmount !== null && nextAmount !== null ? nextAmount - currentAmount : null;
+  const absoluteDifference =
+    difference !== null ? Math.abs(difference).toFixed(2) : null;
+  const campaignImpact =
+    difference === null
+      ? "Ingresa un monto valido para ver el impacto en la campana."
+      : difference === 0
+        ? "La campana no cambiara su total aprobado."
+        : difference > 0
+          ? `La campana aumentara ${formatMoney(absoluteDifference)}.`
+          : `La campana disminuira ${formatMoney(absoluteDifference)}.`;
+
+  return (
+    <Dialog open={Boolean(donation)} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="h-auto max-h-[90svh] max-w-xl overflow-y-auto rounded-lg bg-white p-6"
+        closeButtonClassName="[&_svg]:h-5 [&_svg]:w-5 [&_svg]:bg-transparent [&_svg]:text-neutral-700"
+      >
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold text-neutral-950">
+            Editar monto
+          </DialogTitle>
+          <DialogDescription className="text-sm leading-6 text-neutral-600">
+            Corregi el monto aprobado sin cambiar el comprobante ni los datos de
+            la donacion.
+          </DialogDescription>
+        </DialogHeader>
+
+        {donation && (
+          <form className="mt-5 grid gap-4" onSubmit={onSubmit}>
+            <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase text-neutral-500">
+                    Comprobante
+                  </p>
+                  <p className="mt-1 truncate text-sm font-medium text-neutral-950">
+                    {donation.receiptOriginalName ?? "Ver comprobante"}
+                  </p>
+                  <p className="text-xs text-neutral-500">
+                    {fileSize(donation.receiptBytes)}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="gap-2"
+                  disabled={isBusy || !onReceipt}
+                  onClick={onReceipt}
+                >
+                  <FileImage className="h-4 w-4" />
+                  Abrir
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-md border border-neutral-200 p-4">
+                <p className="text-xs font-semibold uppercase text-neutral-500">
+                  Monto registrado
+                </p>
+                <p className="mt-2 text-lg font-semibold text-neutral-950">
+                  {formatMoney(donation.amount)}
+                </p>
+              </div>
+              <Field label="Nuevo monto">
+                <Input
+                  value={amount}
+                  onChange={(event) => onAmountChange(event.target.value)}
+                  required
+                  inputMode="decimal"
+                  placeholder="3000"
+                />
+              </Field>
+            </div>
+
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+              {campaignImpact}
+            </div>
+
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isBusy}
+                onClick={() => onOpenChange(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isBusy} className="gap-2">
+                <Check className="h-4 w-4" />
+                {isBusy ? "Guardando..." : "Guardar monto"}
+              </Button>
+            </div>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 

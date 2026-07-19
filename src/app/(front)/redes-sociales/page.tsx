@@ -289,7 +289,7 @@ const RedesSocialesPage = () => {
                   </p>
                 </div>
                 <h2 className="text-xl font-semibold leading-tight tracking-tight text-slate-950 md:text-2xl">
-                  Julian Weich tambien lucha contra la muerte subita
+                  Julian Weich tambien lucha contra la muerte súbita
                 </h2>
               </div>
 
@@ -340,12 +340,12 @@ const RedesSocialesPage = () => {
           <div className="container mx-auto">
             <div className="mx-auto max-w-[500px] text-center">
               <div className="mb-8">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-primary">
-                Material de consulta
-              </p>
-              <h2 className="text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">
-                Documento informativo
-              </h2>
+                <p className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-primary">
+                  Material de consulta
+                </p>
+                <h2 className="text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">
+                  Documento informativo
+                </h2>
               </div>
               <PDFViewer />
             </div>

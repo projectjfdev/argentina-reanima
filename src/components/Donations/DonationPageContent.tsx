@@ -32,6 +32,7 @@ import {
   UserRound,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -71,42 +72,45 @@ type CurrentCampaignResponse = {
   success: boolean;
 };
 
+const DONATION_RECEIPT_ACCEPT = "image/jpeg,image/png";
+const DONATION_RECEIPT_ALLOWED_TYPES = new Set(["image/jpeg", "image/png"]);
+
 const donationSteps = [
   {
     icon: Building2,
-    title: "Elegimos una institucion",
+    title: "Elegimos una institución",
     description:
-      "Seleccionamos una institucion, club, escuela o espacio publico que actualmente no cuenta con un DEA.",
+      "Seleccionamos una institución, club, escuela o espacio público o privado que actualmente no cuenta con un DEA",
   },
   {
     icon: HandCoins,
     title: "Realizas tu aporte",
     description:
-      "Colaboras mediante transferencia bancaria y subis el comprobante para que podamos verificarlo.",
+      "Colaboras mediante transferencia bancaria y subís el comprobante para que podamos verificarlo",
   },
   {
     icon: Eye,
-    title: "Elegis como aparecer",
+    title: "Elegís cómo aparecer",
     description:
-      "Podes decidir si tu donacion figura publicamente en el listado de donantes o permanece anonima.",
+      "Podés decidir si tu donación figura publicamente en el listado de donantes o permanece anónima",
   },
   {
     icon: ClipboardCheck,
-    title: "Verificamos la donacion",
+    title: "Verificamos la donación",
     description:
-      "Nuestro equipo revisa el comprobante y carga el monto real antes de aprobar la donacion.",
+      "Nuestro equipo revisa el comprobante y carga el monto real antes de aprobar la donación",
   },
   {
     icon: HeartPulse,
     title: "Instalamos el DEA",
     description:
-      "Al alcanzar el objetivo realizamos la compra, instalacion del DEA y publicamos la documentacion correspondiente.",
+      "Al alcanzar el objetivo realizamos la compra, instalación del DEA y publicamos la documentacion correspondiente",
   },
   {
     icon: GraduationCap,
     title: "Capacitamos gratuitamente",
     description:
-      "Ademas de instalar el DEA, brindamos una capacitacion gratuita en RCP y uso del DEA para la institucion beneficiada.",
+      "Además de instalar el DEA, brindamos una capacitación gratuita en RCP y uso del DEA para la institución beneficiada",
   },
 ];
 
@@ -217,7 +221,6 @@ export function DonationPageContent() {
 
   const heroImage = campaign?.placeImageUrl ?? "/images/4.jpeg";
   const visualPercentage = campaign?.visualPercentage ?? 0;
-  const realPercentage = campaign?.percentage ?? 0;
 
   return (
     <main className="bg-white text-slate-950">
@@ -279,7 +282,6 @@ export function DonationPageContent() {
       <section className="container mx-auto grid gap-10 px-4 py-16 md:grid-cols-[0.95fr_1.05fr] md:items-center md:py-24">
         <DonationDeaProgress
           percentage={visualPercentage}
-          realPercentage={realPercentage}
           hasCampaign={Boolean(campaign)}
         />
         <motion.div
@@ -292,12 +294,12 @@ export function DonationPageContent() {
             {getCampaignStatusText(campaign)}
           </p>
           <h2 className="text-3xl font-semibold leading-tight text-slate-950 md:text-5xl">
-            Cada donacion aprobada acerca al lugar a estar preparado.
+            Cada donación aprobada acerca al lugar a estar preparado.
           </h2>
           <p className="mt-5 text-base leading-8 text-slate-600 md:text-lg">
             El avance visual del DEA muestra el porcentaje recaudado con
-            donaciones verificadas por administracion. La parte en color
-            representa lo que ya se logro; la parte en blanco y negro, lo que
+            donaciones verificadas por administración. La parte en color
+            representa lo que ya se logró; la parte en blanco y negro, lo que
             falta completar.
           </p>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -360,7 +362,7 @@ export function DonationPageContent() {
                   </h2>
                   <p className="mt-3 max-w-xl text-base leading-7 text-white/85 md:text-lg">
                     Y ser parte de esta comunidad que lucha contra la muerte
-                    subita.
+                    súbita.
                   </p>
                 </div>
               </div>
@@ -377,9 +379,18 @@ export function DonationPageContent() {
               </h2>
               <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600">
                 {campaign
-                  ? "El objetivo fue alcanzado o la campaña fue cerrada. Gracias por acompanarnos."
+                  ? "El objetivo fue alcanzado o la campaña fue cerrada. Gracias por acompañarnos."
                   : "Pronto publicaremos una nueva campaña para instalar un DEA."}
               </p>
+              {campaign && (
+                <Link
+                  href="/campanas-dea"
+                  type="button"
+                  className="text-sm font-semibold text-primary underline transition-colors hover:text-primary/80"
+                >
+                  Ver todas las campañas
+                </Link>
+              )}
             </div>
           )}
         </div>
@@ -438,7 +449,7 @@ function DonationProgressSummary({
           <div className="mt-6">
             <div className="mb-2 flex items-center justify-between text-sm font-semibold">
               <span className="text-slate-600">Avance de la campaña</span>
-              <span className="text-primary">{campaign.percentage}%</span>
+              <span className="text-primary">{campaign.visualPercentage}%</span>
             </div>
             <div className="h-3 overflow-hidden rounded-full bg-slate-200">
               <div
@@ -470,11 +481,9 @@ function DonationProgressSummary({
 
 function DonationDeaProgress({
   percentage,
-  realPercentage,
   hasCampaign,
 }: {
   percentage: number;
-  realPercentage: number;
   hasCampaign: boolean;
 }) {
   return (
@@ -494,7 +503,7 @@ function DonationDeaProgress({
           className="object-contain grayscale"
         />
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 bg-primary/50 transition-[clip-path] duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
           style={{
             clipPath: `polygon(0 0, ${percentage}% 0, ${percentage}% 100%, 0 100%)`,
           }}
@@ -519,9 +528,9 @@ function DonationDeaProgress({
           <>
             Hasta ahora hay un{" "}
             <span className="text-xl font-semibold text-primary">
-              {realPercentage}%
+              {percentage}%
             </span>{" "}
-            de preparacion para salvar vidas en este lugar.
+            de preparación para salvar vidas en este lugar.
           </>
         ) : (
           "El avance aparecera cuando haya una campaña publicada."
@@ -593,8 +602,8 @@ function PublicDonorList({
             </h2>
           </div>
           <p className="max-w-lg text-sm leading-6 text-slate-600">
-            Solo aparecen donaciones revisadas por administracion. Pendientes y
-            rechazadas no se publican ni suman al progreso.
+            Solo aparecen donaciones revisadas por administración. Si tu
+            donación no aparece, es porque aun no fue aprobada.
           </p>
         </div>
 
@@ -710,6 +719,11 @@ function DonationModal({
       return;
     }
 
+    if (!DONATION_RECEIPT_ALLOWED_TYPES.has(receipt.type)) {
+      toast.error("El comprobante debe ser una imagen JPG, JPEG o PNG.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("campaignId", String(campaign.id));
     formData.append("visibility", donationVisibility);
@@ -769,10 +783,10 @@ function DonationModal({
                 <Heart className="h-6 w-6" />
               </div>
               <DialogTitle className="text-3xl font-semibold text-white">
-                Realiza tu donacion
+                Realizá tu donación
               </DialogTitle>
               <DialogDescription className="mt-3 text-base leading-7 text-white/75">
-                Transferi a la cuenta indicada y subi el comprobante. El monto
+                Transferí a la cuenta indicada y subí el comprobante. El monto
                 se confirma administrativamente al revisar el archivo.
               </DialogDescription>
             </DialogHeader>
@@ -791,7 +805,7 @@ function DonationModal({
                   value={donationBankData.cuenta}
                 />
                 <BankRow
-                  label="Razon Social"
+                  label="Razón Social"
                   value={donationBankData.razonSocial}
                 />
                 <BankRow label="CUIT" value={donationBankData.cuit} />
@@ -830,37 +844,37 @@ function DonationModal({
                 Informar transferencia
               </p>
               <h3 className="mt-2 text-2xl font-semibold text-slate-950">
-                Envia tu comprobante
+                Enviá tu comprobante
               </h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                No declares el monto: lo verificamos desde el comprobante antes
-                de aprobar la donacion.
+                El monto lo verificamos desde el comprobante al momento de
+                aprobar la donación.
               </p>
             </div>
 
             <div className="box-border w-full min-w-0 max-w-full rounded-lg border border-slate-200 bg-slate-50/70 p-4 md:p-5">
               <div>
                 <h4 className="text-lg font-semibold text-slate-950">
-                  Queres que tu nombre aparezca?
+                  ¿Querés que tu nombre aparezca?
                 </h4>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                  Podes elegir como mostrar tu aporte.
+                  Podés elegir cómo mostrar tu aporte.
                 </p>
               </div>
 
               <div className="mt-5 grid w-full min-w-0 max-w-full gap-3 sm:grid-cols-2">
                 <DonationVisibilityCard
                   icon={UserRound}
-                  title="Si, quiero aparecer en el listado."
-                  description="Mi nombre podra visualizarse en el listado publico de donantes."
+                  title="Si, quiero aparecer en el listado"
+                  description="Mi nombre podra visualizarse en el listado público de donantes."
                   value="public"
                   selectedValue={donationVisibility}
                   onSelect={setDonationVisibility}
                 />
                 <DonationVisibilityCard
                   icon={Shield}
-                  title="Prefiero que mi aporte sea anonimo."
-                  description="Mi donacion sera contabilizada sin mostrar mis datos personales."
+                  title="Prefiero que mi aporte sea anónimo"
+                  description="Mi donación será contabilizada sin mostrar mis datos personales."
                   value="anonymous"
                   selectedValue={donationVisibility}
                   onSelect={setDonationVisibility}
@@ -945,7 +959,7 @@ function DonationModal({
                     Seleccionar comprobante
                   </span>
                   <span className="mt-1 max-w-full text-xs text-slate-500">
-                    Imagen o PDF. Tamano maximo 5MB.
+                    Formatos permitidos: JPG, JPEG o PNG. Tamano maximo 5MB.
                   </span>
                   {selectedFileName && (
                     <span className="mt-3 max-w-full truncate rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700">
@@ -958,12 +972,26 @@ function DonationModal({
                   name="receipt"
                   type="file"
                   required
-                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  accept={DONATION_RECEIPT_ACCEPT}
                   tabIndex={-1}
                   className="pointer-events-none absolute inset-0 h-full w-full min-w-0 max-w-full opacity-0"
-                  onChange={(event) =>
-                    setSelectedFileName(event.target.files?.[0]?.name || "")
-                  }
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+
+                    if (
+                      file &&
+                      !DONATION_RECEIPT_ALLOWED_TYPES.has(file.type)
+                    ) {
+                      event.target.value = "";
+                      setSelectedFileName("");
+                      toast.error(
+                        "El comprobante debe ser una imagen JPG, JPEG o PNG.",
+                      );
+                      return;
+                    }
+
+                    setSelectedFileName(file?.name || "");
+                  }}
                 />
               </div>
             </DonationField>

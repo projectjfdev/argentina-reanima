@@ -42,7 +42,7 @@ function serializePublicDonor(donor: PublicDonor) {
     .trim();
 
   return {
-    displayName: donor.isAnonymous ? "Anonimo" : fullName || "Anonimo",
+    displayName: donor.isAnonymous ? "Anónimo" : fullName || "Anónimo",
     amount: decimalToString(donor.amount),
     createdAt: donor.createdAt.toISOString(),
   };

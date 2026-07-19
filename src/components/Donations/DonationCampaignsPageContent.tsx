@@ -153,8 +153,7 @@ export function DonationCampaignsPageContent() {
               Campañas para instalar desfibriladores.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/78 md:text-lg">
-              Segui las campañas activas y el historico de objetivos alcanzados.
-              Solo se publican campañas activas o completadas.
+              Segui las campañas activas y el histórico de objetivos alcanzados.
             </p>
           </div>
 
@@ -166,7 +165,7 @@ export function DonationCampaignsPageContent() {
             <p className="mt-2 text-sm leading-6 text-white/70">
               {activeCampaign
                 ? `${formatMoney(activeCampaign.approvedTotal)} recaudados de ${formatMoney(activeCampaign.goalAmount)}`
-                : "Cuando haya una campaña activa, aparecera primero en este listado."}
+                : "Cuando haya una campaña activa, aparecerá primero en este listado."}
             </p>
             {activeCampaign && (
               <Button asChild className="mt-5 bg-primary text-white">
@@ -183,16 +182,12 @@ export function DonationCampaignsPageContent() {
         <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
-              Publicas
+              Todas nuestras campañas
             </p>
             <h2 className="mt-2 text-3xl font-semibold text-slate-950 md:text-4xl">
-              Activas e historicas
+              Activas e históicas
             </h2>
           </div>
-          <p className="max-w-xl text-sm leading-6 text-slate-600">
-            Las campañas archivadas no se muestran publicamente. El progreso se
-            calcula solo con donaciones aprobadas por administracion.
-          </p>
         </div>
 
         {isLoading ? (
@@ -275,7 +270,7 @@ function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
             <span className="text-slate-600">
               {formatMoney(campaign.approvedTotal)}
             </span>
-            <span className="text-primary">{campaign.percentage}%</span>
+            <span className="text-primary">{campaign.visualPercentage}%</span>
           </div>
           <div className="h-2.5 overflow-hidden rounded-full bg-slate-200">
             <div

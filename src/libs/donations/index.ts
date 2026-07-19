@@ -44,7 +44,9 @@ export {
   approveDonation,
   createPendingDonation,
   createPendingDonationWithReceipt,
+  reopenDonationReview,
   rejectDonation,
+  updateApprovedDonationAmount,
   type CreatePendingDonationInput,
   type DonationReceiptMetadata,
 } from "./donationService";
@@ -52,6 +54,7 @@ export {
   destroyDonationAsset,
   uploadDonationCampaignPlaceImage,
   uploadDonationReceipt,
+  validateDonationReceiptFile,
   validateDonationUploadFile,
   type CloudinaryStoredAsset,
   type UploadValidationResult,

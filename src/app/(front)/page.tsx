@@ -65,7 +65,7 @@ export default function Home() {
             Nuestra mision
           </p>
           <Titleh1
-            title="Dedicamos nuestros esfuerzos en luchar contra la muerte subita."
+            title="Dedicamos nuestros esfuerzos en luchar contra la muerte súbita."
             className="items-start [&>h1]:text-left"
           />
         </div>
@@ -73,12 +73,12 @@ export default function Home() {
           <p>
             Capacitamos a personas en tecnicas de reanimacion cardiopulmonar
             (RCP), uso de desfibriladores externos automaticos (DEA) y Maniobra
-            de Heimlich, promoviendo ademas el cumplimiento de la Ley 27.159.
+            de Heimlich, promoviendo además el cumplimiento de la Ley 27.159.
           </p>
           <p>
             Fomentamos una comunidad comprometida, solidaria y preparada para
             actuar de manera rapida y eficaz ante situaciones criticas como la
-            muerte subita, fortaleciendo el rol de cada persona como primer
+            muerte súbita, fortaleciendo el rol de cada persona como primer
             respondiente en la cadena de respuesta.
           </p>
         </div>

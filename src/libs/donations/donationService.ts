@@ -47,6 +47,43 @@ async function completeCampaignIfGoalReached(
   });
 }
 
+async function syncCampaignCompletionState(
+  campaign: {
+    id: number;
+    status: DonationCampaignStatus;
+    goalAmount: unknown;
+  },
+  client: DonationTransactionClient,
+) {
+  if (campaign.status === DonationCampaignStatus.ARCHIVED) {
+    return null;
+  }
+
+  const progress = await getCampaignProgress(campaign, client);
+
+  if (progress.isCompleted && campaign.status === DonationCampaignStatus.ACTIVE) {
+    return client.donationCampaign.update({
+      where: { id: campaign.id },
+      data: {
+        status: DonationCampaignStatus.COMPLETED,
+        completedAt: new Date(),
+      },
+    });
+  }
+
+  if (!progress.isCompleted && campaign.status === DonationCampaignStatus.COMPLETED) {
+    return client.donationCampaign.update({
+      where: { id: campaign.id },
+      data: {
+        status: DonationCampaignStatus.ACTIVE,
+        completedAt: null,
+      },
+    });
+  }
+
+  return null;
+}
+
 export async function createPendingDonation(input: CreatePendingDonationInput) {
   const validation = validateDonationPayload(input);
 
@@ -156,13 +193,25 @@ export async function approveDonation(donationId: number, amountInput: unknown) 
       });
     }
 
-    const approvedDonation = await tx.donation.update({
-      where: { id: donationId },
+    const approvedResult = await tx.donation.updateMany({
+      where: { id: donationId, status: DonationStatus.PENDING },
       data: {
         amount: amount.data.amount,
         status: DonationStatus.APPROVED,
         reviewedAt: new Date(),
       },
+    });
+
+    if (approvedResult.count !== 1) {
+      throw new DonationServiceError({
+        code: "DONATION_STATE_CONFLICT",
+        message: "La donacion ya no esta pendiente",
+        status: 409,
+      });
+    }
+
+    const approvedDonation = await tx.donation.findUniqueOrThrow({
+      where: { id: donationId },
     });
 
     const completedCampaign = await completeCampaignIfGoalReached(
@@ -194,7 +243,7 @@ export async function rejectDonation(donationId: number) {
     if (donation.status === DonationStatus.APPROVED) {
       throw new DonationServiceError({
         code: "DONATION_ALREADY_APPROVED",
-        message: "No se puede rechazar una donacion aprobada en esta version",
+        message: "No se puede rechazar una donacion aprobada sin reabrirla",
         status: 409,
       });
     }
@@ -203,12 +252,141 @@ export async function rejectDonation(donationId: number) {
       return donation;
     }
 
-    return tx.donation.update({
-      where: { id: donationId },
+    const rejectedResult = await tx.donation.updateMany({
+      where: { id: donationId, status: DonationStatus.PENDING },
       data: {
         status: DonationStatus.REJECTED,
         reviewedAt: new Date(),
       },
     });
+
+    if (rejectedResult.count !== 1) {
+      throw new DonationServiceError({
+        code: "DONATION_STATE_CONFLICT",
+        message: "La donacion ya no esta pendiente",
+        status: 409,
+      });
+    }
+
+    return tx.donation.findUniqueOrThrow({
+      where: { id: donationId },
+    });
+  });
+}
+
+export async function updateApprovedDonationAmount(
+  donationId: number,
+  amountInput: unknown,
+) {
+  const amount = validateMoneyAmount(amountInput);
+
+  if (!amount.success) {
+    throw createValidationError({ amount: amount.error });
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const donation = await tx.donation.findUnique({
+      where: { id: donationId },
+      include: { campaign: true },
+    });
+
+    if (!donation) {
+      throw new DonationServiceError({
+        code: "DONATION_NOT_FOUND",
+        message: "Donacion no encontrada",
+        status: 404,
+      });
+    }
+
+    if (donation.status !== DonationStatus.APPROVED) {
+      throw new DonationServiceError({
+        code: "DONATION_INVALID_STATE",
+        message: "Solo se puede editar el monto de una donacion aprobada",
+        status: 409,
+      });
+    }
+
+    const updatedResult = await tx.donation.updateMany({
+      where: { id: donationId, status: DonationStatus.APPROVED },
+      data: {
+        amount: amount.data.amount,
+        reviewedAt: new Date(),
+      },
+    });
+
+    if (updatedResult.count !== 1) {
+      throw new DonationServiceError({
+        code: "DONATION_STATE_CONFLICT",
+        message: "La donacion ya no esta aprobada",
+        status: 409,
+      });
+    }
+
+    const updatedDonation = await tx.donation.findUniqueOrThrow({
+      where: { id: donationId },
+    });
+    const campaign = await syncCampaignCompletionState(donation.campaign, tx);
+
+    return {
+      donation: updatedDonation,
+      campaign,
+    };
+  });
+}
+
+export async function reopenDonationReview(donationId: number) {
+  return prisma.$transaction(async (tx) => {
+    const donation = await tx.donation.findUnique({
+      where: { id: donationId },
+      include: { campaign: true },
+    });
+
+    if (!donation) {
+      throw new DonationServiceError({
+        code: "DONATION_NOT_FOUND",
+        message: "Donacion no encontrada",
+        status: 404,
+      });
+    }
+
+    if (donation.status === DonationStatus.PENDING) {
+      return {
+        donation,
+        campaign: null,
+      };
+    }
+
+    const reopenedResult = await tx.donation.updateMany({
+      where: {
+        id: donationId,
+        status: { in: [DonationStatus.APPROVED, DonationStatus.REJECTED] },
+      },
+      data: {
+        amount: null,
+        status: DonationStatus.PENDING,
+        reviewedAt: null,
+      },
+    });
+
+    if (reopenedResult.count !== 1) {
+      throw new DonationServiceError({
+        code: "DONATION_STATE_CONFLICT",
+        message: "La donacion ya no se puede reabrir",
+        status: 409,
+      });
+    }
+
+    const reopenedDonation = await tx.donation.findUniqueOrThrow({
+      where: { id: donationId },
+    });
+    const campaign =
+      donation.status === DonationStatus.APPROVED
+        ? await syncCampaignCompletionState(donation.campaign, tx)
+        : null;
+
+    return {
+      donation: reopenedDonation,
+      campaign,
+    };
   });
 }
