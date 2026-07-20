@@ -1,4 +1,5 @@
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import {
   getPublicCertificateUrl,
   validateCertificatePayload,
@@ -30,6 +31,8 @@ export async function GET(
   _request: NextRequest,
   context: CertificateRouteContext,
 ) {
+  await ensureRequestTimeRendering();
+
   try {
     const authError = await requireAdminSession();
     if (authError) return authError;

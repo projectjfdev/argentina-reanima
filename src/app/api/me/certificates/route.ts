@@ -1,4 +1,5 @@
 import { authOptions } from "@/libs/authOptions";
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import { normalizeCertificateEmail } from "@/libs/certificates";
 import { prisma } from "@/libs/db";
 import { getServerSession } from "next-auth";
@@ -21,6 +22,8 @@ function buildCertificateOwnerFilter(email?: string | null, id?: string) {
 }
 
 export async function GET() {
+  await ensureRequestTimeRendering();
+
   try {
     const session = await getServerSession(authOptions);
 

@@ -1,8 +1,7 @@
 import { DonationStatus } from "@/generated/prisma";
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import { prisma } from "@/libs/db";
 import { NextRequest, NextResponse } from "next/server";
-
-export const dynamic = "force-dynamic";
 
 const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 50;
@@ -44,6 +43,8 @@ function serializePublicDonor(donor: PublicDonor) {
 }
 
 export async function GET(request: NextRequest, context: DonorsRouteContext) {
+  await ensureRequestTimeRendering();
+
   try {
     const campaignId = await getCampaignId(context);
 

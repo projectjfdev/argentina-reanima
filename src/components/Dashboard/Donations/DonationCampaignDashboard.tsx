@@ -244,6 +244,7 @@ export function DonationCampaignDashboard() {
 
         const response = await fetch(
           `/api/admin/donation-campaigns?${params.toString()}`,
+          { cache: "no-store" },
         );
         const data = await response.json();
 
@@ -282,6 +283,7 @@ export function DonationCampaignDashboard() {
 
         const response = await fetch(
           `/api/admin/donations?${params.toString()}`,
+          { cache: "no-store" },
         );
         const data = await response.json();
 
@@ -355,6 +357,7 @@ export function DonationCampaignDashboard() {
           ? `/api/admin/donation-campaigns/${selectedCampaign.id}`
           : "/api/admin/donation-campaigns",
         {
+          cache: "no-store",
           method: selectedCampaign ? "PUT" : "POST",
           body: formData,
         },
@@ -395,6 +398,7 @@ export function DonationCampaignDashboard() {
       const response = await fetch(
         `/api/admin/donation-campaigns/${campaign.id}`,
         {
+          cache: "no-store",
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status }),
@@ -434,6 +438,7 @@ export function DonationCampaignDashboard() {
       const response = await fetch(
         `/api/admin/donations/${donation.id}/approve`,
         {
+          cache: "no-store",
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ amount }),
@@ -470,7 +475,7 @@ export function DonationCampaignDashboard() {
     try {
       const response = await fetch(
         `/api/admin/donations/${donation.id}/reject`,
-        { method: "POST" },
+        { cache: "no-store", method: "POST" },
       );
       const data = await response.json();
 
@@ -503,7 +508,7 @@ export function DonationCampaignDashboard() {
     try {
       const response = await fetch(
         `/api/admin/donations/${donation.id}/reopen`,
-        { method: "POST" },
+        { cache: "no-store", method: "POST" },
       );
       const data = await response.json();
 
@@ -543,6 +548,7 @@ export function DonationCampaignDashboard() {
       const response = await fetch(
         `/api/admin/donations/${editingDonation.id}/amount`,
         {
+          cache: "no-store",
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ amount: editingAmount }),
@@ -573,6 +579,7 @@ export function DonationCampaignDashboard() {
     try {
       const response = await fetch(
         `/api/admin/donations/${donation.id}/receipt`,
+        { cache: "no-store" },
       );
       const data = await response.json();
 

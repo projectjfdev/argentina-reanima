@@ -1,9 +1,8 @@
 import { DonationCampaignStatus, DonationStatus } from "@/generated/prisma";
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import { attachCampaignProgress } from "@/libs/donations";
 import { prisma } from "@/libs/db";
 import { NextResponse } from "next/server";
-
-export const dynamic = "force-dynamic";
 
 const INITIAL_DONORS_LIMIT = 10;
 
@@ -116,6 +115,8 @@ async function getCurrentPublicCampaign() {
 }
 
 export async function GET() {
+  await ensureRequestTimeRendering();
+
   try {
     const campaign = await getCurrentPublicCampaign();
 

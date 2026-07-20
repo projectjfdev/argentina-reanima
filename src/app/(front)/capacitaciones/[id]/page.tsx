@@ -15,7 +15,16 @@ const VideoPlayer = dynamic(() => import("@/components/Video/video-player"), {
   ssr: false,
 });
 
-const CapacitacionPorId = () => {
+const CourseDetailFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="text-center space-y-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p className="text-lg text-muted-foreground">Cargando curso...</p>
+    </div>
+  </div>
+);
+
+const CapacitacionPorIdContent = () => {
   const { id } = useParams();
 
   // Estado para el video seleccionado
@@ -53,14 +62,7 @@ const CapacitacionPorId = () => {
   };
 
   if (!course || !currentLesson) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-lg text-muted-foreground">Cargando curso...</p>
-        </div>
-      </div>
-    );
+    return <CourseDetailFallback />;
   }
 
   return (
@@ -224,5 +226,11 @@ const CapacitacionPorId = () => {
     </div>
   );
 };
+
+const CapacitacionPorId = () => (
+  <Suspense fallback={<CourseDetailFallback />}>
+    <CapacitacionPorIdContent />
+  </Suspense>
+);
 
 export default CapacitacionPorId;

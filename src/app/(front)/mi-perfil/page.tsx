@@ -25,8 +25,17 @@ import {
 import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
-export default async function MiPerfilPage() {
+export default function MiPerfilPage() {
+  return (
+    <Suspense fallback={<MiPerfilFallback />}>
+      <MiPerfilContent />
+    </Suspense>
+  );
+}
+
+async function MiPerfilContent() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -251,6 +260,30 @@ export default async function MiPerfilPage() {
               </CardContent>
             </Card>
           </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function MiPerfilFallback() {
+  return (
+    <main className="min-h-screen bg-slate-50">
+      <section className="mx-auto w-full container px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <header className="mb-8 max-w-3xl">
+          <p className="mb-3 inline-flex items-center gap-2 rounded-md border border-primary/20 bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+            <BadgeCheck className="h-4 w-4" aria-hidden="true" />
+            Cuenta Argentina Reanima
+          </p>
+          <h1 className="text-3xl font-bold tracking-normal text-slate-950 sm:text-4xl">
+            Mi Perfil
+          </h1>
+          <p className="mt-3 text-base leading-7 text-slate-600">
+            Cargando informacion de tu cuenta...
+          </p>
+        </header>
+        <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm font-medium text-slate-600 shadow-sm">
+          Cargando certificados...
         </div>
       </section>
     </main>

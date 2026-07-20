@@ -1,49 +1,17 @@
-import { Prisma } from "@/generated/prisma";
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
+import { revalidateCourseViews } from "@/libs/cache/revalidation";
+import { getPublicCourses } from "@/libs/courses/publicCourseQueries";
 import { prisma } from "@/libs/db";
-import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get("category");
-    const search = searchParams.get("search");
-    const pageParam = searchParams.get("page") || "1";
-
-    const page = Math.max(parseInt(pageParam, 10) || 1, 1);
-    const limit = 6; // puedes ajustar el límite como necesites
-    const skip = (page - 1) * limit;
-
-    const where: Prisma.CourseWhereInput = {
-      ...(category && { category }),
-      ...(search && {
-        OR: [
-          {
-            title: {
-              contains: search,
-              mode: Prisma.QueryMode.insensitive,
-            },
-          },
-        ],
-      }),
-    };
-
-    // Obtener los cursos paginados
-    const courses = await prisma.course.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        lessons: true,
-      },
+    const { courses, totalCourses } = await getPublicCourses({
+      category: searchParams.get("category"),
+      search: searchParams.get("search"),
+      page: searchParams.get("page"),
     });
-
-    // Total de cursos que coinciden con el filtro
-    const totalCourses = await prisma.course.count({ where });
 
     return NextResponse.json({
       message: "Cursos obtenidos correctamente",
@@ -56,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -72,7 +40,7 @@ export async function POST(req: Request) {
     if (!title || !category || !Array.isArray(lessons)) {
       return NextResponse.json(
         { error: "Faltan campos obligatorios" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -91,13 +59,13 @@ export async function POST(req: Request) {
         lessons: true,
       },
     });
-    revalidatePath("/api/courses");
+    revalidateCourseViews(newCourse.id);
     return NextResponse.json(newCourse, { status: 201 });
   } catch (error) {
     console.error("Error creando curso:", error);
     return NextResponse.json(
       { error: "Error interno del servidor" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -113,18 +81,16 @@ export async function PUT(req: Request) {
     if (!id || !title || !category || !Array.isArray(lessons)) {
       return NextResponse.json(
         { error: "Faltan campos obligatorios" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Primero, eliminar lecciones antiguas del curso
     await prisma.lesson.deleteMany({
       where: {
         courseId: id,
       },
     });
 
-    // Luego, actualizar título y categoría del curso y crear las nuevas lecciones
     const updatedCourse = await prisma.course.update({
       where: { id },
       data: {
@@ -141,13 +107,13 @@ export async function PUT(req: Request) {
         lessons: true,
       },
     });
-    revalidatePath("/api/courses");
+    revalidateCourseViews(id);
     return NextResponse.json(updatedCourse, { status: 200 });
   } catch (error) {
     console.error("Error actualizando curso:", error);
     return NextResponse.json(
       { error: "Error interno del servidor" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

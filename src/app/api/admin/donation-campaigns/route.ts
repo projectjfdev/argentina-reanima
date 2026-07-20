@@ -1,5 +1,6 @@
 import { Prisma } from "@/generated/prisma";
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import {
   attachCampaignProgress,
   createDonationCampaignWithPlaceImage,
@@ -11,11 +12,10 @@ import {
   mapDonationServiceError,
   serializeCampaign,
 } from "@/libs/donations/adminApi";
+import { revalidateDonationCampaignViews } from "@/libs/cache/revalidation";
 import { prisma } from "@/libs/db";
-import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
 
 const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 50;
@@ -38,6 +38,8 @@ async function withDonationCounts<TCampaign extends { id: number }>(
 }
 
 export async function GET(request: NextRequest) {
+  await ensureRequestTimeRendering();
+
   try {
     const authError = await requireAdminSession();
     if (authError) return authError;
@@ -125,8 +127,7 @@ export async function POST(request: NextRequest) {
       placeImage,
     );
 
-    revalidatePath("/donar");
-    revalidatePath("/api/donation-campaigns/current");
+    revalidateDonationCampaignViews(campaign.id);
 
     return NextResponse.json(
       {

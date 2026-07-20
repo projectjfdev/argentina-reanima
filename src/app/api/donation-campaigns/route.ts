@@ -1,9 +1,8 @@
 import { DonationCampaignStatus } from "@/generated/prisma";
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import { attachCampaignProgress } from "@/libs/donations";
 import { prisma } from "@/libs/db";
 import { NextRequest, NextResponse } from "next/server";
-
-export const dynamic = "force-dynamic";
 
 const DEFAULT_PAGE_SIZE = 9;
 const MAX_PAGE_SIZE = 24;
@@ -55,6 +54,8 @@ function serializeCampaign(
 }
 
 export async function GET(request: NextRequest) {
+  await ensureRequestTimeRendering();
+
   try {
     const { searchParams } = new URL(request.url);
     const page = Math.max(Number(searchParams.get("page")) || 1, 1);

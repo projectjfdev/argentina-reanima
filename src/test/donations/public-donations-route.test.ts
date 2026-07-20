@@ -86,6 +86,7 @@ describe("POST /api/donations", () => {
       },
     });
     expect(createPendingDonationWithReceiptMock).not.toHaveBeenCalled();
+    expect(revalidatePathMock).not.toHaveBeenCalled();
   });
 
   it("creates a pending donation without sending amount to the service", async () => {
@@ -123,6 +124,8 @@ describe("POST /api/donations", () => {
       receipt,
     );
     expect(revalidatePathMock).toHaveBeenCalledWith("/donar");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/campanas-dea");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/api/donation-campaigns");
     expect(revalidatePathMock).toHaveBeenCalledWith(
       "/api/donation-campaigns/current",
     );

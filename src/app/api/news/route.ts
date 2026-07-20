@@ -1,61 +1,24 @@
-import { Prisma } from "@/generated/prisma";
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
+import { revalidateNewsViews } from "@/libs/cache/revalidation";
 import cloudinary from "@/libs/cloudinary";
+import { getPublicNews } from "@/libs/news/publicNewsQueries";
 import { prisma } from "@/libs/db";
-import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get("category");
-    const search = searchParams.get("search");
-    const pageParam = searchParams.get("page") || "1";
-
-    const page = Math.max(parseInt(pageParam, 10) || 1, 1);
-    const limit = 6;
-    const skip = (page - 1) * limit;
-
-    const where: Prisma.NewsWhereInput = {
-      ...(category && { category }),
-      ...(search && {
-        OR: [
-          {
-            title: {
-              contains: search,
-              mode: Prisma.QueryMode.insensitive,
-            },
-          },
-          {
-            description: {
-              contains: search,
-              mode: Prisma.QueryMode.insensitive,
-            },
-          },
-        ],
-      }),
-    };
-
-    // Obtener las noticias paginadas
-    const news = await prisma.news.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: {
-        dateNew: "desc",
-      },
-    });
-
-    // Obtener el total de noticias que coinciden con el filtro
-    const totalNews = await prisma.news.count({
-      where,
+    const { news, totalNews, currentPage } = await getPublicNews({
+      category: searchParams.get("category"),
+      search: searchParams.get("search"),
+      page: searchParams.get("page"),
     });
 
     return NextResponse.json({
       message: "Noticias obtenidas correctamente",
       news,
       totalNews,
-      currentPage: page,
+      currentPage,
       success: true,
     });
   } catch (error) {
@@ -120,8 +83,7 @@ export async function POST(request: Request) {
         dateNew,
       },
     });
-    revalidatePath("/api/news");
-    revalidatePath("/api/lastThreeNews");
+    revalidateNewsViews(news.id);
     return NextResponse.json(
       { message: "Noticia creada exitosamente", news, success: true },
       { status: 201 }

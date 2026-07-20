@@ -1,14 +1,9 @@
-import { prisma } from "@/libs/db";
+import { getLatestPublicNews } from "@/libs/news/publicNewsQueries";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const news = await prisma.news.findMany({
-      orderBy: {
-        dateNew: "desc",
-      },
-      take: 3,
-    });
+    const news = await getLatestPublicNews(3);
 
     return NextResponse.json({
       message: "Últimas 3 noticias obtenidas correctamente",

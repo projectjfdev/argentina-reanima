@@ -1,7 +1,58 @@
 import type { NextConfig } from "next";
 
+const noStoreHeaders = [
+  {
+    key: "Cache-Control",
+    value: "no-store, max-age=0",
+  },
+  {
+    key: "Pragma",
+    value: "no-cache",
+  },
+  {
+    key: "Expires",
+    value: "0",
+  },
+];
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  cacheComponents: true,
+  async headers() {
+    return [
+      {
+        source: "/api/admin/:path*",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/api/auth/:path*",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/api/me/certificates",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/api/certificates",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/api/certificates/:path*",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/api/donation-campaigns",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/api/donation-campaigns/:path*",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/api/donations",
+        headers: noStoreHeaders,
+      },
+    ];
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "20mb",

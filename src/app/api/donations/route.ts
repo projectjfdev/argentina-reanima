@@ -2,10 +2,8 @@ import {
   createPendingDonationWithReceipt,
   DonationServiceError,
 } from "@/libs/donations";
-import { revalidatePath } from "next/cache";
+import { revalidateDonationCampaignViews } from "@/libs/cache/revalidation";
 import { NextRequest, NextResponse } from "next/server";
-
-export const dynamic = "force-dynamic";
 
 function getFormString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -71,9 +69,7 @@ export async function POST(request: NextRequest) {
       receiptFile,
     );
 
-    revalidatePath("/donar");
-    revalidatePath("/api/donation-campaigns/current");
-    revalidatePath(`/api/donation-campaigns/${donation.campaignId}/donors`);
+    revalidateDonationCampaignViews(donation.campaignId);
 
     return NextResponse.json(
       {

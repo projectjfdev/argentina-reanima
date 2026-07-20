@@ -1,5 +1,6 @@
 import { CertificateStatus, Prisma } from "@/generated/prisma";
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import {
   generateNextCertificateSerialNumbers,
   generateUniqueCertificatePublicId,
@@ -96,6 +97,8 @@ function isUniqueConstraintError(error: unknown, field: string): boolean {
 }
 
 export async function GET(request: NextRequest) {
+  await ensureRequestTimeRendering();
+
   try {
     const authError = await requireAdminSession();
     if (authError) return authError;

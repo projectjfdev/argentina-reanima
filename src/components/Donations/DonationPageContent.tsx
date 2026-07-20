@@ -190,6 +190,7 @@ export function DonationPageContent() {
       });
       const response = await fetch(
         `/api/donation-campaigns/${campaign.id}/donors?${params.toString()}`,
+        { cache: "no-store" },
       );
       const data = await response.json();
 
@@ -738,6 +739,7 @@ function DonationModal({
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/donations", {
+        cache: "no-store",
         method: "POST",
         body: formData,
       });

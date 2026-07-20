@@ -6,7 +6,7 @@ import {
 import { prisma } from "@/libs/db";
 import { AlertTriangle, CheckCircle2, FileBadge } from "lucide-react";
 import { notFound } from "next/navigation";
-import type React from "react";
+import { Suspense, type ReactNode } from "react";
 
 type ValidateCertificatePageProps = {
   params: Promise<{ publicId: string }> | { publicId: string };
@@ -17,7 +17,17 @@ async function getPublicId(params: ValidateCertificatePageProps["params"]) {
   return resolvedParams.publicId;
 }
 
-export default async function ValidateCertificatePage({
+export default function ValidateCertificatePage({
+  params,
+}: ValidateCertificatePageProps) {
+  return (
+    <Suspense fallback={<ValidateCertificateFallback />}>
+      <ValidateCertificateContent params={params} />
+    </Suspense>
+  );
+}
+
+async function ValidateCertificateContent({
   params,
 }: ValidateCertificatePageProps) {
   const publicId = await getPublicId(params);
@@ -114,7 +124,7 @@ function ValidationItem({
   children,
 }: {
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div>
@@ -123,5 +133,30 @@ function ValidationItem({
       </dt>
       <dd className="mt-1 font-medium text-neutral-950">{children}</dd>
     </div>
+  );
+}
+
+function ValidateCertificateFallback() {
+  return (
+    <main className="min-h-screen bg-neutral-50 px-4 py-8 text-neutral-950 md:px-8">
+      <div className="mx-auto flex w-full container flex-col gap-5">
+        <header className="flex flex-col gap-3 border-b border-neutral-200 pb-5 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
+              <FileBadge className="h-4 w-4" />
+              Validacion publica
+            </div>
+            <h1 className="mt-2 text-2xl font-semibold md:text-3xl">
+              Certificado Argentina Reanima
+            </h1>
+          </div>
+        </header>
+        <section className="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
+          <p className="text-sm font-medium text-neutral-600">
+            Validando certificado...
+          </p>
+        </section>
+      </div>
+    </main>
   );
 }

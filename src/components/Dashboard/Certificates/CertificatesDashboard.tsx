@@ -206,7 +206,9 @@ export function CertificatesDashboard() {
           params.set("search", debouncedSearch.trim());
         }
 
-        const response = await fetch(`/api/certificates?${params.toString()}`);
+        const response = await fetch(`/api/certificates?${params.toString()}`, {
+          cache: "no-store",
+        });
         const data = await response.json();
 
         if (!response.ok) {
@@ -284,6 +286,7 @@ export function CertificatesDashboard() {
         formData.append("file", file);
 
         const response = await fetch("/api/certificates/bulk", {
+          cache: "no-store",
           method: "POST",
           body: formData,
         });
@@ -354,6 +357,7 @@ export function CertificatesDashboard() {
       formData.append("instructorKey", values.instructorKey);
 
       const response = await fetch("/api/certificates/bulk", {
+        cache: "no-store",
         method: "POST",
         body: formData,
       });
@@ -398,6 +402,7 @@ export function CertificatesDashboard() {
       const method = selectedCertificate ? "PUT" : "POST";
 
       const response = await fetch(url, {
+        cache: "no-store",
         method,
         headers: {
           "Content-Type": "application/json",
@@ -438,6 +443,7 @@ export function CertificatesDashboard() {
       const response = await fetch(
         `/api/certificates/${certificate.publicId}`,
         {
+          cache: "no-store",
           method: "DELETE",
         },
       );

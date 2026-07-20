@@ -13,6 +13,7 @@ function assertOkResponse(res: Response, data: any) {
 export const NewsContext = createContext<{
   news: News[];
   loadNews: (category: string, search: string, page: number) => Promise<void>;
+  loadAdminNews: (page: number) => Promise<void>;
   createNews: (singleNew: ICreateNewsBase64) => Promise<void>;
   deleteNews: (id: number) => Promise<void>;
   selectedNews: News | null;
@@ -22,6 +23,7 @@ export const NewsContext = createContext<{
 }>({
   news: [],
   loadNews: async (category: string, search: string, page: number) => {},
+  loadAdminNews: async (page: number) => {},
   createNews: async (singleNew: ICreateNewsBase64) => {},
   deleteNews: async (id: number) => {},
   selectedNews: null,
@@ -42,6 +44,7 @@ export const NewsProvider = ({ children }: { children: React.ReactNode }) => {
   const [news, setNews] = useState<News[]>([]);
   const [selectedNews, setSelectedNews] = useState<News | null>(null);
   const [total, setTotal] = useState<number>(0);
+  const adminPageSize = 6;
 
   const loadNews = useCallback(
     async (category: string, search: string, page: number) => {
@@ -55,11 +58,24 @@ export const NewsProvider = ({ children }: { children: React.ReactNode }) => {
 
       const res = await fetch(url);
       const data = await res.json();
+      assertOkResponse(res, data);
       setTotal(data.totalNews);
       setNews(data.news);
     },
     []
   );
+
+  const loadAdminNews = useCallback(async (page: number) => {
+    const res = await fetch("/api/news/get-all", { cache: "no-store" });
+    const data = await res.json();
+    assertOkResponse(res, data);
+
+    const safePage = Number.isInteger(page) && page > 0 ? page : 1;
+    const start = (safePage - 1) * adminPageSize;
+
+    setTotal(data.total);
+    setNews(data.news.slice(start, start + adminPageSize));
+  }, []);
 
   async function createNews(singleNews: ICreateNewsBase64) {
     const res = await fetch("/api/news", {
@@ -72,8 +88,8 @@ export const NewsProvider = ({ children }: { children: React.ReactNode }) => {
 
     const newNews = await res.json();
     assertOkResponse(res, newNews);
-    console.log("newNews news context", newNews);
-    setNews([...news, newNews.news]);
+    setNews((currentNews) => [newNews.news, ...currentNews]);
+    setTotal((currentTotal) => currentTotal + 1);
   }
 
   async function deleteNews(id: number) {
@@ -83,7 +99,11 @@ export const NewsProvider = ({ children }: { children: React.ReactNode }) => {
     });
     const data = await res.json();
     assertOkResponse(res, data);
-    setNews(news.filter((n) => n.id !== id));
+    setNews((currentNews) => currentNews.filter((n) => n.id !== id));
+    setSelectedNews((currentSelectedNews) =>
+      currentSelectedNews?.id === id ? null : currentSelectedNews
+    );
+    setTotal((currentTotal) => Math.max(0, currentTotal - 1));
   }
 
   async function updateNews(id: number, singleNews: IUpdateNote) {
@@ -96,12 +116,14 @@ export const NewsProvider = ({ children }: { children: React.ReactNode }) => {
     });
     const editedNews = await res.json();
     assertOkResponse(res, editedNews);
-    setNews(
-      news.map((singleNews) =>
+    setNews((currentNews) =>
+      currentNews.map((singleNews) =>
         singleNews.id === id ? editedNews.updatedNews : singleNews
       )
     );
-    console.log("data update context", editedNews.updatedNews);
+    setSelectedNews((currentSelectedNews) =>
+      currentSelectedNews?.id === id ? editedNews.updatedNews : currentSelectedNews
+    );
   }
 
   return (
@@ -109,6 +131,7 @@ export const NewsProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         news,
         loadNews,
+        loadAdminNews,
         createNews,
         deleteNews,
         selectedNews,

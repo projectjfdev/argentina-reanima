@@ -11,13 +11,13 @@ import { useEffect, useState } from "react";
 const ITEMS_PER_PAGE = 6;
 
 const NoticiasDashboardPage = () => {
-  const { courses, loadCourses, total } = useCourse();
+  const { courses, loadAdminCourses, total } = useCourse();
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
   useEffect(() => {
-    loadCourses("", "", currentPage);
-  }, [currentPage]);
+    loadAdminCourses();
+  }, [loadAdminCourses]);
 
   return (
     <SidebarContent>

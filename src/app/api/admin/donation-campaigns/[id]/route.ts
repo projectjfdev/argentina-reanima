@@ -1,5 +1,6 @@
 import { DonationCampaignStatus } from "@/generated/prisma";
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import {
   archiveDonationCampaign,
   attachCampaignProgress,
@@ -15,11 +16,10 @@ import {
   serializeCampaign,
   type RouteContextWithId,
 } from "@/libs/donations/adminApi";
+import { revalidateDonationCampaignViews } from "@/libs/cache/revalidation";
 import { prisma } from "@/libs/db";
-import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
 
 async function getCampaignWithProgress(campaignId: number) {
   const campaign = await prisma.donationCampaign.findUnique({
@@ -31,16 +31,12 @@ async function getCampaignWithProgress(campaignId: number) {
   return attachCampaignProgress(campaign);
 }
 
-function revalidateDonationCampaigns(campaignId: number) {
-  revalidatePath("/donar");
-  revalidatePath("/api/donation-campaigns/current");
-  revalidatePath(`/api/donation-campaigns/${campaignId}/donors`);
-}
-
 export async function GET(
   _request: NextRequest,
   context: RouteContextWithId,
 ) {
+  await ensureRequestTimeRendering();
+
   try {
     const authError = await requireAdminSession();
     if (authError) return authError;
@@ -100,7 +96,7 @@ export async function PUT(request: NextRequest, context: RouteContextWithId) {
       getOptionalFormFile(formData, "placeImage"),
     );
 
-    revalidateDonationCampaigns(campaignId);
+    revalidateDonationCampaignViews(campaignId);
 
     return NextResponse.json({
       message: "Campana actualizada correctamente",
@@ -150,7 +146,7 @@ export async function PATCH(request: NextRequest, context: RouteContextWithId) {
       );
     }
 
-    revalidateDonationCampaigns(campaignId);
+    revalidateDonationCampaignViews(campaignId);
 
     return NextResponse.json({
       message: "Estado de campana actualizado correctamente",

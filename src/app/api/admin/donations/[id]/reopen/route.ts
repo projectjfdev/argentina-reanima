@@ -7,16 +7,9 @@ import {
   serializeDonation,
   type RouteContextWithId,
 } from "@/libs/donations/adminApi";
-import { revalidatePath } from "next/cache";
+import { revalidateDonationCampaignViews } from "@/libs/cache/revalidation";
 import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
-
-function revalidateDonationViews(campaignId: number) {
-  revalidatePath("/donar");
-  revalidatePath("/api/donation-campaigns/current");
-  revalidatePath(`/api/donation-campaigns/${campaignId}/donors`);
-}
 
 export async function POST(
   _request: NextRequest,
@@ -36,7 +29,7 @@ export async function POST(
 
     const result = await reopenDonationReview(donationId);
 
-    revalidateDonationViews(result.donation.campaignId);
+    revalidateDonationCampaignViews(result.donation.campaignId);
 
     return NextResponse.json({
       message: "Donacion reabierta correctamente",

@@ -1,5 +1,6 @@
 import { Prisma } from "@/generated/prisma";
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import {
   getDonationStatusFilter,
   serializeDonation,
@@ -7,12 +8,13 @@ import {
 import { prisma } from "@/libs/db";
 import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
 
 const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 50;
 
 export async function GET(request: NextRequest) {
+  await ensureRequestTimeRendering();
+
   try {
     const authError = await requireAdminSession();
     if (authError) return authError;

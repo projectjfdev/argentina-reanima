@@ -1,7 +1,10 @@
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import { prisma } from "@/libs/db";
 import { NextResponse } from "next/server";
 
 export async function GET() {
+  await ensureRequestTimeRendering();
+
   try {
     const news = await prisma.news.findMany();
 

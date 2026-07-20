@@ -1,4 +1,5 @@
 import { getPublicCertificateUrl } from "@/libs/certificates";
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import { prisma } from "@/libs/db";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -15,6 +16,8 @@ export async function GET(
   _request: NextRequest,
   context: ValidateCertificateContext,
 ) {
+  await ensureRequestTimeRendering();
+
   try {
     const publicId = await getPublicId(context);
     const certificate = await prisma.certificate.findUnique({

@@ -1,11 +1,15 @@
 import { Prisma } from "@/generated/prisma";
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
+import { revalidateNewsViews } from "@/libs/cache/revalidation";
 import cloudinary from "@/libs/cloudinary";
 import { prisma } from "@/libs/db";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET /api/news/[id]
 export async function GET(request: NextRequest, context: any) {
+  await ensureRequestTimeRendering();
+
   const id = Number(context.params.id);
 
   if (isNaN(id)) {
@@ -78,6 +82,8 @@ export async function DELETE(request: NextRequest, context: any) {
     if (deletedNews.imagePublicId) {
       await cloudinary.uploader.destroy(deletedNews.imagePublicId);
     }
+
+    revalidateNewsViews(id);
 
     return NextResponse.json({
       message: "Noticia eliminada correctamente",
@@ -172,6 +178,8 @@ export async function PUT(request: NextRequest, context: any) {
         dateNew,
       },
     });
+
+    revalidateNewsViews(id);
 
     return NextResponse.json({
       message: "Noticia actualizada correctamente",

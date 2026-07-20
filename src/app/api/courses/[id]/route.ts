@@ -1,5 +1,7 @@
 import { Prisma } from "@/generated/prisma";
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
+import { revalidateCourseViews } from "@/libs/cache/revalidation";
+import { getPublicCourseById } from "@/libs/courses/publicCourseQueries";
 import { prisma } from "@/libs/db";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -12,10 +14,7 @@ export async function GET(request: NextRequest, context: any) {
   }
 
   try {
-    const course = await prisma.course.findUnique({
-      where: { id: numericId },
-      include: { lessons: true },
-    });
+    const course = await getPublicCourseById(numericId);
 
     if (!course) {
       return NextResponse.json(
@@ -78,6 +77,8 @@ export async function PUT(request: NextRequest, context: any) {
       include: { lessons: true },
     });
 
+    revalidateCourseViews(id);
+
     return NextResponse.json({
       message: "Curso actualizado correctamente",
       updatedCourse,
@@ -105,6 +106,8 @@ export async function DELETE(request: NextRequest, context: any) {
     const deletedCourse = await prisma.course.delete({
       where: { id },
     });
+
+    revalidateCourseViews(id);
 
     return NextResponse.json({
       message: "Curso eliminado correctamente",

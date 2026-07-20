@@ -16,6 +16,7 @@ export const CourseContext = createContext<{
     search: string,
     page: number
   ) => Promise<void>;
+  loadAdminCourses: () => Promise<void>;
   createCourse: (newCourse: ICreateCourse) => Promise<void>;
   deleteCourse: (id: number) => Promise<void>;
   updateCourse: (id: number, updated: IUpdateCourse) => Promise<void>;
@@ -25,6 +26,7 @@ export const CourseContext = createContext<{
 }>({
   courses: [],
   loadCourses: async (category: string, search: string, page: number) => {},
+  loadAdminCourses: async () => {},
   createCourse: async () => {},
   deleteCourse: async () => {},
   updateCourse: async () => {},
@@ -56,11 +58,20 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
 
       const res = await fetch(`/api/courses?${params.toString()}`);
       const data = await res.json();
+      assertOkResponse(res, data);
       setCourses(data.courses);
       setTotal(data.totalCourses);
     },
     []
   );
+
+  const loadAdminCourses = useCallback(async () => {
+    const res = await fetch("/api/courses/get-all", { cache: "no-store" });
+    const data = await res.json();
+    assertOkResponse(res, data);
+    setCourses(data.courses);
+    setTotal(data.total);
+  }, []);
 
   async function createCourse(newCourse: ICreateCourse) {
     const res = await fetch("/api/courses", {
@@ -72,7 +83,8 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
     });
     const data = await res.json();
     assertOkResponse(res, data);
-    setCourses([...courses, data]);
+    setCourses((currentCourses) => [data, ...currentCourses]);
+    setTotal((currentTotal) => currentTotal + 1);
   }
 
   async function deleteCourse(id: number) {
@@ -81,9 +93,12 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
     });
     const data = await res.json();
     assertOkResponse(res, data);
-    console.log(data);
 
-    setCourses(courses.filter((c) => c.id !== id));
+    setCourses((currentCourses) => currentCourses.filter((c) => c.id !== id));
+    setSelectedCourse((currentSelectedCourse) =>
+      currentSelectedCourse?.id === id ? null : currentSelectedCourse
+    );
+    setTotal((currentTotal) => Math.max(0, currentTotal - 1));
   }
 
   async function updateCourse(id: number, updatedCourse: IUpdateCourse) {
@@ -96,9 +111,15 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
     });
     const data = await res.json();
     assertOkResponse(res, data);
-    console.log(data);
 
-    setCourses(courses.map((c) => (c.id === id ? data.updatedCourse : c)));
+    setCourses((currentCourses) =>
+      currentCourses.map((c) => (c.id === id ? data.updatedCourse : c))
+    );
+    setSelectedCourse((currentSelectedCourse) =>
+      currentSelectedCourse?.id === id
+        ? data.updatedCourse
+        : currentSelectedCourse
+    );
   }
 
   return (
@@ -106,6 +127,7 @@ export const CourseProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         courses,
         loadCourses,
+        loadAdminCourses,
         createCourse,
         deleteCourse,
         updateCourse,

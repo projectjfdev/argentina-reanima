@@ -1,5 +1,6 @@
 import cloudinary from "@/libs/cloudinary";
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import {
   getRouteId,
   isValidRouteId,
@@ -8,7 +9,6 @@ import {
 import { prisma } from "@/libs/db";
 import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
 
 const SIGNED_RECEIPT_TTL_SECONDS = 5 * 60;
 
@@ -16,6 +16,8 @@ export async function GET(
   _request: NextRequest,
   context: RouteContextWithId,
 ) {
+  await ensureRequestTimeRendering();
+
   try {
     const authError = await requireAdminSession();
     if (authError) return authError;

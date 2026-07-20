@@ -1,3 +1,4 @@
+import { ensureRequestTimeRendering } from "@/libs/cache/runtime";
 import { verifyEmailToken } from "@/libs/auth/emailVerification";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -9,6 +10,8 @@ const STATUS_CODE_BY_RESULT = {
 } as const;
 
 export async function GET(request: NextRequest) {
+  await ensureRequestTimeRendering();
+
   const token = request.nextUrl.searchParams.get("token") || "";
   const result = await verifyEmailToken(token);
 
