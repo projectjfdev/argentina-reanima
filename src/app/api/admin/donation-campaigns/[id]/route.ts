@@ -85,15 +85,19 @@ export async function PUT(request: NextRequest, context: RouteContextWithId) {
     }
 
     const formData = await request.formData();
+    const removeInvoiceImage = getFormString(formData, "removeInvoiceImage") === "true";
     const campaign = await updateActiveDonationCampaignWithPlaceImage(
       campaignId,
       {
         institutionName: getFormString(formData, "institutionName"),
         locality: getFormString(formData, "locality"),
         address: getFormString(formData, "address"),
+        youtubeVideoUrl: getFormString(formData, "youtubeVideoUrl"),
         goalAmount: getFormString(formData, "goalAmount"),
       },
       getOptionalFormFile(formData, "placeImage"),
+      getOptionalFormFile(formData, "invoiceImage"),
+      removeInvoiceImage,
     );
 
     revalidateDonationCampaignViews(campaignId);

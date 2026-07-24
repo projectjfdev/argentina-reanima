@@ -1,10 +1,16 @@
 import { DonationCampaignStatus, DonationStatus, Prisma } from "@/generated/prisma";
 import { prisma } from "@/libs/db";
-import { calculateCampaignProgress } from "./campaignProgress";
 import {
   destroyDonationAsset,
+  uploadDonationCampaignInvoiceImage,
   uploadDonationCampaignPlaceImage,
 } from "./cloudinaryDonationStorage";
+import {
+  applyPendingTransfersToCampaign,
+  getCampaignProgressFromFunds,
+  syncCampaignOverflow,
+  type CampaignFundsSummary,
+} from "./campaignTransferService";
 import { createValidationError, DonationServiceError } from "./serviceErrors";
 import {
   validateDonationCampaignPayload,
@@ -30,6 +36,7 @@ export type DonationCampaignWithImageInput = Omit<
 
 type CampaignWithProgress<TCampaign> = TCampaign & {
   progress: CampaignProgressData;
+  funds: CampaignFundsSummary;
 };
 
 function decimalToString(value: unknown): string {
@@ -80,33 +87,21 @@ export async function getCampaignProgress(
   campaign: { id: number; goalAmount: unknown },
   client: DonationTransactionClient = prisma,
 ): Promise<CampaignProgressData> {
-  const approvedTotal = await getApprovedDonationTotal(campaign.id, client);
-  const progress = calculateCampaignProgress({
-    goalAmount: decimalToString(campaign.goalAmount),
-    approvedTotal,
-  });
+  const { progress } = await getCampaignProgressFromFunds(campaign, client);
 
-  if (!progress.success) {
-    throw createValidationError(progress.errors);
-  }
-
-  return {
-    approvedTotal: progress.data.approvedTotal,
-    percentage: progress.data.percentage,
-    visualPercentage: progress.data.visualPercentage,
-    isCompleted: progress.data.isCompleted,
-  };
+  return progress;
 }
 
 export async function attachCampaignProgress<TCampaign extends { id: number; goalAmount: unknown }>(
   campaign: TCampaign,
   client: DonationTransactionClient = prisma,
 ): Promise<CampaignWithProgress<TCampaign>> {
-  const progress = await getCampaignProgress(campaign, client);
+  const { progress, funds } = await getCampaignProgressFromFunds(campaign, client);
 
   return {
     ...campaign,
     progress,
+    funds,
   };
 }
 
@@ -132,12 +127,27 @@ export async function createDonationCampaign(input: DonationCampaignPayloadInput
         });
       }
 
-      return tx.donationCampaign.create({
+      const campaign = await tx.donationCampaign.create({
         data: {
           ...validation.data,
           status: DonationCampaignStatus.ACTIVE,
         },
       });
+
+      await applyPendingTransfersToCampaign(campaign, tx);
+
+      const progress = await getCampaignProgress(campaign, tx);
+      if (progress.isCompleted) {
+        return tx.donationCampaign.update({
+          where: { id: campaign.id },
+          data: {
+            status: DonationCampaignStatus.COMPLETED,
+            completedAt: new Date(),
+          },
+        });
+      }
+
+      return campaign;
     });
   } catch (error) {
     mapCampaignCreateError(error);
@@ -147,17 +157,30 @@ export async function createDonationCampaign(input: DonationCampaignPayloadInput
 export async function createDonationCampaignWithPlaceImage(
   input: DonationCampaignWithImageInput,
   placeImage: File,
+  invoiceImage?: File | null,
 ) {
   const uploadedImage = await uploadDonationCampaignPlaceImage(placeImage);
+  const uploadedInvoiceImage = invoiceImage
+    ? await uploadDonationCampaignInvoiceImage(invoiceImage)
+    : null;
 
   try {
     return await createDonationCampaign({
       ...input,
       placeImageUrl: uploadedImage.url,
       placeImagePublicId: uploadedImage.publicId,
+      invoiceImageUrl: uploadedInvoiceImage?.url ?? null,
+      invoiceImagePublicId: uploadedInvoiceImage?.publicId ?? null,
+      invoiceImageResourceType: uploadedInvoiceImage?.resourceType ?? null,
+      invoiceImageOriginalName: uploadedInvoiceImage?.originalName ?? null,
+      invoiceImageBytes: uploadedInvoiceImage?.bytes ?? null,
     });
   } catch (error) {
     await destroyDonationAsset(uploadedImage.publicId, uploadedImage.resourceType);
+    await destroyDonationAsset(
+      uploadedInvoiceImage?.publicId,
+      uploadedInvoiceImage?.resourceType,
+    );
     throw error;
   }
 }
@@ -185,19 +208,12 @@ export async function updateActiveDonationCampaign(
       });
     }
 
-    if (campaign.status !== DonationCampaignStatus.ACTIVE) {
-      throw new DonationServiceError({
-        code: "CAMPAIGN_NOT_ACTIVE",
-        message: "Solo se puede editar una campana activa",
-        status: 409,
-      });
-    }
-
     const updatedCampaign = await tx.donationCampaign.update({
       where: { id: campaignId },
       data: validation.data,
     });
     const progress = await getCampaignProgress(updatedCampaign, tx);
+    await syncCampaignOverflow(updatedCampaign.id, tx);
 
     if (progress.isCompleted) {
       return tx.donationCampaign.update({
@@ -217,12 +233,16 @@ export async function updateActiveDonationCampaignWithPlaceImage(
   campaignId: number,
   input: DonationCampaignWithImageInput,
   placeImage?: File | null,
+  invoiceImage?: File | null,
+  removeInvoiceImage = false,
 ) {
   const existingCampaign = await prisma.donationCampaign.findUnique({
     where: { id: campaignId },
     select: {
       placeImageUrl: true,
       placeImagePublicId: true,
+      invoiceImagePublicId: true,
+      invoiceImageResourceType: true,
     },
   });
 
@@ -234,28 +254,55 @@ export async function updateActiveDonationCampaignWithPlaceImage(
     });
   }
 
-  if (!placeImage) {
-    return updateActiveDonationCampaign(campaignId, {
-      ...input,
-      placeImageUrl: existingCampaign.placeImageUrl,
-      placeImagePublicId: existingCampaign.placeImagePublicId,
-    });
-  }
-
-  const uploadedImage = await uploadDonationCampaignPlaceImage(placeImage);
+  const uploadedImage = placeImage
+    ? await uploadDonationCampaignPlaceImage(placeImage)
+    : null;
+  const uploadedInvoiceImage = invoiceImage
+    ? await uploadDonationCampaignInvoiceImage(invoiceImage)
+    : null;
 
   try {
     const updatedCampaign = await updateActiveDonationCampaign(campaignId, {
       ...input,
-      placeImageUrl: uploadedImage.url,
-      placeImagePublicId: uploadedImage.publicId,
+      placeImageUrl: uploadedImage?.url ?? existingCampaign.placeImageUrl,
+      placeImagePublicId:
+        uploadedImage?.publicId ?? existingCampaign.placeImagePublicId,
+      ...(uploadedInvoiceImage
+        ? {
+            invoiceImageUrl: uploadedInvoiceImage.url,
+            invoiceImagePublicId: uploadedInvoiceImage.publicId,
+            invoiceImageResourceType: uploadedInvoiceImage.resourceType,
+            invoiceImageOriginalName: uploadedInvoiceImage.originalName ?? null,
+            invoiceImageBytes: uploadedInvoiceImage.bytes ?? null,
+          }
+        : removeInvoiceImage
+          ? {
+              invoiceImageUrl: null,
+              invoiceImagePublicId: null,
+              invoiceImageResourceType: null,
+              invoiceImageOriginalName: null,
+              invoiceImageBytes: null,
+            }
+          : {}),
     });
 
-    await destroyDonationAsset(existingCampaign.placeImagePublicId);
+    if (uploadedImage) {
+      await destroyDonationAsset(existingCampaign.placeImagePublicId);
+    }
+    if (uploadedInvoiceImage || removeInvoiceImage) {
+      await destroyDonationAsset(
+        existingCampaign.invoiceImagePublicId,
+        existingCampaign.invoiceImageResourceType ?? "image",
+      );
+    }
 
     return updatedCampaign;
   } catch (error) {
-    await destroyDonationAsset(uploadedImage.publicId, uploadedImage.resourceType);
+    await destroyDonationAsset(uploadedImage?.publicId, uploadedImage?.resourceType);
+    await destroyDonationAsset(
+      uploadedInvoiceImage?.publicId,
+      uploadedInvoiceImage?.resourceType,
+    );
     throw error;
   }
 }
@@ -283,16 +330,21 @@ export async function markDonationCampaignCompleted(campaignId: number) {
     }
 
     if (campaign.status === DonationCampaignStatus.COMPLETED) {
+      await syncCampaignOverflow(campaign.id, tx);
       return campaign;
     }
 
-    return tx.donationCampaign.update({
+    const completedCampaign = await tx.donationCampaign.update({
       where: { id: campaignId },
       data: {
         status: DonationCampaignStatus.COMPLETED,
         completedAt: new Date(),
       },
     });
+
+    await syncCampaignOverflow(completedCampaign.id, tx);
+
+    return completedCampaign;
   });
 }
 

@@ -17,7 +17,7 @@ export type ValidDonationPayload = {
   isAnonymous: boolean;
   firstName: string | null;
   lastName: string | null;
-  email: string | null;
+  email: string;
 };
 
 export type DonationPayloadValidationResult =
@@ -59,6 +59,7 @@ export function validateDonationPayload(
 
   if (!campaignId) errors.campaignId = "La campana es obligatoria";
   if (!visibility) errors.visibility = "La visibilidad de la donacion no es valida";
+  if (!email) errors.email = "El email es obligatorio";
 
   if (visibility === "public") {
     if (!firstName) errors.firstName = "El nombre es obligatorio";
@@ -92,7 +93,7 @@ export function validateDonationPayload(
       isAnonymous,
       firstName: isAnonymous ? null : firstName,
       lastName: isAnonymous ? null : lastName,
-      email: email || null,
+      email,
     },
   };
 }

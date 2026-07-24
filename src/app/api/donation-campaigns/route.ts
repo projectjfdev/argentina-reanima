@@ -13,6 +13,9 @@ type PublicCampaign = {
   locality: string;
   address: string;
   placeImageUrl: string;
+  youtubeVideoUrl: string | null;
+  invoiceImageUrl: string | null;
+  invoiceImageOriginalName: string | null;
   goalAmount: unknown;
   status: DonationCampaignStatus;
   completedAt: Date | null;
@@ -33,6 +36,13 @@ function serializeCampaign(
       percentage: number;
       visualPercentage: number;
     };
+    funds?: {
+      directApprovedTotal: string;
+      incomingTransferTotal: string;
+      outgoingTransferAmount: string;
+      hasIncomingTransfers: boolean;
+      hasOutgoingTransfer: boolean;
+    };
   },
 ) {
   return {
@@ -41,12 +51,21 @@ function serializeCampaign(
     locality: campaign.locality,
     address: campaign.address,
     placeImageUrl: campaign.placeImageUrl,
+    youtubeVideoUrl: campaign.youtubeVideoUrl,
+    invoiceImageUrl: campaign.invoiceImageUrl,
+    invoiceImageOriginalName: campaign.invoiceImageOriginalName,
     goalAmount: decimalToString(campaign.goalAmount),
     status: campaign.status,
     completedAt: campaign.completedAt?.toISOString() ?? null,
     createdAt: campaign.createdAt.toISOString(),
     updatedAt: campaign.updatedAt.toISOString(),
     approvedTotal: campaign.progress.approvedTotal,
+    directApprovedTotal:
+      campaign.funds?.directApprovedTotal ?? campaign.progress.approvedTotal,
+    incomingTransferTotal: campaign.funds?.incomingTransferTotal ?? "0.00",
+    outgoingTransferAmount: campaign.funds?.outgoingTransferAmount ?? "0.00",
+    hasIncomingTransfers: campaign.funds?.hasIncomingTransfers ?? false,
+    hasOutgoingTransfer: campaign.funds?.hasOutgoingTransfer ?? false,
     percentage: campaign.progress.percentage,
     visualPercentage: campaign.progress.visualPercentage,
     canDonate: campaign.status === DonationCampaignStatus.ACTIVE,
@@ -86,6 +105,9 @@ export async function GET(request: NextRequest) {
           locality: true,
           address: true,
           placeImageUrl: true,
+          youtubeVideoUrl: true,
+          invoiceImageUrl: true,
+          invoiceImageOriginalName: true,
           goalAmount: true,
           status: true,
           completedAt: true,

@@ -23,7 +23,17 @@ function createTransactionClient() {
       aggregate: vi.fn(),
     },
     donationCampaign: {
+      findUnique: vi.fn(),
+      findFirst: vi.fn(),
       update: vi.fn(),
+    },
+    donationCampaignTransfer: {
+      aggregate: vi.fn().mockResolvedValue({ _sum: { amount: "0.00" } }),
+      findUnique: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
+      upsert: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
     },
   };
 }
@@ -79,6 +89,10 @@ describe("donation review workflow", () => {
       amount: "3000.00",
     });
     tx.donation.aggregate.mockResolvedValue({ _sum: { amount: "3000.00" } });
+    tx.donationCampaignTransfer.aggregate.mockResolvedValue({
+      _sum: { amount: "0.00" },
+    });
+    tx.donationCampaignTransfer.findUnique.mockResolvedValue(null);
     tx.donationCampaign.update.mockResolvedValue({
       id: 3,
       status: DonationCampaignStatus.ACTIVE,
@@ -126,6 +140,10 @@ describe("donation review workflow", () => {
       reviewedAt: null,
     });
     tx.donation.aggregate.mockResolvedValue({ _sum: { amount: "0.00" } });
+    tx.donationCampaignTransfer.aggregate.mockResolvedValue({
+      _sum: { amount: "0.00" },
+    });
+    tx.donationCampaignTransfer.findUnique.mockResolvedValue(null);
     tx.donationCampaign.update.mockResolvedValue({
       id: 4,
       status: DonationCampaignStatus.ACTIVE,

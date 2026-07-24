@@ -105,6 +105,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const placeImage = getOptionalFormFile(formData, "placeImage");
+    const invoiceImage = getOptionalFormFile(formData, "invoiceImage");
 
     if (!placeImage) {
       return NextResponse.json(
@@ -122,9 +123,11 @@ export async function POST(request: NextRequest) {
         institutionName: getFormString(formData, "institutionName"),
         locality: getFormString(formData, "locality"),
         address: getFormString(formData, "address"),
+        youtubeVideoUrl: getFormString(formData, "youtubeVideoUrl"),
         goalAmount: getFormString(formData, "goalAmount"),
       },
       placeImage,
+      invoiceImage,
     );
 
     revalidateDonationCampaignViews(campaign.id);

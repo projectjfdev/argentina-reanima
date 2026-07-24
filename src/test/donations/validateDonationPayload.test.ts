@@ -30,6 +30,7 @@ describe("validateDonationPayload", () => {
         visibility: "public",
         firstName: "Ana",
         lastName: "Perez",
+        email: "ana@example.com",
       }),
     ).toEqual({
       success: true,
@@ -38,7 +39,7 @@ describe("validateDonationPayload", () => {
         isAnonymous: false,
         firstName: "Ana",
         lastName: "Perez",
-        email: null,
+        email: "ana@example.com",
       },
     });
   });
@@ -54,6 +55,7 @@ describe("validateDonationPayload", () => {
       errors: {
         firstName: "El nombre es obligatorio",
         lastName: "El apellido es obligatorio",
+        email: "El email es obligatorio",
       },
     });
   });

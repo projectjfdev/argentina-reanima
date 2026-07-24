@@ -16,6 +16,13 @@ export {
   type ValidDonationCampaignPayload,
 } from "./validateDonationCampaignPayload";
 export {
+  getCanonicalYouTubeVideoUrl,
+  getYouTubeVideoId,
+  isValidYouTubeUrl,
+  normalizeOptionalYouTubeUrl,
+  validateOptionalYouTubeUrl,
+} from "./youtubeVideo";
+export {
   validateDonationPayload,
   type DonationPayloadInput,
   type DonationPayloadValidationResult,
@@ -41,6 +48,13 @@ export {
   type DonationCampaignWithImageInput,
 } from "./campaignService";
 export {
+  applyPendingTransfersToCampaign,
+  getCampaignFundsSummary,
+  getCampaignProgressFromFunds,
+  syncCampaignOverflow,
+  type CampaignFundsSummary,
+} from "./campaignTransferService";
+export {
   approveDonation,
   createPendingDonation,
   createPendingDonationWithReceipt,
@@ -52,8 +66,10 @@ export {
 } from "./donationService";
 export {
   destroyDonationAsset,
+  uploadDonationCampaignInvoiceImage,
   uploadDonationCampaignPlaceImage,
   uploadDonationReceipt,
+  validateDonationInvoiceFile,
   validateDonationReceiptFile,
   validateDonationUploadFile,
   type CloudinaryStoredAsset,

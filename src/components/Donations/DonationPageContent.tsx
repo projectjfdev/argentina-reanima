@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { donationBankData } from "@/libs/donations/bankData";
+import { DonationCampaignVideo } from "./DonationCampaignVideo";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
@@ -52,9 +53,15 @@ type PublicCampaign = {
   locality: string;
   address: string;
   placeImageUrl: string;
+  youtubeVideoUrl: string | null;
   goalAmount: string;
   status: "ACTIVE" | "COMPLETED" | "ARCHIVED";
   approvedTotal: string;
+  directApprovedTotal: string;
+  incomingTransferTotal: string;
+  outgoingTransferAmount: string;
+  hasIncomingTransfers: boolean;
+  hasOutgoingTransfer: boolean;
   percentage: number;
   visualPercentage: number;
   canDonate: boolean;
@@ -80,37 +87,37 @@ const donationSteps = [
     icon: Building2,
     title: "Elegimos una institución",
     description:
-      "Seleccionamos una institución, club, escuela o espacio público o privado que actualmente no cuenta con un DEA",
+      "Seleccionamos una escuela pública, un club de barrio o un espacio público que hoy no cuenta con un DEA, utilizando criterios objetivos, profesionales y transparentes.",
   },
   {
     icon: HandCoins,
-    title: "Realizas tu aporte",
+    title: "Hacés tu aporte",
     description:
-      "Colaboras mediante transferencia bancaria y subís el comprobante para que podamos verificarlo",
+      "Transferís el monto que desees y cargás el comprobante. Cada aporte suma.",
   },
   {
     icon: Eye,
-    title: "Elegís cómo aparecer",
+    title: "Elegís cómo querés aparecer",
     description:
-      "Podés decidir si tu donación figura publicamente en el listado de donantes o permanece anónima",
+      "Podés figurar en el listado de donantes o realizar tu aporte de manera anónima.",
   },
   {
     icon: ClipboardCheck,
-    title: "Verificamos la donación",
+    title: "Verificamos tu donación",
     description:
-      "Nuestro equipo revisa el comprobante y carga el monto real antes de aprobar la donación",
+      "Controlamos el comprobante y actualizamos el monto recaudado para garantizar la transparencia de la campaña.",
   },
   {
     icon: HeartPulse,
-    title: "Instalamos el DEA",
+    title: "Compramos e instalamos el DEA",
     description:
-      "Al alcanzar el objetivo realizamos la compra, instalación del DEA y publicamos la documentacion correspondiente",
+      "Al alcanzar el objetivo adquirimos el DEA, el gabinete y la cartelería reglamentaria. Publicamos toda la documentación de la compra.",
   },
   {
     icon: GraduationCap,
-    title: "Capacitamos gratuitamente",
+    title: "Capacitamos gratuitamente a la institución",
     description:
-      "Además de instalar el DEA, brindamos una capacitación gratuita en RCP y uso del DEA para la institución beneficiada",
+      "Representantes de todos los turnos reciben capacitación en RCP y uso del DEA",
   },
 ];
 
@@ -253,17 +260,21 @@ export function DonationPageContent() {
               {getCampaignStatusText(campaign)}
             </div>
             <h1 className="text-4xl font-semibold leading-tight md:text-6xl">
-              Un DEA puede marcar la diferencia entre la vida y la muerte.
+              QUIERO SER PARTE
             </h1>
-            <p className="mt-5 text-2xl font-semibold text-primary md:text-4xl">
+            <h3 className="text-xl font-semibold text-primary md:text-4xl">
+              de una nueva oportunidad
+            </h3>
+            <p className="mt-5 text-2xl font-semibold md:text-4xl">
               {campaign
-                ? `Ayudanos a instalar uno en ${campaign.institutionName}.`
+                ? `Una comunidad preparada puede darle una nueva oportunidad a quien sufra una muerte súbita.`
                 : "Pronto tendremos una nueva campaña activa."}
             </p>
             <p className="mt-6 max-w-2xl text-base leading-8 text-white/80 md:text-lg">
               {campaign
-                ? `${campaign.locality} - ${campaign.address}. Cuando se llegue al objetivo, se instala el DEA y se capacita gratis.`
-                : "En este momento no hay una campaña disponible para recibir donaciones."}
+                ? `Hoy podés ser parte de ese cambio. Con tu aporte vamos a instalar un DEA, capacitar gratuitamente a la institución y publicar cada paso de la campaña para que puedas seguir el destino de tu donación.`
+                : // ? `${campaign.locality} - ${campaign.address}. Cuando se llegue al objetivo, se instala el DEA y se capacita gratis.`
+                  "En este momento no hay una campaña disponible para recibir donaciones."}
             </p>
             <Button
               size="lg"
@@ -271,7 +282,7 @@ export function DonationPageContent() {
               className="mt-8 h-12 bg-primary px-6 text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
               onClick={campaign?.canDonate ? openDonationModal : undefined}
             >
-              {campaign?.canDonate ? "Donar ahora" : "Donaciones cerradas"}
+              {campaign?.canDonate ? "Quiero donar" : "Donaciones cerradas"}
               <Heart className="ml-2 h-4 w-4" />
             </Button>
           </motion.div>
@@ -295,17 +306,17 @@ export function DonationPageContent() {
             {getCampaignStatusText(campaign)}
           </p>
           <h2 className="text-3xl font-semibold leading-tight text-slate-950 md:text-5xl">
-            Cada donación aprobada acerca al lugar a estar preparado.
+            Cada donación construye una nueva oportunidad.
           </h2>
           <p className="mt-5 text-base leading-8 text-slate-600 md:text-lg">
-            El avance visual del DEA muestra el porcentaje recaudado con
-            donaciones verificadas por administración. La parte en color
-            representa lo que ya se logró; la parte en blanco y negro, lo que
-            falta completar.
+            Cada aporte verificado nos acerca al objetivo. Cuando alcancemos la
+            meta instalaremos el DEA, publicaremos la factura de compra y
+            capacitaremos gratuitamente a la institución.
           </p>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             <InfoPoint text="100% destinado a compra de DEA" />
             <InfoPoint text="Monto confirmado desde el comprobante" />
+            <InfoPoint text="Excedentes aplicados a la próxima campaña" />
           </div>
         </motion.div>
       </section>
@@ -319,7 +330,7 @@ export function DonationPageContent() {
               Proceso transparente
             </p>
             <h2 className="text-3xl font-semibold leading-tight text-slate-950 md:text-4xl">
-              Como funciona tu aporte
+              ¿Cómo funciona tu aporte?"
             </h2>
 
             <div className="mt-8">
@@ -338,6 +349,10 @@ export function DonationPageContent() {
         </div>
       </section>
 
+      {campaign?.status === "ACTIVE" && (
+        <DonationCampaignVideo youtubeVideoUrl={campaign.youtubeVideoUrl} />
+      )}
+
       <PublicDonorList
         donors={donors}
         canLoadMore={canLoadMoreDonors}
@@ -346,7 +361,53 @@ export function DonationPageContent() {
       />
 
       <section id="donar" className="px-4 py-16 md:py-24">
-        <div className="container mx-auto">
+        <div className="container mx-auto text-center">
+          {campaign?.canDonate ? (
+            <div className="flex flex-col items-center">
+              <h2 className="text-3xl font-semibold leading-tight text-slate-950 md:text-4xl">
+                Hoy podés ser parte de una nueva oportunidad.
+              </h2>
+
+              <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600 md:text-lg">
+                Cada aporte nos acerca a una institución y/o espacio mejor
+                preparado para responder durante los primeros minutos de una
+                emergencia por muerte súbita.
+              </p>
+
+              <button
+                type="button"
+                onClick={openDonationModal}
+                className="mt-8 inline-flex cursor-pointer items-center justify-center rounded-md bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
+              >
+                Quiero donar
+              </button>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-8 text-center">
+              <h2 className="text-2xl font-semibold text-slate-950">
+                {campaign
+                  ? "Esta campaña ya no acepta donaciones."
+                  : "No hay una campaña activa para donar."}
+              </h2>
+
+              <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                {campaign
+                  ? "El objetivo fue alcanzado o la campaña fue cerrada. Gracias por acompañarnos."
+                  : "Pronto publicaremos una nueva campaña para instalar un DEA."}
+              </p>
+
+              {campaign && (
+                <Link
+                  href="/campanas-dea"
+                  className="mt-3 inline-block text-sm font-semibold text-primary underline transition-colors hover:text-primary/80"
+                >
+                  Ver todas las campañas
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
+        {/* <div className="container mx-auto">
           {campaign?.canDonate ? (
             <button
               type="button"
@@ -394,7 +455,7 @@ export function DonationPageContent() {
               )}
             </div>
           )}
-        </div>
+        </div> */}
       </section>
 
       <DonationModal
@@ -465,6 +526,26 @@ function DonationProgressSummary({
               ? "Cuando lleguemos al objetivo, instalamos el DEA y capacitamos gratis."
               : "Objetivo alcanzado o campaña cerrada para nuevas donaciones."}
           </p>
+          <div className="mt-4 rounded-md border border-primary/20 bg-primary/5 p-3 text-sm leading-6 text-slate-700">
+            Esta campaña no termina cuando llegamos al objetivo. Ese día
+            comienza la siguiente.
+          </div>
+          {(campaign.hasIncomingTransfers || campaign.hasOutgoingTransfer) && (
+            <div className="mt-3 grid gap-2 text-sm leading-6 text-slate-700">
+              {campaign.hasIncomingTransfers && (
+                <p>
+                  Incluye {formatMoney(campaign.incomingTransferTotal)}{" "}
+                  transferidos desde una campaña anterior.
+                </p>
+              )}
+              {campaign.hasOutgoingTransfer && (
+                <p>
+                  Excedente transferido a la siguiente campaña:{" "}
+                  {formatMoney(campaign.outgoingTransferAmount)}.
+                </p>
+              )}
+            </div>
+          )}
         </>
       ) : (
         <div className="min-h-56">
@@ -604,13 +685,13 @@ function PublicDonorList({
           </div>
           <p className="max-w-lg text-sm leading-6 text-slate-600">
             Solo aparecen donaciones revisadas por administración. Si tu
-            donación no aparece, es porque aun no fue aprobada.
+            donación no aparece, es porque aún no fue aprobada.
           </p>
         </div>
 
         {donors.length === 0 ? (
           <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
-            Todavia no hay donaciones aprobadas para mostrar.
+            Todavía no hay donaciones aprobadas para mostrar.
           </div>
         ) : (
           <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
@@ -684,6 +765,19 @@ function DonationModal({
   const [donationVisibility, setDonationVisibility] =
     useState<DonationVisibility>("anonymous");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const resetDonationModalState = () => {
+    setSelectedFileName("");
+    setDonationVisibility("anonymous");
+    setIsSubmitting(false);
+    setIsSubmitted(false);
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    onOpenChange(nextOpen);
+    if (!nextOpen) resetDonationModalState();
+  };
 
   const copyToClipboard = async (label: string, value: string) => {
     try {
@@ -699,7 +793,7 @@ function DonationModal({
 
     if (!campaign?.canDonate) {
       toast.error("La campaña ya no acepta donaciones.");
-      onOpenChange(false);
+      handleOpenChange(false);
       await onSubmitted();
       return;
     }
@@ -710,9 +804,11 @@ function DonationModal({
     const isPublicDonation = donationVisibility === "public";
     const firstName = rawFormData.get("firstName");
     const lastName = rawFormData.get("lastName");
+    const email = rawFormData.get("email");
 
     if (
       (isPublicDonation && (!firstName || !lastName)) ||
+      !email ||
       !(receipt instanceof File) ||
       receipt.size === 0
     ) {
@@ -733,8 +829,7 @@ function DonationModal({
       formData.append("firstName", String(firstName));
       formData.append("lastName", String(lastName));
     }
-    const email = rawFormData.get("email");
-    if (email) formData.append("email", String(email));
+    formData.append("email", String(email));
 
     setIsSubmitting(true);
     try {
@@ -751,14 +846,10 @@ function DonationModal({
         );
       }
 
-      toast.success("Muchas gracias por tu donacion", {
-        description: "Recibimos tu comprobante y lo revisaremos a la brevedad.",
-        duration: 10000,
-      });
       form.reset();
       setSelectedFileName("");
       setDonationVisibility("anonymous");
-      onOpenChange(false);
+      setIsSubmitted(true);
       await onSubmitted();
     } catch (error) {
       console.error(error);
@@ -773,243 +864,300 @@ function DonationModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="box-border h-auto max-h-[92svh] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] overflow-x-hidden overflow-y-auto rounded-lg bg-white p-0 sm:max-w-6xl"
+        className={`box-border h-auto max-h-[92svh] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] overflow-x-hidden overflow-y-auto rounded-lg bg-white p-0 ${
+          isSubmitted ? "sm:max-w-2xl" : "sm:max-w-6xl"
+        }`}
         closeButtonClassName="[&_svg]:h-5 [&_svg]:w-5 [&_svg]:bg-transparent [&_svg]:text-slate-700"
       >
-        <div className="grid w-full min-w-0 max-w-full overflow-x-hidden lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-          <div className="box-border min-w-0 max-w-full overflow-hidden bg-slate-950 p-6 text-white md:p-8">
-            <DialogHeader>
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-md bg-primary/20 text-primary">
-                <Heart className="h-6 w-6" />
-              </div>
-              <DialogTitle className="text-3xl font-semibold text-white">
-                Realizá tu donación
-              </DialogTitle>
-              <DialogDescription className="mt-3 text-base leading-7 text-white/75">
-                Transferí a la cuenta indicada y subí el comprobante. El monto
-                se confirma administrativamente al revisar el archivo.
-              </DialogDescription>
-            </DialogHeader>
+        {isSubmitted ? (
+          <DonationThanksScreen onClose={() => handleOpenChange(false)} />
+        ) : (
+          <div className="grid w-full min-w-0 max-w-full overflow-x-hidden lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            <div className="box-border min-w-0 max-w-full overflow-hidden bg-slate-950 p-6 text-white md:p-8">
+              <DialogHeader>
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-md bg-primary/20 text-primary">
+                  <Heart className="h-6 w-6" />
+                </div>
+                <DialogTitle className="text-3xl font-semibold text-white">
+                  Realizá tu donación
+                </DialogTitle>
+                <DialogDescription className="mt-3 text-base leading-7 text-white/75">
+                  Transferí a la cuenta indicada y subí el comprobante. El monto
+                  se confirma administrativamente al revisar el archivo. Si el
+                  objetivo ya fue superado, el excedente se destinara a la
+                  proxima campaña.
+                </DialogDescription>
+              </DialogHeader>
 
-            <div className="mt-8 box-border w-full min-w-0 max-w-full rounded-lg border border-white/15 bg-white/10 p-5">
-              <div className="mb-5 flex items-center gap-3">
-                <Banknote className="h-5 w-5 text-primary" />
-                <h3 className="font-semibold">Datos bancarios</h3>
-              </div>
-              <div className="space-y-3">
-                <BankRow label="Banco" value={donationBankData.banco} />
-                <BankRow label="Alias" value={donationBankData.alias} />
-                <BankRow label="CBU" value={donationBankData.cbu} />
-                <BankRow
-                  label="Cuenta Corriente en Pesos"
-                  value={donationBankData.cuenta}
-                />
-                <BankRow
-                  label="Razón Social"
-                  value={donationBankData.razonSocial}
-                />
-                <BankRow label="CUIT" value={donationBankData.cuit} />
-              </div>
-              <div className="mt-5 grid w-full min-w-0 max-w-full gap-3 sm:grid-cols-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="min-w-0 border-white/25 bg-white/10 text-white hover:bg-white hover:text-slate-950"
-                  onClick={() =>
-                    copyToClipboard("Alias", donationBankData.alias)
-                  }
-                >
-                  <Copy className="mr-2 h-4 w-4" />
-                  Copiar Alias
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="min-w-0 border-white/25 bg-white/10 text-white hover:bg-white hover:text-slate-950"
-                  onClick={() => copyToClipboard("CBU", donationBankData.cbu)}
-                >
-                  <Copy className="mr-2 h-4 w-4" />
-                  Copiar CBU
-                </Button>
+              <div className="mt-8 box-border w-full min-w-0 max-w-full rounded-lg border border-white/15 bg-white/10 p-5">
+                <div className="mb-5 flex items-center gap-3">
+                  <Banknote className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold">Datos bancarios</h3>
+                </div>
+                <div className="space-y-3">
+                  <BankRow label="Banco" value={donationBankData.banco} />
+                  <BankRow label="Alias" value={donationBankData.alias} />
+                  <BankRow label="CBU" value={donationBankData.cbu} />
+                  <BankRow
+                    label="Cuenta Corriente en Pesos"
+                    value={donationBankData.cuenta}
+                  />
+                  <BankRow
+                    label="Razón Social"
+                    value={donationBankData.razonSocial}
+                  />
+                  <BankRow label="CUIT" value={donationBankData.cuit} />
+                </div>
+                <div className="mt-5 grid w-full min-w-0 max-w-full gap-3 sm:grid-cols-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-w-0 border-white/25 bg-white/10 text-white hover:bg-white hover:text-slate-950"
+                    onClick={() =>
+                      copyToClipboard("Alias", donationBankData.alias)
+                    }
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copiar Alias
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-w-0 border-white/25 bg-white/10 text-white hover:bg-white hover:text-slate-950"
+                    onClick={() => copyToClipboard("CBU", donationBankData.cbu)}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copiar CBU
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <form
-            onSubmit={handleSubmitDonation}
-            className="box-border flex w-full min-w-0 max-w-full flex-col gap-5 overflow-x-hidden p-6 md:p-8"
-          >
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
-                Informar transferencia
-              </p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-950">
-                Enviá tu comprobante
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                El monto lo verificamos desde el comprobante al momento de
-                aprobar la donación.
-              </p>
-            </div>
-
-            <div className="box-border w-full min-w-0 max-w-full rounded-lg border border-slate-200 bg-slate-50/70 p-4 md:p-5">
+            <form
+              onSubmit={handleSubmitDonation}
+              className="box-border flex w-full min-w-0 max-w-full flex-col gap-5 overflow-x-hidden p-6 md:p-8"
+            >
               <div>
-                <h4 className="text-lg font-semibold text-slate-950">
-                  ¿Querés que tu nombre aparezca?
-                </h4>
-                <p className="mt-1 text-sm leading-6 text-slate-600">
-                  Podés elegir cómo mostrar tu aporte.
+                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
+                  Informar transferencia
+                </p>
+                <h3 className="mt-2 text-2xl font-semibold text-slate-950">
+                  Enviá tu comprobante
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  El monto lo verificamos desde el comprobante al momento de
+                  aprobar la donación.
                 </p>
               </div>
 
-              <div className="mt-5 grid w-full min-w-0 max-w-full gap-3 sm:grid-cols-2">
-                <DonationVisibilityCard
-                  icon={UserRound}
-                  title="Si, quiero aparecer en el listado"
-                  description="Mi nombre podra visualizarse en el listado público de donantes."
-                  value="public"
-                  selectedValue={donationVisibility}
-                  onSelect={setDonationVisibility}
-                />
-                <DonationVisibilityCard
-                  icon={Shield}
-                  title="Prefiero que mi aporte sea anónimo"
-                  description="Mi donación será contabilizada sin mostrar mis datos personales."
-                  value="anonymous"
-                  selectedValue={donationVisibility}
-                  onSelect={setDonationVisibility}
-                />
+              <div className="box-border w-full min-w-0 max-w-full rounded-lg border border-slate-200 bg-slate-50/70 p-4 md:p-5">
+                <div>
+                  <h4 className="text-lg font-semibold text-slate-950">
+                    ¿Querés que tu nombre aparezca?
+                  </h4>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Podés elegir cómo mostrar tu aporte.
+                  </p>
+                </div>
+
+                <div className="mt-5 grid w-full min-w-0 max-w-full gap-3 sm:grid-cols-2">
+                  <DonationVisibilityCard
+                    icon={UserRound}
+                    title="Si, quiero aparecer en el listado"
+                    description="Mi nombre podra visualizarse en el listado público de donantes."
+                    value="public"
+                    selectedValue={donationVisibility}
+                    onSelect={setDonationVisibility}
+                  />
+                  <DonationVisibilityCard
+                    icon={Shield}
+                    title="Prefiero que mi aporte sea anónimo"
+                    description="Mi donación será contabilizada sin mostrar mis datos personales."
+                    value="anonymous"
+                    selectedValue={donationVisibility}
+                    onSelect={setDonationVisibility}
+                  />
+                </div>
               </div>
-            </div>
 
-            <AnimatePresence initial={false}>
-              {donationVisibility === "public" && (
-                <motion.div
-                  key="public-donor-fields"
-                  initial={{
-                    opacity: 0,
-                    height: 0,
-                    transform: "translateY(-6px)",
-                  }}
-                  animate={{
-                    opacity: 1,
-                    height: "auto",
-                    transform: "translateY(0)",
-                  }}
-                  exit={{
-                    opacity: 0,
-                    height: 0,
-                    transform: "translateY(-6px)",
-                  }}
-                  transition={{
-                    duration: 0.22,
-                    ease: [0.23, 1, 0.32, 1],
-                  }}
-                  className="grid w-full min-w-0 max-w-full overflow-hidden"
-                >
-                  <div className="grid w-full min-w-0 max-w-full gap-4 sm:grid-cols-2">
-                    <DonationField label="Nombre" htmlFor="donation-name">
-                      <Input
-                        id="donation-name"
-                        name="firstName"
-                        required={donationVisibility === "public"}
-                        placeholder="Tu nombre"
-                        className="h-11 min-w-0 border-slate-300 bg-slate-50 text-slate-950 focus-visible:ring-primary"
-                      />
-                    </DonationField>
-                    <DonationField label="Apellido" htmlFor="donation-lastname">
-                      <Input
-                        id="donation-lastname"
-                        name="lastName"
-                        required={donationVisibility === "public"}
-                        placeholder="Tu apellido"
-                        className="h-11 min-w-0 border-slate-300 bg-slate-50 text-slate-950 focus-visible:ring-primary"
-                      />
-                    </DonationField>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+              <AnimatePresence initial={false}>
+                {donationVisibility === "public" && (
+                  <motion.div
+                    key="public-donor-fields"
+                    initial={{
+                      opacity: 0,
+                      height: 0,
+                      transform: "translateY(-6px)",
+                    }}
+                    animate={{
+                      opacity: 1,
+                      height: "auto",
+                      transform: "translateY(0)",
+                    }}
+                    exit={{
+                      opacity: 0,
+                      height: 0,
+                      transform: "translateY(-6px)",
+                    }}
+                    transition={{
+                      duration: 0.22,
+                      ease: [0.23, 1, 0.32, 1],
+                    }}
+                    className="grid w-full min-w-0 max-w-full overflow-hidden"
+                  >
+                    <div className="grid w-full min-w-0 max-w-full gap-4 sm:grid-cols-2">
+                      <DonationField label="Nombre" htmlFor="donation-name">
+                        <Input
+                          id="donation-name"
+                          name="firstName"
+                          required={donationVisibility === "public"}
+                          placeholder="Tu nombre"
+                          className="h-11 min-w-0 border-slate-300 bg-slate-50 text-slate-950 focus-visible:ring-primary"
+                        />
+                      </DonationField>
+                      <DonationField
+                        label="Apellido"
+                        htmlFor="donation-lastname"
+                      >
+                        <Input
+                          id="donation-lastname"
+                          name="lastName"
+                          required={donationVisibility === "public"}
+                          placeholder="Tu apellido"
+                          className="h-11 min-w-0 border-slate-300 bg-slate-50 text-slate-950 focus-visible:ring-primary"
+                        />
+                      </DonationField>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-            <DonationField
-              label="Email"
-              htmlFor="donation-email"
-              required={false}
-            >
-              <Input
-                id="donation-email"
-                name="email"
-                type="email"
-                placeholder="nombre@email.com"
-                className="h-11 min-w-0 border-slate-300 bg-slate-50 text-slate-950 focus-visible:ring-primary"
-              />
-            </DonationField>
-
-            <DonationField
-              label="Adjuntar comprobante de pago"
-              htmlFor="donation-receipt"
-            >
-              <div className="relative box-border w-full min-w-0 max-w-full overflow-hidden rounded-lg">
-                <label
-                  htmlFor="donation-receipt"
-                  className="box-border flex min-h-28 w-full min-w-0 max-w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-center transition hover:border-primary/60 hover:bg-primary/5"
-                >
-                  <Clipboard className="mb-3 h-7 w-7 text-primary" />
-                  <span className="max-w-full text-sm font-semibold text-slate-950">
-                    Seleccionar comprobante
-                  </span>
-                  <span className="mt-1 max-w-full text-xs text-slate-500">
-                    Formatos permitidos: JPG, JPEG o PNG. Tamano maximo 5MB.
-                  </span>
-                  {selectedFileName && (
-                    <span className="mt-3 max-w-full truncate rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700">
-                      {selectedFileName}
-                    </span>
-                  )}
-                </label>
+              <DonationField label="Email" htmlFor="donation-email">
                 <Input
-                  id="donation-receipt"
-                  name="receipt"
-                  type="file"
+                  id="donation-email"
+                  name="email"
+                  type="email"
                   required
-                  accept={DONATION_RECEIPT_ACCEPT}
-                  tabIndex={-1}
-                  className="pointer-events-none absolute inset-0 h-full w-full min-w-0 max-w-full opacity-0"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-
-                    if (
-                      file &&
-                      !DONATION_RECEIPT_ALLOWED_TYPES.has(file.type)
-                    ) {
-                      event.target.value = "";
-                      setSelectedFileName("");
-                      toast.error(
-                        "El comprobante debe ser una imagen JPG, JPEG o PNG.",
-                      );
-                      return;
-                    }
-
-                    setSelectedFileName(file?.name || "");
-                  }}
+                  placeholder="nombre@email.com"
+                  className="h-11 min-w-0 border-slate-300 bg-slate-50 text-slate-950 focus-visible:ring-primary"
                 />
-              </div>
-            </DonationField>
+              </DonationField>
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="mt-2 h-12 bg-primary text-white hover:bg-primary/90"
-            >
-              {isSubmitting ? "Enviando..." : "Enviar comprobante"}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </form>
-        </div>
+              <DonationField
+                label="Adjuntar comprobante de pago"
+                htmlFor="donation-receipt"
+              >
+                <div className="relative box-border w-full min-w-0 max-w-full overflow-hidden rounded-lg">
+                  <label
+                    htmlFor="donation-receipt"
+                    className="box-border flex min-h-28 w-full min-w-0 max-w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-center transition hover:border-primary/60 hover:bg-primary/5"
+                  >
+                    <Clipboard className="mb-3 h-7 w-7 text-primary" />
+                    <span className="max-w-full text-sm font-semibold text-slate-950">
+                      Seleccionar comprobante
+                    </span>
+                    <span className="mt-1 max-w-full text-xs text-slate-500">
+                      Formatos permitidos: JPG, JPEG o PNG. Tamano maximo 5MB.
+                    </span>
+                    {selectedFileName && (
+                      <span className="mt-3 max-w-full truncate rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700">
+                        {selectedFileName}
+                      </span>
+                    )}
+                  </label>
+                  <Input
+                    id="donation-receipt"
+                    name="receipt"
+                    type="file"
+                    required
+                    accept={DONATION_RECEIPT_ACCEPT}
+                    tabIndex={-1}
+                    className="pointer-events-none absolute inset-0 h-full w-full min-w-0 max-w-full opacity-0"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+
+                      if (
+                        file &&
+                        !DONATION_RECEIPT_ALLOWED_TYPES.has(file.type)
+                      ) {
+                        event.target.value = "";
+                        setSelectedFileName("");
+                        toast.error(
+                          "El comprobante debe ser una imagen JPG, JPEG o PNG.",
+                        );
+                        return;
+                      }
+
+                      setSelectedFileName(file?.name || "");
+                    }}
+                  />
+                </div>
+              </DonationField>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="mt-2 h-12 bg-primary text-white hover:bg-primary/90"
+              >
+                {isSubmitting ? "Enviando..." : "Enviar comprobante"}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </form>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function DonationThanksScreen({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
+      className="flex min-h-[520px] flex-col items-center justify-center px-6 py-10 text-center md:px-10"
+    >
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <CheckCircle2 className="h-8 w-8" />
+      </div>
+      <DialogHeader className="mt-6 items-center text-center">
+        <DialogTitle className="text-3xl font-semibold leading-tight text-slate-950">
+          ¡Gracias por tu aporte! ❤️
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          Recibimos tu comprobante correctamente.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="mt-5 max-w-xl space-y-4 text-sm leading-7 text-slate-600 md:text-base">
+        <p className="font-semibold text-slate-800">
+          Recibimos tu comprobante correctamente.
+        </p>
+        <p>
+          Cada persona que decide colaborar acerca un poco más esta campaña a su
+          objetivo y ayuda a que un nuevo espacio pueda contar con un DEA.
+        </p>
+        <p>
+          Ahora nuestro equipo revisará el comprobante. Una vez aprobado, tu
+          donación se reflejará automáticamente en el progreso de la campaña y,
+          si elegiste aparecer publicamente, también en el listado de donantes.
+        </p>
+        <p className="font-semibold text-slate-800">
+          Gracias por formar parte de esta iniciativa.
+        </p>
+      </div>
+
+      <Button
+        type="button"
+        className="mt-8 h-11 bg-primary px-6 text-white hover:bg-primary/90"
+        onClick={onClose}
+      >
+        Cerrar
+      </Button>
+    </motion.div>
   );
 }
 

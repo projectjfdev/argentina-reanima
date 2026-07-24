@@ -62,6 +62,16 @@ export function serializeCampaign(
       visualPercentage: number;
       isCompleted: boolean;
     };
+    funds?: {
+      directApprovedTotal: string;
+      incomingTransferTotal: string;
+      approvedTotal: string;
+      outgoingTransferAmount: string;
+      outgoingTransferTargetCampaignId: number | null;
+      pendingOutgoingTransfer: boolean;
+      hasIncomingTransfers: boolean;
+      hasOutgoingTransfer: boolean;
+    };
     donationCounts?: Partial<Record<DonationStatus, number>>;
   },
 ) {
@@ -72,6 +82,12 @@ export function serializeCampaign(
     address: campaign.address,
     placeImageUrl: campaign.placeImageUrl,
     placeImagePublicId: campaign.placeImagePublicId,
+    youtubeVideoUrl: campaign.youtubeVideoUrl,
+    invoiceImageUrl: campaign.invoiceImageUrl,
+    invoiceImagePublicId: campaign.invoiceImagePublicId,
+    invoiceImageResourceType: campaign.invoiceImageResourceType,
+    invoiceImageOriginalName: campaign.invoiceImageOriginalName,
+    invoiceImageBytes: campaign.invoiceImageBytes,
     goalAmount: decimalToString(campaign.goalAmount),
     status: campaign.status,
     completedAt: campaign.completedAt?.toISOString() ?? null,
@@ -79,6 +95,7 @@ export function serializeCampaign(
     createdAt: campaign.createdAt.toISOString(),
     updatedAt: campaign.updatedAt.toISOString(),
     progress: campaign.progress,
+    funds: campaign.funds,
     donationCounts: {
       pending: campaign.donationCounts?.[DonationStatus.PENDING] ?? 0,
       approved: campaign.donationCounts?.[DonationStatus.APPROVED] ?? 0,

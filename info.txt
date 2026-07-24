@@ -97,7 +97,14 @@ npx prisma db push
 
 ---------------------------
 
-TODO:
+TODO PRODUCCION:
 
 Agregar RESEND_API_KEY a Vercel
 Cambiar configuracion en produccion, pegarla a la url de deploy https://console.cloud.google.com/apis/credentials?authuser=3&project=argentina-reanima
+
+TODO:
+OK - si sobra dinero de la campaña 1 que pase automaticamente a la campaña 2 y que quede algun registro y aclarar para los usuarios que si se exede se aplicará a la siguiente campaña
+OK - poner opcion de video a traves de link de youtube
+OK - finalizada la campaña debe figurar la factura
+OK - descarga de excel con los donantes
+OK - establecer como obligatorio el email de donaciones

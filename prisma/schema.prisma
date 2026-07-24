@@ -121,6 +121,12 @@ model DonationCampaign {
   address            String
   placeImageUrl      String
   placeImagePublicId String
+  youtubeVideoUrl    String?                @db.VarChar(500)
+  invoiceImageUrl    String?
+  invoiceImagePublicId String?
+  invoiceImageResourceType String?          @db.VarChar(40)
+  invoiceImageOriginalName String?
+  invoiceImageBytes  Int?
   goalAmount         Decimal                @db.Decimal(14, 2)
   status             DonationCampaignStatus @default(ACTIVE)
   completedAt        DateTime?
@@ -128,10 +134,27 @@ model DonationCampaign {
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
 
-  donations Donation[]
+  donations         Donation[]
+  outgoingTransfer  DonationCampaignTransfer?  @relation("TransferSource")
+  incomingTransfers DonationCampaignTransfer[] @relation("TransferTarget")
 
   @@index([status])
   @@index([createdAt])
+}
+
+model DonationCampaignTransfer {
+  id               Int      @id @default(autoincrement())
+  sourceCampaignId Int      @unique
+  targetCampaignId Int?
+  amount           Decimal  @db.Decimal(14, 2)
+  appliedAt        DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  sourceCampaign DonationCampaign  @relation("TransferSource", fields: [sourceCampaignId], references: [id], onDelete: Restrict)
+  targetCampaign DonationCampaign? @relation("TransferTarget", fields: [targetCampaignId], references: [id], onDelete: Restrict)
+
+  @@index([targetCampaignId])
 }
 
 model Donation {

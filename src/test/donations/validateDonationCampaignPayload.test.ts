@@ -20,6 +20,7 @@ describe("validateDonationCampaignPayload", () => {
         address: "Calle 1 123",
         placeImageUrl: "https://res.cloudinary.com/demo/image/upload/place.jpg",
         placeImagePublicId: "donation-campaigns/places/place",
+        youtubeVideoUrl: null,
         goalAmount: "2000000.00",
       },
     });
@@ -49,6 +50,35 @@ describe("validateDonationCampaignPayload", () => {
       success: false,
       errors: {
         goalAmount: "El monto debe ser mayor a cero",
+      },
+    });
+  });
+
+  it("accepts a valid optional YouTube URL", () => {
+    expect(
+      validateDonationCampaignPayload({
+        ...VALID_CAMPAIGN_PAYLOAD,
+        youtubeVideoUrl: " https://www.youtube.com/shorts/GQo_ylWwC2c ",
+      }),
+    ).toMatchObject({
+      success: true,
+      data: {
+        youtubeVideoUrl: "https://www.youtube.com/watch?v=GQo_ylWwC2c",
+      },
+    });
+  });
+
+  it("rejects an invalid YouTube URL", () => {
+    expect(
+      validateDonationCampaignPayload({
+        ...VALID_CAMPAIGN_PAYLOAD,
+        youtubeVideoUrl: "https://example.com/video",
+      }),
+    ).toEqual({
+      success: false,
+      errors: {
+        youtubeVideoUrl:
+          "Ingresá una URL válida de YouTube, por ejemplo youtube.com/watch, youtu.be, Shorts, live o embed.",
       },
     });
   });

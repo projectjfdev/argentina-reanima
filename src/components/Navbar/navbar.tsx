@@ -21,6 +21,7 @@ import {
   LogIn,
   Headset,
   HeartHandshake,
+  Heart,
   HeartPulse,
   Home,
   Images,
@@ -32,6 +33,9 @@ import {
   Scale,
   Users,
   type LucideIcon,
+  Globe,
+  Smile,
+  School,
 } from "lucide-react";
 import type { Session } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
@@ -64,15 +68,27 @@ const primaryLinks: MenuLink[] = [
 
 const moreLinks: MenuLink[] = [
   {
+    label: "Quiero donar",
+    href: "/donar",
+    icon: Heart,
+    description: "Ayudanos a instalar un DEA.",
+  },
+  {
+    label: "Campañas de donación",
+    href: "/campanas-dea",
+    icon: School,
+    description: "Campañas de donación de DEA.",
+  },
+  {
     label: "La RCP y el cuidado emocional",
     href: "/rcp-y-cuidado-emocional",
-    icon: HeartHandshake,
+    icon: Smile,
     description: "Protocolo de intervencion y cuidado emocional.",
   },
   {
     label: "Filiales y convenios",
     href: "/filiales",
-    icon: HeartPulse,
+    icon: Globe,
     description: "Sedes regionales, capacitaciones y convenios.",
   },
   {

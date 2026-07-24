@@ -1,6 +1,7 @@
 import { DonationCampaignStatus, DonationStatus } from "@/generated/prisma";
 import { prisma } from "@/libs/db";
 import { getCampaignProgress } from "./campaignService";
+import { syncCampaignOverflow } from "./campaignTransferService";
 import {
   destroyDonationAsset,
   uploadDonationReceipt,
@@ -218,6 +219,7 @@ export async function approveDonation(donationId: number, amountInput: unknown) 
       donation.campaign,
       tx,
     );
+    await syncCampaignOverflow(donation.campaign.id, tx);
 
     return {
       donation: approvedDonation,
@@ -326,6 +328,7 @@ export async function updateApprovedDonationAmount(
       where: { id: donationId },
     });
     const campaign = await syncCampaignCompletionState(donation.campaign, tx);
+    await syncCampaignOverflow(donation.campaign.id, tx);
 
     return {
       donation: updatedDonation,
@@ -383,6 +386,9 @@ export async function reopenDonationReview(donationId: number) {
       donation.status === DonationStatus.APPROVED
         ? await syncCampaignCompletionState(donation.campaign, tx)
         : null;
+    if (donation.status === DonationStatus.APPROVED) {
+      await syncCampaignOverflow(donation.campaign.id, tx);
+    }
 
     return {
       donation: reopenedDonation,

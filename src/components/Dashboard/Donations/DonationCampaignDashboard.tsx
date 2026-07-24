@@ -23,7 +23,9 @@ import {
   Archive,
   Check,
   CircleDollarSign,
+  Download,
   FileImage,
+  FileText,
   HeartHandshake,
   ImagePlus,
   MoreVertical,
@@ -32,7 +34,9 @@ import {
   RotateCcw,
   Search,
   ShieldCheck,
+  Trash2,
   X,
+  Youtube,
   type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -48,6 +52,9 @@ type Campaign = {
   locality: string;
   address: string;
   placeImageUrl: string;
+  youtubeVideoUrl: string | null;
+  invoiceImageUrl: string | null;
+  invoiceImageOriginalName: string | null;
   goalAmount: string;
   status: CampaignStatus;
   progress?: {
@@ -55,6 +62,16 @@ type Campaign = {
     percentage: number;
     visualPercentage: number;
     isCompleted: boolean;
+  };
+  funds?: {
+    directApprovedTotal: string;
+    incomingTransferTotal: string;
+    approvedTotal: string;
+    outgoingTransferAmount: string;
+    outgoingTransferTargetCampaignId: number | null;
+    pendingOutgoingTransfer: boolean;
+    hasIncomingTransfers: boolean;
+    hasOutgoingTransfer: boolean;
   };
   donationCounts?: {
     pending: number;
@@ -88,16 +105,22 @@ type CampaignFormState = {
   institutionName: string;
   locality: string;
   address: string;
+  youtubeVideoUrl: string;
   goalAmount: string;
   placeImage: File | null;
+  invoiceImage: File | null;
+  removeInvoiceImage: boolean;
 };
 
 const EMPTY_FORM: CampaignFormState = {
   institutionName: "",
   locality: "",
   address: "",
+  youtubeVideoUrl: "",
   goalAmount: "",
   placeImage: null,
+  invoiceImage: null,
+  removeInvoiceImage: false,
 };
 
 const moneyFormatter = new Intl.NumberFormat("es-AR", {
@@ -212,12 +235,18 @@ export function DonationCampaignDashboard() {
   const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false);
   const [isLoadingDonations, setIsLoadingDonations] = useState(false);
   const [isSubmittingCampaign, setIsSubmittingCampaign] = useState(false);
+  const [exportingCampaignId, setExportingCampaignId] = useState<number | null>(
+    null,
+  );
   const [activeDonationAction, setActiveDonationAction] = useState<
     number | null
   >(null);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [editingAmount, setEditingAmount] = useState("");
   const [openActionMenuId, setOpenActionMenuId] = useState<number | null>(null);
+  const [campaignFormErrors, setCampaignFormErrors] = useState<
+    Record<string, string>
+  >({});
 
   const activeCampaign = useMemo(
     () => campaigns.find((campaign) => campaign.status === "ACTIVE") ?? null,
@@ -227,6 +256,7 @@ export function DonationCampaignDashboard() {
   const resetForm = () => {
     setSelectedCampaign(null);
     setForm(EMPTY_FORM);
+    setCampaignFormErrors({});
   };
 
   const loadCampaigns = useCallback(
@@ -330,18 +360,25 @@ export function DonationCampaignDashboard() {
       institutionName: campaign.institutionName,
       locality: campaign.locality,
       address: campaign.address,
+      youtubeVideoUrl: campaign.youtubeVideoUrl ?? "",
       goalAmount: campaign.goalAmount,
       placeImage: null,
+      invoiceImage: null,
+      removeInvoiceImage: false,
     });
+    setCampaignFormErrors({});
   };
 
   const submitCampaign = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmittingCampaign(true);
+    setCampaignFormErrors({});
 
     try {
       if (!selectedCampaign && !form.placeImage) {
-        toast.error("La imagen del lugar es obligatoria");
+        setCampaignFormErrors({
+          placeImage: "La imagen del lugar es obligatoria",
+        });
         return;
       }
 
@@ -349,8 +386,13 @@ export function DonationCampaignDashboard() {
       formData.append("institutionName", form.institutionName);
       formData.append("locality", form.locality);
       formData.append("address", form.address);
+      formData.append("youtubeVideoUrl", form.youtubeVideoUrl);
       formData.append("goalAmount", form.goalAmount);
       if (form.placeImage) formData.append("placeImage", form.placeImage);
+      if (form.invoiceImage) formData.append("invoiceImage", form.invoiceImage);
+      if (form.removeInvoiceImage && !form.invoiceImage) {
+        formData.append("removeInvoiceImage", "true");
+      }
 
       const response = await fetch(
         selectedCampaign
@@ -365,12 +407,24 @@ export function DonationCampaignDashboard() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.errors && typeof data.errors === "object") {
+          const nextErrors = { ...data.errors };
+          if (nextErrors.file && form.invoiceImage) {
+            nextErrors.invoiceImage = nextErrors.file;
+          }
+          setCampaignFormErrors(nextErrors);
+        }
         throw new Error(data.message || data.error || "No se pudo guardar");
       }
 
       toast.success(
         selectedCampaign ? "Campaña actualizada" : "Campaña creada",
       );
+      if (!selectedCampaign && data.campaign?.funds?.hasIncomingTransfers) {
+        toast.info(
+          "Se aplicaron fondos excedentes de campañas anteriores a esta nueva campaña.",
+        );
+      }
       resetForm();
       await refreshAll();
     } catch (error) {
@@ -534,12 +588,14 @@ export function DonationCampaignDashboard() {
     setEditingAmount(donation.amount ?? "");
   };
 
-  const updateDonationAmount = async (event: React.FormEvent<HTMLFormElement>) => {
+  const updateDonationAmount = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
     if (!editingDonation) return;
 
     const confirmed = window.confirm(
-      `El monto registrado cambiara de ${formatMoney(editingDonation.amount)} a ${formatMoney(editingAmount)} y se actualizara el progreso de la campana.`,
+      `El monto registrado cambiara de ${formatMoney(editingDonation.amount)} a ${formatMoney(editingAmount)} y se actualizara el progreso de la campana y cualquier excedente asociado.`,
     );
     if (!confirmed) return;
 
@@ -593,6 +649,50 @@ export function DonationCampaignDashboard() {
       toast.error(error instanceof Error ? error.message : "No se pudo abrir");
     } finally {
       setActiveDonationAction(null);
+    }
+  };
+
+  const exportCampaignDonors = async (campaign: Campaign) => {
+    setExportingCampaignId(campaign.id);
+
+    try {
+      const response = await fetch(
+        `/api/admin/donation-campaigns/${campaign.id}/donors-export`,
+        { cache: "no-store" },
+      );
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(
+          data.message || data.error || "No se pudo exportar el Excel",
+        );
+      }
+
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get("Content-Disposition");
+      const filenameMatch = contentDisposition?.match(/filename="([^"]+)"/);
+      const filename =
+        filenameMatch?.[1] ??
+        `donantes-campana-${campaign.id}-${new Date()
+          .toISOString()
+          .slice(0, 10)}.xlsx`;
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Excel de donantes generado");
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error instanceof Error ? error.message : "No se pudo exportar",
+      );
+    } finally {
+      setExportingCampaignId(null);
     }
   };
 
@@ -674,7 +774,10 @@ export function DonationCampaignDashboard() {
           </div>
 
           <form className="grid gap-3" onSubmit={submitCampaign}>
-            <Field label="Institucion">
+            <Field
+              label="Institución"
+              error={campaignFormErrors.institutionName}
+            >
               <Input
                 value={form.institutionName}
                 onChange={(event) =>
@@ -687,7 +790,7 @@ export function DonationCampaignDashboard() {
                 maxLength={120}
               />
             </Field>
-            <Field label="Localidad">
+            <Field label="Localidad" error={campaignFormErrors.locality}>
               <Input
                 value={form.locality}
                 onChange={(event) =>
@@ -700,7 +803,7 @@ export function DonationCampaignDashboard() {
                 maxLength={80}
               />
             </Field>
-            <Field label="Direccion">
+            <Field label="Dirección" error={campaignFormErrors.address}>
               <Input
                 value={form.address}
                 onChange={(event) =>
@@ -713,7 +816,30 @@ export function DonationCampaignDashboard() {
                 maxLength={180}
               />
             </Field>
-            <Field label="Objetivo ARS">
+            <Field
+              label="Video de YouTube"
+              optional
+              error={campaignFormErrors.youtubeVideoUrl}
+            >
+              <div className="relative">
+                <Youtube className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                <Input
+                  value={form.youtubeVideoUrl}
+                  onChange={(event) =>
+                    setForm((state) => ({
+                      ...state,
+                      youtubeVideoUrl: event.target.value,
+                    }))
+                  }
+                  type="url"
+                  inputMode="url"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  maxLength={500}
+                  className="pl-9"
+                />
+              </div>
+            </Field>
+            <Field label="Objetivo ARS" error={campaignFormErrors.goalAmount}>
               <Input
                 value={form.goalAmount}
                 onChange={(event) =>
@@ -727,14 +853,19 @@ export function DonationCampaignDashboard() {
                 placeholder="2500000"
               />
             </Field>
-            <Field label={selectedCampaign ? "Nueva imagen" : "Imagen"}>
+            <Field
+              label={
+                selectedCampaign ? "Nueva imágen del lugar" : "Imágen del lugar"
+              }
+              error={campaignFormErrors.placeImage}
+            >
               <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-4 py-5 text-center text-sm transition-colors hover:border-rose-300 hover:bg-rose-50/70">
                 <ImagePlus className="h-5 w-5 text-rose-700" />
                 <span className="font-medium text-neutral-900">
                   {form.placeImage?.name ??
                     (selectedCampaign
-                      ? "Mantener imagen actual"
-                      : "Seleccionar imagen")}
+                      ? "Mantener imágen actual"
+                      : "Seleccionar imágen")}
                 </span>
                 <span className="text-xs text-neutral-500">
                   JPG, PNG o WEBP hasta 5MB
@@ -751,6 +882,77 @@ export function DonationCampaignDashboard() {
                   }
                 />
               </label>
+            </Field>
+            <Field
+              label="Factura de compra"
+              optional
+              error={campaignFormErrors.invoiceImage}
+            >
+              <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-4 py-5 text-center text-sm transition-colors hover:border-rose-300 hover:bg-rose-50/70">
+                <FileText className="h-5 w-5 text-rose-700" />
+                <span className="font-medium text-neutral-900">
+                  {form.invoiceImage?.name ??
+                    (selectedCampaign?.invoiceImageUrl &&
+                    !form.removeInvoiceImage
+                      ? "Reemplazar factura actual"
+                      : "Seleccionar factura")}
+                </span>
+                <span className="text-xs text-neutral-500">
+                  JPG, JPEG o PNG hasta 5MB
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  className="sr-only"
+                  onChange={(event) => {
+                    const invoiceImage = event.target.files?.[0] ?? null;
+
+                    if (
+                      invoiceImage &&
+                      !["image/jpeg", "image/png"].includes(invoiceImage.type)
+                    ) {
+                      event.target.value = "";
+                      toast.error(
+                        "La factura debe ser una imagen JPG, JPEG o PNG.",
+                      );
+                      return;
+                    }
+
+                    setForm((state) => ({
+                      ...state,
+                      invoiceImage,
+                      removeInvoiceImage: invoiceImage
+                        ? false
+                        : state.removeInvoiceImage,
+                    }));
+                  }}
+                />
+              </label>
+              {selectedCampaign?.invoiceImageUrl && !form.invoiceImage && (
+                <div className="mt-2 flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600">
+                  <span className="min-w-0 truncate">
+                    {form.removeInvoiceImage
+                      ? "La factura actual se eliminara al guardar."
+                      : (selectedCampaign.invoiceImageOriginalName ??
+                        "Factura cargada")}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 shrink-0 gap-2 border-red-200 text-red-700 hover:bg-red-50"
+                    onClick={() =>
+                      setForm((state) => ({
+                        ...state,
+                        removeInvoiceImage: !state.removeInvoiceImage,
+                      }))
+                    }
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {form.removeInvoiceImage ? "Conservar" : "Eliminar"}
+                  </Button>
+                </div>
+              )}
             </Field>
             <div className="flex gap-2 pt-2">
               <Button disabled={isSubmittingCampaign} className="gap-2">
@@ -775,7 +977,7 @@ export function DonationCampaignDashboard() {
                 Campañas
               </h2>
               <p className="text-xs text-neutral-500">
-                Progreso calculado con donaciones aprobadas.
+                Progreso y exportación calculados con donaciones aprobadas.
               </p>
             </div>
             <div className="grid gap-2 md:grid-cols-[160px_240px]">
@@ -818,7 +1020,9 @@ export function DonationCampaignDashboard() {
                   key={campaign.id}
                   campaign={campaign}
                   selected={selectedCampaign?.id === campaign.id}
+                  isExporting={exportingCampaignId === campaign.id}
                   onEdit={() => selectCampaign(campaign)}
+                  onExport={() => exportCampaignDonors(campaign)}
                   onComplete={() => updateCampaignStatus(campaign, "COMPLETED")}
                   onArchive={() => updateCampaignStatus(campaign, "ARCHIVED")}
                 />
@@ -837,10 +1041,10 @@ export function DonationCampaignDashboard() {
         <div className="flex flex-col gap-3 border-b border-neutral-200 pb-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-base font-semibold text-neutral-950">
-              Revision de donaciones
+              Revisión de donaciones
             </h2>
             <p className="text-xs text-neutral-500">
-              El monto se ingresa al aprobar, despues de verificar el
+              El monto se ingresa al aprobar, después de verificar el
               comprobante.
             </p>
           </div>
@@ -965,7 +1169,8 @@ export function DonationCampaignDashboard() {
         donation={editingDonation}
         amount={editingAmount}
         isBusy={
-          editingDonation !== null && activeDonationAction === editingDonation.id
+          editingDonation !== null &&
+          activeDonationAction === editingDonation.id
         }
         onAmountChange={setEditingAmount}
         onOpenChange={(open) => {
@@ -974,7 +1179,9 @@ export function DonationCampaignDashboard() {
             setEditingAmount("");
           }
         }}
-        onReceipt={editingDonation ? () => openReceipt(editingDonation) : undefined}
+        onReceipt={
+          editingDonation ? () => openReceipt(editingDonation) : undefined
+        }
         onSubmit={updateDonationAmount}
       />
 
@@ -1011,13 +1218,17 @@ function ProgressSummary({
 function CampaignRow({
   campaign,
   selected,
+  isExporting,
   onEdit,
+  onExport,
   onComplete,
   onArchive,
 }: {
   campaign: Campaign;
   selected: boolean;
+  isExporting: boolean;
   onEdit: () => void;
+  onExport: () => void;
   onComplete: () => void;
   onArchive: () => void;
 }) {
@@ -1065,8 +1276,41 @@ function CampaignRow({
           <span>{campaign.progress?.visualPercentage ?? 0}%</span>
           <span>{campaign.donationCounts?.pending ?? 0} pendientes</span>
         </div>
+        {campaign.funds && (
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-500">
+            <span>
+              Propias: {formatMoney(campaign.funds.directApprovedTotal)}
+            </span>
+            {campaign.funds.hasIncomingTransfers && (
+              <span>
+                Recibidas: {formatMoney(campaign.funds.incomingTransferTotal)}
+              </span>
+            )}
+            {campaign.funds.hasOutgoingTransfer && (
+              <span>
+                Excedente enviado:{" "}
+                {formatMoney(campaign.funds.outgoingTransferAmount)}
+                {campaign.funds.pendingOutgoingTransfer
+                  ? " (pendiente)"
+                  : campaign.funds.outgoingTransferTargetCampaignId
+                    ? ` (#${campaign.funds.outgoingTransferTargetCampaignId})`
+                    : ""}
+              </span>
+            )}
+          </div>
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          disabled={isExporting}
+          onClick={onExport}
+        >
+          <Download className="h-4 w-4" />
+          {isExporting ? "Generando..." : "Donantes"}
+        </Button>
         <Button variant="outline" size="sm" className="gap-2" onClick={onEdit}>
           <Pencil className="h-4 w-4" />
           Editar
@@ -1280,7 +1524,9 @@ function EditDonationAmountDialog({
   const currentAmount = parseMoneyForPreview(donation?.amount);
   const nextAmount = parseMoneyForPreview(amount);
   const difference =
-    currentAmount !== null && nextAmount !== null ? nextAmount - currentAmount : null;
+    currentAmount !== null && nextAmount !== null
+      ? nextAmount - currentAmount
+      : null;
   const absoluteDifference =
     difference !== null ? Math.abs(difference).toFixed(2) : null;
   const campaignImpact =
@@ -1384,14 +1630,28 @@ function EditDonationAmountDialog({
 function Field({
   label,
   children,
+  error,
+  optional = false,
 }: {
   label: string;
   children: React.ReactNode;
+  error?: string;
+  optional?: boolean;
 }) {
   return (
     <div>
-      <Label className="mb-1.5 block text-neutral-700">{label}</Label>
+      <Label className="mb-1.5 block text-neutral-700">
+        {label}
+        {optional && (
+          <span className="ml-2 text-xs font-medium text-neutral-500">
+            opcional
+          </span>
+        )}
+      </Label>
       {children}
+      {error && (
+        <p className="mt-1.5 text-xs font-medium text-red-600">{error}</p>
+      )}
     </div>
   );
 }

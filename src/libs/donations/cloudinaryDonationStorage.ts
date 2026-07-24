@@ -14,7 +14,7 @@ const RECEIPT_MIME_TYPES = new Set([
   "image/png",
 ]);
 
-type UploadKind = "placeImage" | "receipt";
+type UploadKind = "placeImage" | "receipt" | "invoice";
 
 export type CloudinaryStoredAsset = {
   url: string;
@@ -33,7 +33,10 @@ function getAllowedMimeTypes(kind: UploadKind) {
 }
 
 function getUploadLabel(kind: UploadKind) {
-  return kind === "placeImage" ? "imagen del lugar" : "comprobante";
+  if (kind === "placeImage") return "imagen del lugar";
+  if (kind === "invoice") return "factura";
+
+  return "comprobante";
 }
 
 export function validateDonationUploadFile(
@@ -101,6 +104,34 @@ export async function validateDonationReceiptFile(
     return {
       success: false,
       error: "El comprobante debe ser una imagen JPG, JPEG o PNG valida",
+    };
+  }
+
+  return { success: true };
+}
+
+export async function validateDonationInvoiceFile(
+  file: File | null | undefined,
+): Promise<UploadValidationResult> {
+  const validation = validateDonationUploadFile(file, "invoice");
+
+  if (!validation.success) {
+    return validation;
+  }
+
+  if (!(file instanceof File)) {
+    return validation;
+  }
+
+  const bytes = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+  const hasAllowedSignature =
+    (file.type === "image/jpeg" && hasJpegSignature(bytes)) ||
+    (file.type === "image/png" && hasPngSignature(bytes));
+
+  if (!hasAllowedSignature) {
+    return {
+      success: false,
+      error: "La factura debe ser una imagen JPG, JPEG o PNG valida",
     };
   }
 
@@ -201,6 +232,41 @@ export async function uploadDonationReceipt(
   } catch (error) {
     console.error("Error uploading donation receipt:", error);
     throw createUploadError("No se pudo subir el comprobante");
+  }
+}
+
+export async function uploadDonationCampaignInvoiceImage(
+  file: File,
+): Promise<CloudinaryStoredAsset> {
+  const validation = await validateDonationInvoiceFile(file);
+
+  if (!validation.success) {
+    throw createUploadValidationError(validation.error);
+  }
+
+  try {
+    const uploadResult = await cloudinary.uploader.upload(await fileToDataUri(file), {
+      folder: "donation-campaigns/invoices",
+      resource_type: "image",
+      transformation: [
+        {
+          quality: 85,
+          format: "auto",
+          strip_metadata: true,
+        },
+      ],
+    });
+
+    return {
+      url: uploadResult.secure_url,
+      publicId: uploadResult.public_id,
+      resourceType: uploadResult.resource_type,
+      originalName: file.name,
+      bytes: uploadResult.bytes,
+    };
+  } catch (error) {
+    console.error("Error uploading donation campaign invoice:", error);
+    throw createUploadError("No se pudo subir la factura");
   }
 }
 

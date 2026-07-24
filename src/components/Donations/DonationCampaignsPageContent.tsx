@@ -2,10 +2,19 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/libs/utils";
 import {
   ArrowRight,
   CheckCircle2,
+  ExternalLink,
+  FileText,
   HeartHandshake,
   Loader2,
   MapPin,
@@ -22,10 +31,17 @@ type PublicCampaign = {
   locality: string;
   address: string;
   placeImageUrl: string;
+  invoiceImageUrl: string | null;
+  invoiceImageOriginalName: string | null;
   goalAmount: string;
   status: "ACTIVE" | "COMPLETED";
   completedAt: string | null;
   approvedTotal: string;
+  directApprovedTotal: string;
+  incomingTransferTotal: string;
+  outgoingTransferAmount: string;
+  hasIncomingTransfers: boolean;
+  hasOutgoingTransfer: boolean;
   percentage: number;
   visualPercentage: number;
   canDonate: boolean;
@@ -78,6 +94,9 @@ export function DonationCampaignsPageContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<PublicCampaign | null>(
+    null,
+  );
 
   const activeCampaign = useMemo(
     () => campaigns.find((campaign) => campaign.status === "ACTIVE") ?? null,
@@ -167,10 +186,16 @@ export function DonationCampaignsPageContent() {
                 ? `${formatMoney(activeCampaign.approvedTotal)} recaudados de ${formatMoney(activeCampaign.goalAmount)}`
                 : "Cuando haya una campaña activa, aparecerá primero en este listado."}
             </p>
+            {activeCampaign?.hasIncomingTransfers && (
+              <p className="mt-2 text-sm leading-6 text-white/70">
+                Incluye {formatMoney(activeCampaign.incomingTransferTotal)}{" "}
+                transferidos desde una campaña anterior.
+              </p>
+            )}
             {activeCampaign && (
               <Button asChild className="mt-5 bg-primary text-white">
                 <Link href="/donar">
-                  Donar ahora <ArrowRight className="ml-2 h-4 w-4" />
+                  Quiero ahora <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             )}
@@ -210,7 +235,11 @@ export function DonationCampaignsPageContent() {
           <>
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {campaigns.map((campaign) => (
-                <CampaignCard key={campaign.id} campaign={campaign} />
+                <CampaignCard
+                  key={campaign.id}
+                  campaign={campaign}
+                  onViewInvoice={() => setSelectedInvoice(campaign)}
+                />
               ))}
             </div>
 
@@ -229,12 +258,24 @@ export function DonationCampaignsPageContent() {
           </>
         )}
       </section>
+      <InvoiceDialog
+        campaign={selectedInvoice}
+        onOpenChange={(open) => {
+          if (!open) setSelectedInvoice(null);
+        }}
+      />
       <Toaster />
     </main>
   );
 }
 
-function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
+function CampaignCard({
+  campaign,
+  onViewInvoice,
+}: {
+  campaign: PublicCampaign;
+  onViewInvoice: () => void;
+}) {
   const completedDate = formatDate(campaign.completedAt);
 
   return (
@@ -284,26 +325,118 @@ function CampaignCard({ campaign }: { campaign: PublicCampaign }) {
           <p className="mt-2 text-xs text-slate-500">
             Objetivo: {formatMoney(campaign.goalAmount)}
           </p>
+          {(campaign.hasIncomingTransfers || campaign.hasOutgoingTransfer) && (
+            <div className="mt-3 grid gap-1 text-xs leading-5 text-slate-600">
+              {campaign.hasIncomingTransfers && (
+                <p>
+                  Incluye {formatMoney(campaign.incomingTransferTotal)} de una
+                  campaña anterior.
+                </p>
+              )}
+              {campaign.hasOutgoingTransfer && (
+                <p>
+                  Excedente transferido:{" "}
+                  {formatMoney(campaign.outgoingTransferAmount)}.
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="mt-5 flex items-center justify-between gap-3">
-          {campaign.status === "ACTIVE" ? (
-            <Button asChild className="bg-primary text-white">
-              <Link href="/donar">
-                Donar <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          ) : (
-            <div className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700">
-              <CheckCircle2 className="h-4 w-4" />
-              Objetivo alcanzado
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {campaign.status === "ACTIVE" ? (
+              <Button asChild className="bg-primary text-white">
+                <Link href="/donar">
+                  Donar <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            ) : (
+              <div className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                <CheckCircle2 className="h-4 w-4" />
+                Objetivo alcanzado
+              </div>
+            )}
+            {campaign.invoiceImageUrl && (
+              <Button
+                type="button"
+                variant="outline"
+                className="gap-2"
+                onClick={onViewInvoice}
+              >
+                <FileText className="h-4 w-4" />
+                Ver factura
+              </Button>
+            )}
+          </div>
           {completedDate && (
             <span className="text-xs text-slate-500">{completedDate}</span>
           )}
         </div>
       </div>
     </article>
+  );
+}
+
+function InvoiceDialog({
+  campaign,
+  onOpenChange,
+}: {
+  campaign: PublicCampaign | null;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [hasImageError, setHasImageError] = useState(false);
+  const invoiceUrl = campaign?.invoiceImageUrl ?? null;
+
+  useEffect(() => {
+    setHasImageError(false);
+  }, [invoiceUrl]);
+
+  return (
+    <Dialog open={Boolean(campaign)} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="box-border h-auto max-h-[92svh] w-[calc(100vw-2rem)] max-w-5xl overflow-hidden rounded-lg bg-white p-0"
+        closeButtonClassName="[&_svg]:h-5 [&_svg]:w-5 [&_svg]:bg-transparent [&_svg]:text-slate-700"
+      >
+        <div className="flex max-h-[92svh] min-h-0 flex-col">
+          <DialogHeader className="border-b border-slate-200 px-5 py-4 pr-14 md:px-6">
+            <DialogTitle className="text-xl font-semibold text-slate-950">
+              Factura de compra del DEA
+            </DialogTitle>
+            <DialogDescription className="text-sm text-slate-600">
+              {campaign
+                ? `${campaign.institutionName} - ${campaign.locality}`
+                : "Documento de compra"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="min-h-0 flex-1 overflow-auto bg-slate-50 p-4 md:p-6">
+            {invoiceUrl && !hasImageError ? (
+              <img
+                src={invoiceUrl}
+                alt={`Factura de compra del DEA para ${campaign?.institutionName ?? "la campana"}`}
+                className="mx-auto h-auto max-w-full rounded-md border border-slate-200 bg-white object-contain shadow-sm"
+                onError={() => setHasImageError(true)}
+              />
+            ) : (
+              <div className="rounded-md border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
+                No se pudo cargar la imagen de la factura.
+              </div>
+            )}
+          </div>
+
+          {invoiceUrl && (
+            <div className="border-t border-slate-200 bg-white px-5 py-4 md:px-6">
+              <Button asChild variant="outline" className="gap-2">
+                <a href={invoiceUrl} target="_blank" rel="noopener noreferrer">
+                  Abrir imágen en una nueva pestaña
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,4 +1,5 @@
 import { validateMoneyAmount } from "./money";
+import { validateOptionalYouTubeUrl } from "./youtubeVideo";
 
 const MAX_INSTITUTION_NAME_LENGTH = 120;
 const MAX_LOCALITY_LENGTH = 80;
@@ -10,6 +11,12 @@ export type DonationCampaignPayloadInput = {
   address?: unknown;
   placeImageUrl?: unknown;
   placeImagePublicId?: unknown;
+  youtubeVideoUrl?: unknown;
+  invoiceImageUrl?: unknown;
+  invoiceImagePublicId?: unknown;
+  invoiceImageResourceType?: unknown;
+  invoiceImageOriginalName?: unknown;
+  invoiceImageBytes?: unknown;
   goalAmount?: unknown;
 };
 
@@ -19,6 +26,12 @@ export type ValidDonationCampaignPayload = {
   address: string;
   placeImageUrl: string;
   placeImagePublicId: string;
+  youtubeVideoUrl: string | null;
+  invoiceImageUrl?: string | null;
+  invoiceImagePublicId?: string | null;
+  invoiceImageResourceType?: string | null;
+  invoiceImageOriginalName?: string | null;
+  invoiceImageBytes?: number | null;
   goalAmount: string;
 };
 
@@ -28,6 +41,15 @@ export type DonationCampaignPayloadValidationResult =
 
 function getTrimmedString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function getOptionalTrimmedString(value: unknown): string | null {
+  const trimmedValue = getTrimmedString(value);
+  return trimmedValue || null;
+}
+
+function getOptionalNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 function validateRequiredString(
@@ -52,6 +74,7 @@ export function validateDonationCampaignPayload(
   const address = getTrimmedString(input.address);
   const placeImageUrl = getTrimmedString(input.placeImageUrl);
   const placeImagePublicId = getTrimmedString(input.placeImagePublicId);
+  const youtubeVideoUrl = validateOptionalYouTubeUrl(input.youtubeVideoUrl);
   const goalAmount = validateMoneyAmount(input.goalAmount);
   const errors: Record<string, string> = {};
 
@@ -83,8 +106,15 @@ export function validateDonationCampaignPayload(
   if (!goalAmount.success) {
     errors.goalAmount = goalAmount.error;
   }
+  if (!youtubeVideoUrl.success) {
+    errors.youtubeVideoUrl = youtubeVideoUrl.error;
+  }
 
-  if (Object.keys(errors).length > 0 || !goalAmount.success) {
+  if (
+    Object.keys(errors).length > 0 ||
+    !goalAmount.success ||
+    !youtubeVideoUrl.success
+  ) {
     return { success: false, errors };
   }
 
@@ -96,6 +126,26 @@ export function validateDonationCampaignPayload(
       address,
       placeImageUrl,
       placeImagePublicId,
+      youtubeVideoUrl: youtubeVideoUrl.data,
+      ...("invoiceImageUrl" in input && {
+        invoiceImageUrl: getOptionalTrimmedString(input.invoiceImageUrl),
+      }),
+      ...("invoiceImagePublicId" in input && {
+        invoiceImagePublicId: getOptionalTrimmedString(input.invoiceImagePublicId),
+      }),
+      ...("invoiceImageResourceType" in input && {
+        invoiceImageResourceType: getOptionalTrimmedString(
+          input.invoiceImageResourceType,
+        ),
+      }),
+      ...("invoiceImageOriginalName" in input && {
+        invoiceImageOriginalName: getOptionalTrimmedString(
+          input.invoiceImageOriginalName,
+        ),
+      }),
+      ...("invoiceImageBytes" in input && {
+        invoiceImageBytes: getOptionalNumber(input.invoiceImageBytes),
+      }),
       goalAmount: goalAmount.data.amount,
     },
   };
