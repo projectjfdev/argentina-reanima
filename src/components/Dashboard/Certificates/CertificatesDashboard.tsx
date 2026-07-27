@@ -19,9 +19,9 @@ import {
   DEFAULT_CERTIFICATE_TEMPLATE_KEY,
   DEFAULT_CERTIFICATE_TEXT_TEMPLATE,
   certificateTextHasRecipientNamePlaceholder,
+  getCertificateInstructorByKey,
   getCertificateTemplateByKey,
   renderCertificateTextTemplate,
-  type CertificateInstructorKey,
   type CertificateTemplateKey,
 } from "@/libs/certificates";
 import { cn } from "@/libs/utils";
@@ -40,7 +40,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Toaster, toast } from "sonner";
 import {
   CertificatePreview,
@@ -55,7 +55,7 @@ type CertificateFormValues = {
   footerText: string;
   templateKey: CertificateTemplateKey;
   instructorSignatureEnabled: boolean;
-  instructorKey: CertificateInstructorKey;
+  instructorKey: string;
 };
 
 type CertificateMode = "single" | "bulk";
@@ -93,7 +93,7 @@ type CertificateListItem = Omit<
   CertificateFormValues,
   "instructorKey" | "recipientDni"
 > & {
-  instructorKey: CertificateInstructorKey | null;
+  instructorKey: string | null;
   recipientDni: string | null;
   serialNumber: string;
   publicId: string;
@@ -117,6 +117,37 @@ const EMPTY_FORM_VALUES: CertificateFormValues = {
   instructorSignatureEnabled: false,
   instructorKey: CERTIFICATE_INSTRUCTORS[0].key,
 };
+
+const DEFAULT_CERTIFICATE_INSTRUCTOR_KEY =
+  CERTIFICATE_INSTRUCTORS[0]?.key ?? "";
+
+type CertificateSubmitPayload = Omit<
+  CertificateFormValues,
+  "instructorKey"
+> & {
+  instructorKey: string | null;
+};
+
+function getValidInstructorKey(value: string | null | undefined) {
+  return getCertificateInstructorByKey(value) ? value ?? "" : "";
+}
+
+function getDefaultedInstructorKey(value: string | null | undefined) {
+  return getValidInstructorKey(value) || DEFAULT_CERTIFICATE_INSTRUCTOR_KEY;
+}
+
+function normalizeCertificateFormValues(
+  values: CertificateFormValues,
+): CertificateSubmitPayload {
+  const instructorKey = values.instructorSignatureEnabled
+    ? getDefaultedInstructorKey(values.instructorKey)
+    : null;
+
+  return {
+    ...values,
+    instructorKey,
+  };
+}
 
 function getTextPreview(value: string) {
   return value.length > 160 ? `${value.slice(0, 160)}...` : value;
@@ -150,6 +181,7 @@ export function CertificatesDashboard() {
     reset,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useForm<CertificateFormValues>({
     defaultValues: EMPTY_FORM_VALUES,
@@ -157,10 +189,9 @@ export function CertificatesDashboard() {
   });
 
   const watchedValues = watch();
-  const selectedTemplateKey =
-    watchedValues.templateKey ?? DEFAULT_CERTIFICATE_TEMPLATE_KEY;
-  const selectedInstructorKey =
-    watchedValues.instructorKey ?? CERTIFICATE_INSTRUCTORS[0].key;
+  const watchedInstructorSignatureEnabled =
+    watchedValues.instructorSignatureEnabled ?? false;
+  const watchedInstructorKey = watchedValues.instructorKey ?? "";
   const bulkPreviewRecipientName =
     bulkValidation?.previewRows?.[0]?.recipientName || "Nombre de ejemplo";
   const previewData: CertificatePreviewData = useMemo(
@@ -243,6 +274,19 @@ export function CertificatesDashboard() {
     loadCertificates();
   }, [loadCertificates]);
 
+  useEffect(() => {
+    if (
+      watchedInstructorSignatureEnabled &&
+      DEFAULT_CERTIFICATE_INSTRUCTOR_KEY &&
+      !getCertificateInstructorByKey(watchedInstructorKey)
+    ) {
+      setValue("instructorKey", DEFAULT_CERTIFICATE_INSTRUCTOR_KEY, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  }, [setValue, watchedInstructorKey, watchedInstructorSignatureEnabled]);
+
   const handleResetForm = () => {
     setSelectedCertificate(null);
     setCertificateMode("single");
@@ -258,6 +302,13 @@ export function CertificatesDashboard() {
     setBulkFile(null);
     setBulkFileName("");
     setBulkValidation(null);
+    const hasObsoleteInstructorKey = Boolean(
+      certificate.instructorSignatureEnabled &&
+        certificate.instructorKey &&
+        !getCertificateInstructorByKey(certificate.instructorKey),
+    );
+    const instructorKey = certificate.instructorKey ?? DEFAULT_CERTIFICATE_INSTRUCTOR_KEY;
+
     reset({
       recipientName: certificate.recipientName,
       recipientEmail: certificate.recipientEmail,
@@ -267,9 +318,15 @@ export function CertificatesDashboard() {
       templateKey: certificate.templateKey ?? DEFAULT_CERTIFICATE_TEMPLATE_KEY,
       instructorSignatureEnabled:
         certificate.instructorSignatureEnabled ?? false,
-      instructorKey:
-        certificate.instructorKey ?? CERTIFICATE_INSTRUCTORS[0].key,
+      instructorKey,
     });
+
+    if (hasObsoleteInstructorKey && DEFAULT_CERTIFICATE_INSTRUCTOR_KEY) {
+      setValue("instructorKey", DEFAULT_CERTIFICATE_INSTRUCTOR_KEY, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
   };
 
   const handleValidateBulkFile = useCallback(
@@ -347,14 +404,16 @@ export function CertificatesDashboard() {
       const formData = new FormData();
       formData.append("intent", "create");
       formData.append("file", bulkFile);
-      formData.append("certificateText", values.certificateText);
-      formData.append("footerText", values.footerText);
-      formData.append("templateKey", values.templateKey);
+      const payload = normalizeCertificateFormValues(values);
+
+      formData.append("certificateText", payload.certificateText);
+      formData.append("footerText", payload.footerText);
+      formData.append("templateKey", payload.templateKey);
       formData.append(
         "instructorSignatureEnabled",
-        String(values.instructorSignatureEnabled),
+        String(payload.instructorSignatureEnabled),
       );
-      formData.append("instructorKey", values.instructorKey);
+      formData.append("instructorKey", payload.instructorKey ?? "");
 
       const response = await fetch("/api/certificates/bulk", {
         cache: "no-store",
@@ -407,7 +466,7 @@ export function CertificatesDashboard() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(normalizeCertificateFormValues(values)),
       });
       const data = await response.json();
 
@@ -620,26 +679,27 @@ export function CertificatesDashboard() {
             error={errors.templateKey?.message}
             className="mt-3"
           >
-            <Select
-              value={selectedTemplateKey}
-              onValueChange={(value) =>
-                setValue("templateKey", value as CertificateTemplateKey, {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona una plantilla" />
-              </SelectTrigger>
-              <SelectContent>
-                {CERTIFICATE_TEMPLATES.map((template) => (
-                  <SelectItem key={template.key} value={template.key}>
-                    {template.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              name="templateKey"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={(value) => field.onChange(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una plantilla" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CERTIFICATE_TEMPLATES.map((template) => (
+                      <SelectItem key={template.key} value={template.key}>
+                        {template.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </Field>
 
           <Field
@@ -699,27 +759,28 @@ export function CertificatesDashboard() {
               error={errors.instructorKey?.message}
               className="mt-3"
             >
-              <Select
-                value={selectedInstructorKey}
-                onValueChange={(value) =>
-                  setValue("instructorKey", value as CertificateInstructorKey, {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  })
-                }
-                disabled={!watchedValues.instructorSignatureEnabled}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un instructor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CERTIFICATE_INSTRUCTORS.map((instructor) => (
-                    <SelectItem key={instructor.key} value={instructor.key}>
-                      {instructor.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                name="instructorKey"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => field.onChange(value)}
+                    disabled={!watchedInstructorSignatureEnabled}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un instructor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CERTIFICATE_INSTRUCTORS.map((instructor) => (
+                        <SelectItem key={instructor.key} value={instructor.key}>
+                          {instructor.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </Field>
           </div>
 

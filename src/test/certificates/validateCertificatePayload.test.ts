@@ -57,6 +57,68 @@ describe("validateCertificatePayload", () => {
     });
   });
 
+  it("accepts an enabled instructor signature with a valid instructor key", () => {
+    const result = validateCertificatePayload({
+      ...VALID_PAYLOAD,
+      instructorSignatureEnabled: true,
+      instructorKey: "emir",
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      data: {
+        instructorSignatureEnabled: true,
+        instructorKey: "emir",
+      },
+    });
+  });
+
+  it("rejects an enabled instructor signature without an instructor key", () => {
+    const result = validateCertificatePayload({
+      ...VALID_PAYLOAD,
+      instructorSignatureEnabled: true,
+      instructorKey: undefined,
+    });
+
+    expect(result).toEqual({
+      success: false,
+      errors: {
+        instructorKey: "El instructor seleccionado no es valido",
+      },
+    });
+  });
+
+  it("rejects an enabled instructor signature with an obsolete instructor key", () => {
+    const result = validateCertificatePayload({
+      ...VALID_PAYLOAD,
+      instructorSignatureEnabled: true,
+      instructorKey: "instructor-obsoleto",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      errors: {
+        instructorKey: "El instructor seleccionado no es valido",
+      },
+    });
+  });
+
+  it("stores null instructor key when instructor signature is disabled", () => {
+    const result = validateCertificatePayload({
+      ...VALID_PAYLOAD,
+      instructorSignatureEnabled: false,
+      instructorKey: "emir",
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      data: {
+        instructorSignatureEnabled: false,
+        instructorKey: null,
+      },
+    });
+  });
+
   it("rejects an invalid certificate template", () => {
     const result = validateCertificatePayload({
       ...VALID_PAYLOAD,
