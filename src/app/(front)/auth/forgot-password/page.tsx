@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
           transition={{ duration: 0.5 }}
           className="w-full max-w-4xl overflow-hidden rounded-2xl flex items-stretch bg-white shadow-xl"
         >
-          <AuthVisualPanel description="Recupera el acceso a tu cuenta desde tu email registrado." />
+          <AuthVisualPanel description="Recuperá el acceso a tu cuenta desde tu email registrado." />
 
           <div className="w-full md:w-1/2 p-8 md:p-10 flex flex-col justify-center bg-white">
             <motion.div

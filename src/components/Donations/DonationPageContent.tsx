@@ -44,6 +44,7 @@ import {
   type ReactNode,
 } from "react";
 import { Toaster, toast } from "sonner";
+import { Titleh1 } from "../Texts/Titleh1";
 
 type DonationVisibility = "public" | "anonymous";
 
@@ -265,11 +266,7 @@ export function DonationPageContent() {
             <h3 className="text-xl font-semibold text-primary md:text-4xl">
               de una nueva oportunidad
             </h3>
-            <p className="mt-5 text-2xl font-semibold md:text-4xl">
-              {campaign
-                ? `Una comunidad preparada puede darle una nueva oportunidad a quien sufra una muerte súbita.`
-                : "Pronto tendremos una nueva campaña activa."}
-            </p>
+
             <p className="mt-6 max-w-2xl text-base leading-8 text-white/80 md:text-lg">
               {campaign
                 ? `Hoy podés ser parte de ese cambio. Con tu aporte vamos a instalar un DEA, capacitar gratuitamente a la institución y publicar cada paso de la campaña para que puedas seguir el destino de tu donación.`
@@ -291,11 +288,21 @@ export function DonationPageContent() {
         </div>
       </section>
 
+      <Titleh1
+        title={
+          campaign
+            ? `Una comunidad preparada puede darle una nueva oportunidad a quien sufra una muerte súbita.`
+            : "Pronto tendremos una nueva campaña activa."
+        }
+        className="mx-auto mt-10 text-pretty text-3xl font-semibold md:text-4xl lg:max-w-4xl"
+      />
+
       <section className="container mx-auto grid gap-10 px-4 py-16 md:grid-cols-[0.95fr_1.05fr] md:items-center md:py-24">
         <DonationDeaProgress
           percentage={visualPercentage}
           hasCampaign={Boolean(campaign)}
         />
+
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -407,55 +414,6 @@ export function DonationPageContent() {
             </div>
           )}
         </div>
-        {/* <div className="container mx-auto">
-          {campaign?.canDonate ? (
-            <button
-              type="button"
-              className="group flex w-full cursor-pointer flex-col gap-8 rounded-lg bg-primary p-7 text-left text-white shadow-[0_18px_45px_rgba(44,156,193,0.22)] transition-[box-shadow,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(44,156,193,0.3)] active:scale-[0.99] motion-reduce:transition-none motion-reduce:hover:translate-y-0 md:flex-row md:items-center md:justify-between md:p-10"
-              onClick={openDonationModal}
-            >
-              <div className="flex min-w-0 flex-col gap-5 md:max-w-2xl">
-                <span className="flex h-12 w-12 items-center justify-center rounded-md bg-white/15 text-white shadow-sm">
-                  <Heart className="h-6 w-6" />
-                </span>
-                <div>
-                  <h2 className="text-3xl font-semibold leading-tight md:text-4xl">
-                    Quiero donar
-                  </h2>
-                  <p className="mt-3 max-w-xl text-base leading-7 text-white/85 md:text-lg">
-                    Y ser parte de esta comunidad que lucha contra la muerte
-                    súbita.
-                  </p>
-                </div>
-              </div>
-              <span className="inline-flex items-center text-base font-semibold text-white transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-1 motion-reduce:transition-none md:text-lg">
-                Quiero donar <ArrowRight className="ml-2 h-5 w-5" />
-              </span>
-            </button>
-          ) : (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-8 text-center">
-              <h2 className="text-2xl font-semibold text-slate-950">
-                {campaign
-                  ? "Esta campaña ya no acepta donaciones."
-                  : "No hay una campaña activa para donar."}
-              </h2>
-              <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-                {campaign
-                  ? "El objetivo fue alcanzado o la campaña fue cerrada. Gracias por acompañarnos."
-                  : "Pronto publicaremos una nueva campaña para instalar un DEA."}
-              </p>
-              {campaign && (
-                <Link
-                  href="/campanas-dea"
-                  type="button"
-                  className="text-sm font-semibold text-primary underline transition-colors hover:text-primary/80"
-                >
-                  Ver todas las campañas
-                </Link>
-              )}
-            </div>
-          )}
-        </div> */}
       </section>
 
       <DonationModal
@@ -485,7 +443,9 @@ function DonationProgressSummary({
     >
       <div className="mb-4 inline-flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2 text-sm font-semibold text-primary">
         <Target className="h-4 w-4" />
-        {getCampaignStatusText(campaign)}
+        {campaign && campaign.institutionName
+          ? campaign.institutionName
+          : "Sin campaña activa"}
       </div>
       {isLoading ? (
         <div className="flex min-h-56 items-center justify-center text-slate-500">
@@ -494,9 +454,6 @@ function DonationProgressSummary({
         </div>
       ) : campaign ? (
         <>
-          <p className="text-sm font-medium text-slate-500">
-            {campaign.institutionName}
-          </p>
           <p className="mt-1 text-sm text-slate-600">
             {campaign.locality} - {campaign.address}
           </p>

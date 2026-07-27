@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 // import { DonationBanner } from "@/components/DonationBanner/DonationBanner";
 import {
@@ -18,24 +24,23 @@ import {
 import {
   ActivityIcon,
   ChevronDown,
-  LogIn,
+  Globe,
   Headset,
-  HeartHandshake,
   Heart,
-  HeartPulse,
+  HeartHandshake,
   Home,
   Images,
+  LogIn,
   Menu,
   Music,
   Network,
   NewspaperIcon,
   Pen,
   Scale,
+  School,
+  Smile,
   Users,
   type LucideIcon,
-  Globe,
-  Smile,
-  School,
 } from "lucide-react";
 import type { Session } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
@@ -50,6 +55,12 @@ interface MenuLink {
   description?: string;
 }
 
+interface MenuGroup {
+  label: string;
+  links: MenuLink[];
+  highlighted?: boolean;
+}
+
 interface NavbarProps {
   logo?: {
     url: string;
@@ -58,15 +69,68 @@ interface NavbarProps {
   };
 }
 
-const primaryLinks: MenuLink[] = [
+const mainLinks: MenuLink[] = [
   { label: "Inicio", href: "/", icon: Home },
-  { label: "Noticias", href: "/noticias", icon: NewspaperIcon },
-  { label: "Marco Normativo", href: "/marco-normativo", icon: Scale },
   { label: "Actividades", href: "/actividades", icon: ActivityIcon },
-  { label: "Videos", href: "/capacitaciones", icon: Pen },
+  { label: "Noticias", href: "/noticias", icon: NewspaperIcon },
+  { label: "Contacto", href: "/contacto", icon: Headset },
 ];
 
-const moreLinks: MenuLink[] = [
+const resourcesLinks: MenuLink[] = [
+  {
+    label: "Marco normativo",
+    href: "/marco-normativo",
+    icon: Scale,
+    description: "Leyes y referencias institucionales.",
+  },
+  {
+    label: "Videos",
+    href: "/capacitaciones",
+    icon: Pen,
+    description: "Capacitaciones y material audiovisual.",
+  },
+  {
+    label: "RCP y cuidado emocional",
+    href: "/rcp-y-cuidado-emocional",
+    icon: Smile,
+    description: "Protocolo de intervención y cuidado emocional.",
+  },
+  {
+    label: "Nuestra música",
+    href: "/nuestra-musica",
+    icon: Music,
+    description: "Canciones y materiales de la organización.",
+  },
+  {
+    label: "Galería de imágenes",
+    href: "/galeria",
+    icon: Images,
+    description: "Actividades, cursos y encuentros en imágenes.",
+  },
+  {
+    label: "Redes sociales",
+    href: "/redes-sociales",
+    icon: Network,
+    description: "Contenido organizado por categorías.",
+  },
+];
+
+const aboutLinks: MenuLink[] = [
+  {
+    label: "Quiénes somos",
+    href: "/quienes-somos",
+    icon: Users,
+    description: "Misión, visión y valores de la organización.",
+  },
+  {
+    label: "Filiales y convenios",
+    href: "/filiales",
+    icon: Globe,
+    description: "Sedes regionales, capacitaciones y convenios.",
+  },
+];
+
+const donationLinks: MenuLink[] = [
   {
     label: "Quiero donar",
     href: "/donar",
@@ -77,43 +141,14 @@ const moreLinks: MenuLink[] = [
     label: "Campañas de donación",
     href: "/campanas-dea",
     icon: School,
-    description: "Campañas de donación de DEA.",
-  },
-  {
-    label: "La RCP y el cuidado emocional",
-    href: "/rcp-y-cuidado-emocional",
-    icon: Smile,
-    description: "Protocolo de intervencion y cuidado emocional.",
-  },
-  {
-    label: "Filiales y convenios",
-    href: "/filiales",
-    icon: Globe,
-    description: "Sedes regionales, capacitaciones y convenios.",
-  },
-  {
-    label: "Nuestra musica",
-    href: "/nuestra-musica",
-    icon: Music,
-    description: "Canciones y materiales de la organizacion.",
-  },
-  {
-    label: "Galeria de imagenes",
-    href: "/galeria",
-    icon: Images,
-    description: "Actividades, cursos y encuentros en imagenes.",
-  },
-  {
-    label: "Redes Sociales",
-    href: "/redes-sociales",
-    icon: Network,
-    description: "Contenido organizado por categorias.",
+    description: "Campañas de donación para un DEA.",
   },
 ];
 
-const secondaryLinks: MenuLink[] = [
-  { label: "¿Quiénes somos?", href: "/quienes-somos", icon: Users },
-  { label: "Contacto", href: "/contacto", icon: Headset },
+const navGroups: MenuGroup[] = [
+  { label: "Recursos", links: resourcesLinks },
+  { label: "Nosotros", links: aboutLinks },
+  { label: "Donar", links: donationLinks, highlighted: true },
 ];
 
 const Navbar = ({
@@ -149,7 +184,7 @@ const Navbar = ({
         <nav className="hidden h-20 items-center justify-between lg:flex">
           <Link
             href={logo.url}
-            className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="flex shrink-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             aria-label="Argentina Reanima - inicio"
           >
             <Image
@@ -162,62 +197,35 @@ const Navbar = ({
             />
           </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
             <NavigationMenu>
               <NavigationMenuList className="gap-1">
-                {primaryLinks.map((item) => (
-                  <NavigationMenuItem key={item.href}>
-                    <DesktopNavLink href={item.href}>
-                      {item.label}
-                    </DesktopNavLink>
-                  </NavigationMenuItem>
-                ))}
-
-                <NavigationMenuItem className="relative">
-                  <div className="group/more">
-                    <button
-                      type="button"
-                      className="inline-flex h-10 items-center rounded-md px-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                    >
-                      Más
-                      <ChevronDown className="ml-2 h-4 w-4 text-slate-400 transition-transform duration-200 group-hover/more:rotate-180" />
-                    </button>
-                    <div className="invisible absolute left-0 top-full z-50 pt-3 opacity-0 transition duration-150 group-hover/more:visible group-hover/more:opacity-100 group-focus-within/more:visible group-focus-within/more:opacity-100">
-                      <ul className="grid w-[360px] gap-1 rounded-lg border border-slate-200 bg-white p-3 shadow-xl shadow-slate-900/10">
-                        {moreLinks.map((item) => (
-                          <li key={item.href}>
-                            <Link
-                              href={item.href}
-                              className="flex gap-3 rounded-md p-3 outline-none transition-colors hover:bg-slate-50 focus:bg-slate-50"
-                            >
-                              <item.icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                              <span>
-                                <span className="block text-sm font-semibold text-slate-950">
-                                  {item.label}
-                                </span>
-                                {item.description && (
-                                  <span className="mt-1 block text-sm leading-5 text-slate-500">
-                                    {item.description}
-                                  </span>
-                                )}
-                              </span>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
+                <NavigationMenuItem>
+                  <DesktopNavLink href="/">Inicio</DesktopNavLink>
                 </NavigationMenuItem>
-
-                {secondaryLinks.map((item) => (
-                  <NavigationMenuItem key={item.href}>
-                    <DesktopNavLink href={item.href}>
-                      {item.label}
-                    </DesktopNavLink>
-                  </NavigationMenuItem>
-                ))}
+                <NavigationMenuItem>
+                  <DesktopNavLink href="/actividades">
+                    Actividades
+                  </DesktopNavLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <DesktopDropdown group={navGroups[0]} />
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <DesktopNavLink href="/noticias">Noticias</DesktopNavLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <DesktopDropdown group={navGroups[1]} />
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <DesktopNavLink href="/contacto">Contacto</DesktopNavLink>
+                </NavigationMenuItem>
+                {/* <NavigationMenuItem>
+                  <DesktopDropdown group={navGroups[2]} />
+                </NavigationMenuItem> */}
               </NavigationMenuList>
             </NavigationMenu>
+
             <ProfileMenu session={session} isLoading={isSessionLoading} />
           </div>
         </nav>
@@ -239,14 +247,13 @@ const Navbar = ({
           </Link>
 
           <div className="flex items-center gap-2">
-            <ProfileMenu session={session} isLoading={isSessionLoading} />
             <Sheet>
               <SheetTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon"
                   className="h-11 w-11 rounded-md border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50"
-                  aria-label="Abrir menu"
+                  aria-label="Abrir menú"
                 >
                   <Menu className="h-5 w-5" />
                 </Button>
@@ -272,31 +279,100 @@ const Navbar = ({
                 </SheetHeader>
 
                 <div className="px-4 py-5">
-                  <MobileGroup title="Navegacion principal">
-                    {primaryLinks.map((item) => (
+                  <MobileGroup title="Menú principal">
+                    {mainLinks.map((item) => (
                       <MobileNavLink key={item.href} item={item} />
                     ))}
                   </MobileGroup>
 
-                  <MobileGroup title="Mas secciones" className="mt-6">
-                    {moreLinks.map((item) => (
-                      <MobileNavLink key={item.href} item={item} compact />
+                  <Accordion type="multiple" className="mt-5 grid gap-2">
+                    {navGroups.map((group) => (
+                      <MobileAccordionGroup key={group.label} group={group} />
                     ))}
-                  </MobileGroup>
-
-                  <MobileGroup title="Institucional" className="mt-6">
-                    {secondaryLinks.map((item) => (
-                      <MobileNavLink key={item.href} item={item} />
-                    ))}
-                  </MobileGroup>
+                  </Accordion>
                 </div>
               </SheetContent>
             </Sheet>
+            <ProfileMenu session={session} isLoading={isSessionLoading} />
           </div>
         </div>
       </div>
       {/* <DonationBanner /> */}
     </header>
+  );
+};
+
+const DesktopDropdown = ({ group }: { group: MenuGroup }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuId = `${group.label.toLowerCase()}-desktop-menu`;
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={menuRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className={
+          group.highlighted
+            ? "inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            : "inline-flex h-10 items-center rounded-md px-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        }
+        aria-controls={menuId}
+        aria-expanded={isOpen}
+      >
+        {group.highlighted && <HeartHandshake className="mr-2 h-4 w-4" />}
+        {group.label}
+        <ChevronDown
+          className={`ml-2 h-4 w-4 transition-transform duration-200 ${
+            group.highlighted ? "text-primary-foreground/80" : "text-slate-400"
+          } ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      <div
+        id={menuId}
+        className={`absolute right-0 top-full z-50 mt-3 w-[340px] origin-top-right rounded-lg border border-slate-200 bg-white p-3 shadow-xl shadow-slate-900/10 transition-[opacity,transform,visibility] duration-150 ease-out ${
+          isOpen
+            ? "visible translate-y-0 opacity-100"
+            : "invisible -translate-y-1 opacity-0"
+        }`}
+      >
+        <ul className="grid gap-1">
+          {group.links.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                className="flex gap-3 rounded-md p-3 outline-none transition-colors hover:bg-slate-50 focus:bg-slate-50 focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <item.icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                <span>
+                  <span className="block text-sm font-semibold text-slate-950">
+                    {item.label}
+                  </span>
+                  {item.description && (
+                    <span className="mt-1 block text-sm leading-5 text-slate-500">
+                      {item.description}
+                    </span>
+                  )}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 };
 
@@ -342,11 +418,11 @@ const ProfileMenu = ({
       <Button
         asChild
         className="h-10 shrink-0 px-3 text-sm md:px-4"
-        aria-label="Iniciar sesion"
+        aria-label="Iniciar sesión"
       >
         <Link href="/auth/login">
           <LogIn className="h-4 w-4" />
-          <span className="hidden sm:inline">Iniciar sesion</span>
+          <span className="hidden sm:inline">Iniciar sesión</span>
         </Link>
       </Button>
     );
@@ -358,7 +434,7 @@ const ProfileMenu = ({
         type="button"
         onClick={() => setIsOpen((current) => !current)}
         className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-sm transition-[box-shadow,transform] duration-150 ease-out hover:shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-        aria-label="Abrir menu de perfil"
+        aria-label="Abrir menú de perfil"
         aria-expanded={isOpen}
       >
         {initial}
@@ -420,6 +496,29 @@ const MobileGroup = ({
     </p>
     <div className="grid gap-1">{children}</div>
   </section>
+);
+
+const MobileAccordionGroup = ({ group }: { group: MenuGroup }) => (
+  <AccordionItem
+    value={group.label}
+    className="rounded-md border border-slate-200 px-2"
+  >
+    <AccordionTrigger
+      className={`px-2 py-3 text-base font-semibold no-underline hover:no-underline ${
+        group.highlighted ? "text-primary" : "text-slate-950"
+      }`}
+    >
+      <span className="inline-flex items-center gap-2">
+        {group.highlighted && <HeartHandshake className="h-4 w-4" />}
+        {group.label}
+      </span>
+    </AccordionTrigger>
+    <AccordionContent className="grid gap-1 pb-3">
+      {group.links.map((item) => (
+        <MobileNavLink key={item.href} item={item} compact />
+      ))}
+    </AccordionContent>
+  </AccordionItem>
 );
 
 const MobileNavLink = ({
