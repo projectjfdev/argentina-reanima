@@ -337,9 +337,9 @@ export function DonationPageContent() {
               Proceso transparente
             </p>
             <h2 className="text-3xl font-semibold leading-tight text-slate-950 md:text-4xl">
-              ¿Cómo funciona tu aporte?"
+              ¿Cómo funciona tu aporte?
             </h2>
-
+            El número de serie se asigna automaticamente al guardar.
             <div className="mt-8">
               {donationSteps.map((step, index) => (
                 <DonationTimelineStep

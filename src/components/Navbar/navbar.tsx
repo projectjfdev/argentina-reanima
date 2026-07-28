@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-// import { DonationBanner } from "@/components/DonationBanner/DonationBanner";
+import { DonationBanner } from "@/components/DonationBanner/DonationBanner";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -220,9 +220,9 @@ const Navbar = ({
                 <NavigationMenuItem>
                   <DesktopNavLink href="/contacto">Contacto</DesktopNavLink>
                 </NavigationMenuItem>
-                {/* <NavigationMenuItem>
+                <NavigationMenuItem>
                   <DesktopDropdown group={navGroups[2]} />
-                </NavigationMenuItem> */}
+                </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
 
@@ -297,7 +297,7 @@ const Navbar = ({
           </div>
         </div>
       </div>
-      {/* <DonationBanner /> */}
+      <DonationBanner />
     </header>
   );
 };

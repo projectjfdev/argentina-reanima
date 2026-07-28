@@ -121,15 +121,12 @@ const EMPTY_FORM_VALUES: CertificateFormValues = {
 const DEFAULT_CERTIFICATE_INSTRUCTOR_KEY =
   CERTIFICATE_INSTRUCTORS[0]?.key ?? "";
 
-type CertificateSubmitPayload = Omit<
-  CertificateFormValues,
-  "instructorKey"
-> & {
+type CertificateSubmitPayload = Omit<CertificateFormValues, "instructorKey"> & {
   instructorKey: string | null;
 };
 
 function getValidInstructorKey(value: string | null | undefined) {
-  return getCertificateInstructorByKey(value) ? value ?? "" : "";
+  return getCertificateInstructorByKey(value) ? (value ?? "") : "";
 }
 
 function getDefaultedInstructorKey(value: string | null | undefined) {
@@ -304,10 +301,11 @@ export function CertificatesDashboard() {
     setBulkValidation(null);
     const hasObsoleteInstructorKey = Boolean(
       certificate.instructorSignatureEnabled &&
-        certificate.instructorKey &&
-        !getCertificateInstructorByKey(certificate.instructorKey),
+      certificate.instructorKey &&
+      !getCertificateInstructorByKey(certificate.instructorKey),
     );
-    const instructorKey = certificate.instructorKey ?? DEFAULT_CERTIFICATE_INSTRUCTOR_KEY;
+    const instructorKey =
+      certificate.instructorKey ?? DEFAULT_CERTIFICATE_INSTRUCTOR_KEY;
 
     reset({
       recipientName: certificate.recipientName,
@@ -586,7 +584,6 @@ export function CertificatesDashboard() {
               </Badge>
             )}
           </div>
-
           <div className="mb-4 grid grid-cols-2 rounded-lg border border-neutral-200 bg-neutral-50 p-1">
             <ModeButton
               active={certificateMode === "single"}
@@ -613,7 +610,6 @@ export function CertificatesDashboard() {
               }}
             />
           </div>
-
           {certificateMode === "single" ? (
             <div className="grid gap-3 md:grid-cols-2">
               <Field label="Nombre" error={errors.recipientName?.message}>
@@ -667,13 +663,12 @@ export function CertificatesDashboard() {
               />
             </Field>
           )}
-
           <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
             {selectedCertificate
               ? `Número de serie: ${selectedCertificate.serialNumber}`
               : "El número de serie se asigna automaticamente al guardar."}
           </p>
-
+          {/* Fecha de vencimiento: <input type="date" /> */}
           <Field
             label="Plantilla"
             error={errors.templateKey?.message}
@@ -701,7 +696,6 @@ export function CertificatesDashboard() {
               )}
             />
           </Field>
-
           <Field
             label="Texto principal del certificado"
             error={errors.certificateText?.message}
@@ -721,7 +715,6 @@ export function CertificatesDashboard() {
               El nombre del participante se insertara automaticamente.
             </p>
           </Field>
-
           <Field
             label="Texto inferior / aclaracion"
             error={errors.footerText?.message}
@@ -735,7 +728,6 @@ export function CertificatesDashboard() {
               placeholder="La presente actividad tuvo caracter..."
             />
           </Field>
-
           <div className="mt-3 rounded-md border border-neutral-200 p-3">
             <label className="flex items-start gap-3 text-sm text-neutral-700">
               <input
@@ -783,7 +775,6 @@ export function CertificatesDashboard() {
               />
             </Field>
           </div>
-
           <div className="mt-5 flex flex-col gap-2 sm:flex-row">
             <Button
               type="submit"
