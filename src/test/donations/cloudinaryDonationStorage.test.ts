@@ -1,4 +1,5 @@
 import {
+  uploadDonationCampaignAdditionalImages,
   validateDonationReceiptFile,
   validateDonationUploadFile,
 } from "@/libs/donations";
@@ -25,6 +26,12 @@ function createFile({
 describe("validateDonationUploadFile", () => {
   it("accepts valid campaign place images", () => {
     expect(validateDonationUploadFile(createFile({}), "placeImage")).toEqual({
+      success: true,
+    });
+  });
+
+  it("accepts valid additional campaign images", () => {
+    expect(validateDonationUploadFile(createFile({}), "additionalImage")).toEqual({
       success: true,
     });
   });
@@ -104,6 +111,21 @@ describe("validateDonationUploadFile", () => {
     expect(validateDonationUploadFile(largeFile, "receipt")).toEqual({
       success: false,
       error: "El archivo de comprobante no puede superar 5MB",
+    });
+  });
+
+  it("rejects more than two additional campaign images", async () => {
+    await expect(
+      uploadDonationCampaignAdditionalImages([
+        createFile({ name: "extra-1.png" }),
+        createFile({ name: "extra-2.png" }),
+        createFile({ name: "extra-3.png" }),
+      ]),
+    ).rejects.toMatchObject({
+      code: "UPLOAD_VALIDATION_ERROR",
+      details: {
+        additionalImages: "No se pueden cargar mas de 2 imagenes adicionales",
+      },
     });
   });
 });

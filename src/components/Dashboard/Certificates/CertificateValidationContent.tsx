@@ -4,7 +4,10 @@ import {
   CertificatePreview,
   type CertificatePreviewData,
 } from "@/components/Dashboard/Certificates/CertificatePreview";
-import { renderCertificateTextTemplate } from "@/libs/certificates";
+import {
+  formatCertificateDate,
+  renderCertificateTextTemplate,
+} from "@/libs/certificates";
 import { exportCertificatePreviewToPng } from "@/libs/certificates/exportCertificatePreviewToPng";
 import {
   Copy,
@@ -26,6 +29,7 @@ type CertificateValidationContentProps = {
     certificateText: string;
     serialNumber: string;
     publicId: string;
+    expiresAt?: Date | string | null;
   };
 };
 
@@ -41,6 +45,7 @@ export function CertificateValidationContent({
     certificate.recipientName,
   );
   const shareText = `Mira mi certificado de Argentina Reanima: ${renderedCertificateText}`;
+  const expiresAtText = formatCertificateDate(certificate.expiresAt);
   const encodedShareUrl = encodeURIComponent(shareUrl);
   const encodedShareText = encodeURIComponent(shareText);
   const shareLinks = [
@@ -111,7 +116,23 @@ export function CertificateValidationContent({
     <>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)]">
         <section className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
-          <CertificatePreview ref={previewRef} data={certificate} />
+          <CertificatePreview
+            ref={previewRef}
+            data={{
+              recipientName: certificate.recipientName,
+              recipientDni: certificate.recipientDni,
+              certificateText: certificate.certificateText,
+              footerText: certificate.footerText,
+              templateKey: certificate.templateKey,
+              serialNumber: certificate.serialNumber,
+              instructorSignatureEnabled:
+                certificate.instructorSignatureEnabled,
+              instructorKey: certificate.instructorKey,
+              publicId: certificate.publicId,
+              publicUrl: certificate.publicUrl,
+              qrDataUrl: certificate.qrDataUrl,
+            }}
+          />
         </section>
 
         <aside className="rounded-lg border border-neutral-200 bg-white p-5 shadow-sm">
@@ -135,6 +156,11 @@ export function CertificateValidationContent({
             <ValidationItem label="Número de serie">
               {certificate.serialNumber}
             </ValidationItem>
+            {expiresAtText && (
+              <ValidationItem label="Fecha de vencimiento">
+                {expiresAtText}
+              </ValidationItem>
+            )}
           </dl>
 
           <button

@@ -8,8 +8,10 @@ import {
   getCertificateInstructorByKey,
   getCertificateTemplateByKey,
   getPublicCertificateUrl,
+  isCertificateDateInput,
   normalizeCertificateTemplateKey,
   normalizeCertificateEmail,
+  parseCertificateDateInput,
   type CertificateTemplateKey,
 } from "@/libs/certificates";
 import {
@@ -40,6 +42,7 @@ type BulkSharedPayloadValidationResult =
         templateKey: CertificateTemplateKey;
         instructorSignatureEnabled: boolean;
         instructorKey: string | null;
+        expiresAt: Date | null;
       };
     }
   | { success: false; errors: Record<string, string> };
@@ -108,6 +111,8 @@ function validateBulkSharedPayload(
     "instructorSignatureEnabled",
   );
   const instructorKey = getTrimmedFormString(formData, "instructorKey");
+  const expiresAtInput = formData.get("expiresAt");
+  const expiresAt = parseCertificateDateInput(expiresAtInput);
   const errors: Record<string, string> = {};
 
   if (!certificateText) {
@@ -131,6 +136,10 @@ function validateBulkSharedPayload(
     errors.instructorKey = "El instructor seleccionado no es valido";
   }
 
+  if (!isCertificateDateInput(expiresAtInput)) {
+    errors.expiresAt = "La fecha de vencimiento no es valida";
+  }
+
   if (Object.keys(errors).length > 0) {
     return { success: false, errors };
   }
@@ -143,17 +152,24 @@ function validateBulkSharedPayload(
       templateKey: templateKey as CertificateTemplateKey,
       instructorSignatureEnabled,
       instructorKey: instructorSignatureEnabled ? instructorKey : null,
+      expiresAt,
     },
   };
 }
 
 function serializeCertificate<
-  T extends { publicId: string; createdAt: Date; updatedAt: Date },
+  T extends {
+    publicId: string;
+    createdAt: Date;
+    updatedAt: Date;
+    expiresAt?: Date | null;
+  },
 >(certificate: T) {
   return {
     ...certificate,
     createdAt: certificate.createdAt.toISOString(),
     updatedAt: certificate.updatedAt.toISOString(),
+    expiresAt: certificate.expiresAt?.toISOString() ?? null,
     publicUrl: getPublicCertificateUrl(certificate.publicId),
   };
 }
@@ -320,6 +336,7 @@ async function createCertificatesFromRows(
             instructorSignatureEnabled:
               sharedData.data.instructorSignatureEnabled,
             instructorKey: sharedData.data.instructorKey,
+            expiresAt: sharedData.data.expiresAt,
             userId: user?.id ?? null,
           },
           include: {

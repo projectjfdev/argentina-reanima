@@ -19,6 +19,7 @@ import {
   DEFAULT_CERTIFICATE_TEMPLATE_KEY,
   DEFAULT_CERTIFICATE_TEXT_TEMPLATE,
   certificateTextHasRecipientNamePlaceholder,
+  getCertificateDateInputValue,
   getCertificateInstructorByKey,
   getCertificateTemplateByKey,
   renderCertificateTextTemplate,
@@ -56,6 +57,7 @@ type CertificateFormValues = {
   templateKey: CertificateTemplateKey;
   instructorSignatureEnabled: boolean;
   instructorKey: string;
+  expiresAt: string;
 };
 
 type CertificateMode = "single" | "bulk";
@@ -91,7 +93,7 @@ type BulkValidationResult = {
 
 type CertificateListItem = Omit<
   CertificateFormValues,
-  "instructorKey" | "recipientDni"
+  "instructorKey" | "recipientDni" | "expiresAt"
 > & {
   instructorKey: string | null;
   recipientDni: string | null;
@@ -100,6 +102,7 @@ type CertificateListItem = Omit<
   recipientEmailNormalized: string;
   status: "ACTIVE" | "DELETED";
   publicUrl: string;
+  expiresAt: string | null;
   user?: {
     id: number;
     name: string;
@@ -116,6 +119,7 @@ const EMPTY_FORM_VALUES: CertificateFormValues = {
   templateKey: DEFAULT_CERTIFICATE_TEMPLATE_KEY,
   instructorSignatureEnabled: false,
   instructorKey: CERTIFICATE_INSTRUCTORS[0].key,
+  expiresAt: "",
 };
 
 const DEFAULT_CERTIFICATE_INSTRUCTOR_KEY =
@@ -145,6 +149,7 @@ function normalizeCertificateFormValues(
 
   return {
     ...values,
+    expiresAt: values.expiresAt?.trim() ?? "",
     instructorKey,
   };
 }
@@ -195,22 +200,26 @@ export function CertificatesDashboard() {
   const bulkPreviewRecipientName =
     bulkValidation?.previewRows?.[0]?.recipientName || "Nombre de ejemplo";
   const previewData: CertificatePreviewData = useMemo(
-    () => ({
-      ...watchedValues,
-      recipientName:
-        certificateMode === "bulk"
-          ? bulkPreviewRecipientName
-          : watchedValues.recipientName,
-      recipientEmail:
-        certificateMode === "bulk"
-          ? "participantes@archivo.xlsx"
-          : watchedValues.recipientEmail,
-      recipientDni:
-        certificateMode === "bulk" ? null : watchedValues.recipientDni,
-      serialNumber: selectedCertificate?.serialNumber,
-      publicId: selectedCertificate?.publicId,
-      publicUrl: selectedCertificate?.publicUrl,
-    }),
+    () => {
+      const { expiresAt: _expiresAt, ...previewValues } = watchedValues;
+
+      return {
+        ...previewValues,
+        recipientName:
+          certificateMode === "bulk"
+            ? bulkPreviewRecipientName
+            : watchedValues.recipientName,
+        recipientEmail:
+          certificateMode === "bulk"
+            ? "participantes@archivo.xlsx"
+            : watchedValues.recipientEmail,
+        recipientDni:
+          certificateMode === "bulk" ? null : watchedValues.recipientDni,
+        serialNumber: selectedCertificate?.serialNumber,
+        publicId: selectedCertificate?.publicId,
+        publicUrl: selectedCertificate?.publicUrl,
+      };
+    },
     [
       bulkPreviewRecipientName,
       certificateMode,
@@ -319,6 +328,7 @@ export function CertificatesDashboard() {
       instructorSignatureEnabled:
         certificate.instructorSignatureEnabled ?? false,
       instructorKey,
+      expiresAt: getCertificateDateInputValue(certificate.expiresAt),
     });
 
     if (hasObsoleteInstructorKey && DEFAULT_CERTIFICATE_INSTRUCTOR_KEY) {
@@ -414,6 +424,7 @@ export function CertificatesDashboard() {
         String(payload.instructorSignatureEnabled),
       );
       formData.append("instructorKey", payload.instructorKey ?? "");
+      formData.append("expiresAt", payload.expiresAt);
 
       const response = await fetch("/api/certificates/bulk", {
         cache: "no-store",
@@ -641,31 +652,47 @@ export function CertificatesDashboard() {
               >
                 <Input {...register("recipientDni")} placeholder="00.000.000" />
               </Field>
+
+              <Field
+                label="Fecha de vencimiento (Opcional)"
+                error={errors.expiresAt?.message}
+              >
+                <Input type="date" {...register("expiresAt")} />
+              </Field>
             </div>
           ) : (
-            <Field label="Archivo Excel">
-              <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-4 py-5 text-center transition-colors hover:border-emerald-300 hover:bg-emerald-50/60">
-                <FileSpreadsheet className="h-6 w-6 text-emerald-700" />
-                <span className="text-sm font-medium text-neutral-900">
-                  {bulkFileName || "Seleccionar archivo .xlsx"}
-                </span>
-                <span className="text-xs text-neutral-500">
-                  Columnas esperadas: Email y Nombre
-                </span>
-                <input
-                  type="file"
-                  accept=".xlsx"
-                  className="sr-only"
-                  onChange={(event) =>
-                    handleBulkFileChange(event.target.files?.[0] ?? null)
-                  }
+            <div className="grid gap-3 md:grid-cols-2">
+              <Field label="Archivo Excel" className="md:col-span-2">
+                <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-4 py-5 text-center transition-colors hover:border-emerald-300 hover:bg-emerald-50/60">
+                  <FileSpreadsheet className="h-6 w-6 text-emerald-700" />
+                  <span className="text-sm font-medium text-neutral-900">
+                    {bulkFileName || "Seleccionar archivo .xlsx"}
+                  </span>
+                  <span className="text-xs text-neutral-500">
+                    Columnas esperadas: Email y Nombre
+                  </span>
+                  <input
+                    type="file"
+                    accept=".xlsx"
+                    className="sr-only"
+                    onChange={(event) =>
+                      handleBulkFileChange(event.target.files?.[0] ?? null)
+                    }
+                  />
+                </label>
+                <BulkValidationSummary
+                  result={bulkValidation}
+                  isLoading={isValidatingBulkFile}
                 />
-              </label>
-              <BulkValidationSummary
-                result={bulkValidation}
-                isLoading={isValidatingBulkFile}
-              />
-            </Field>
+              </Field>
+
+              <Field
+                label="Fecha de vencimiento (Opcional)"
+                error={errors.expiresAt?.message}
+              >
+                <Input type="date" {...register("expiresAt")} />
+              </Field>
+            </div>
           )}
 
           <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">

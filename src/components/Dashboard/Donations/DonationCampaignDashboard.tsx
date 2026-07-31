@@ -52,6 +52,8 @@ type Campaign = {
   locality: string;
   address: string;
   placeImageUrl: string;
+  additionalImageUrls: string[];
+  additionalImagePublicIds: string[];
   youtubeVideoUrl: string | null;
   invoiceImageUrl: string | null;
   invoiceImageOriginalName: string | null;
@@ -110,6 +112,8 @@ type CampaignFormState = {
   placeImage: File | null;
   invoiceImage: File | null;
   removeInvoiceImage: boolean;
+  additionalImages: File[];
+  removeAdditionalImages: boolean;
 };
 
 const EMPTY_FORM: CampaignFormState = {
@@ -121,7 +125,13 @@ const EMPTY_FORM: CampaignFormState = {
   placeImage: null,
   invoiceImage: null,
   removeInvoiceImage: false,
+  additionalImages: [],
+  removeAdditionalImages: false,
 };
+
+const MAX_ADDITIONAL_IMAGES = 2;
+const ADDITIONAL_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const moneyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
@@ -365,6 +375,8 @@ export function DonationCampaignDashboard() {
       placeImage: null,
       invoiceImage: null,
       removeInvoiceImage: false,
+      additionalImages: [],
+      removeAdditionalImages: false,
     });
     setCampaignFormErrors({});
   };
@@ -390,8 +402,14 @@ export function DonationCampaignDashboard() {
       formData.append("goalAmount", form.goalAmount);
       if (form.placeImage) formData.append("placeImage", form.placeImage);
       if (form.invoiceImage) formData.append("invoiceImage", form.invoiceImage);
+      form.additionalImages.forEach((image) => {
+        formData.append("additionalImages", image);
+      });
       if (form.removeInvoiceImage && !form.invoiceImage) {
         formData.append("removeInvoiceImage", "true");
+      }
+      if (form.removeAdditionalImages && form.additionalImages.length === 0) {
+        formData.append("removeAdditionalImages", "true");
       }
 
       const response = await fetch(
@@ -411,6 +429,9 @@ export function DonationCampaignDashboard() {
           const nextErrors = { ...data.errors };
           if (nextErrors.file && form.invoiceImage) {
             nextErrors.invoiceImage = nextErrors.file;
+          }
+          if (nextErrors.file && form.additionalImages.length > 0) {
+            nextErrors.additionalImages = nextErrors.file;
           }
           setCampaignFormErrors(nextErrors);
         }
@@ -882,6 +903,103 @@ export function DonationCampaignDashboard() {
                   }
                 />
               </label>
+            </Field>
+            <Field
+              label="Fotos adicionales"
+              optional
+              error={campaignFormErrors.additionalImages}
+            >
+              <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-4 py-5 text-center text-sm transition-colors hover:border-rose-300 hover:bg-rose-50/70">
+                <ImagePlus className="h-5 w-5 text-rose-700" />
+                <span className="font-medium text-neutral-900">
+                  {form.additionalImages.length > 0
+                    ? form.additionalImages
+                        .map((image) => image.name)
+                        .join(", ")
+                    : selectedCampaign?.additionalImageUrls.length &&
+                        !form.removeAdditionalImages
+                      ? "Reemplazar fotos actuales"
+                      : "Seleccionar hasta 2 fotos"}
+                </span>
+                <span className="text-xs text-neutral-500">
+                  JPG, PNG o WEBP hasta 5MB
+                </span>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  onChange={(event) => {
+                    const additionalImages = Array.from(
+                      event.target.files ?? [],
+                    );
+
+                    if (additionalImages.length > MAX_ADDITIONAL_IMAGES) {
+                      event.target.value = "";
+                      toast.error(
+                        "Solo se pueden cargar hasta 2 fotos adicionales.",
+                      );
+                      return;
+                    }
+
+                    const invalidImage = additionalImages.find(
+                      (image) =>
+                        !ADDITIONAL_IMAGE_TYPES.includes(image.type) ||
+                        image.size > MAX_IMAGE_SIZE_BYTES,
+                    );
+
+                    if (invalidImage) {
+                      event.target.value = "";
+                      toast.error(
+                        "Las fotos adicionales deben ser JPG, PNG o WEBP de hasta 5MB.",
+                      );
+                      return;
+                    }
+
+                    setForm((state) => ({
+                      ...state,
+                      additionalImages,
+                      removeAdditionalImages:
+                        additionalImages.length > 0
+                          ? false
+                          : state.removeAdditionalImages,
+                    }));
+                  }}
+                />
+              </label>
+              {(selectedCampaign?.additionalImageUrls.length ?? 0) > 0 &&
+                form.additionalImages.length === 0 && (
+                  <div className="mt-2 flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600">
+                    <span className="min-w-0 truncate">
+                      {form.removeAdditionalImages
+                        ? "Las fotos actuales se eliminaran al guardar."
+                        : `${selectedCampaign?.additionalImageUrls.length ?? 0} foto${
+                            selectedCampaign?.additionalImageUrls.length === 1
+                              ? ""
+                              : "s"
+                          } cargada${
+                            selectedCampaign?.additionalImageUrls.length === 1
+                              ? ""
+                              : "s"
+                          }`}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 shrink-0 gap-2 border-red-200 text-red-700 hover:bg-red-50"
+                      onClick={() =>
+                        setForm((state) => ({
+                          ...state,
+                          removeAdditionalImages: !state.removeAdditionalImages,
+                        }))
+                      }
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {form.removeAdditionalImages ? "Conservar" : "Eliminar"}
+                    </Button>
+                  </div>
+                )}
             </Field>
             <Field
               label="Factura de compra"

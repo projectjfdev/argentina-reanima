@@ -9,6 +9,12 @@ export { getPublicCertificateUrl } from "./getPublicCertificateUrl";
 export { linkCertificatesToUserByEmail } from "./linkCertificatesToUserByEmail";
 export { normalizeCertificateEmail } from "./normalizeCertificateEmail";
 export {
+  formatCertificateDate,
+  getCertificateDateInputValue,
+  isCertificateDateInput,
+  parseCertificateDateInput,
+} from "./certificateDates";
+export {
   CERTIFICATE_RECIPIENT_NAME_PLACEHOLDER,
   DEFAULT_CERTIFICATE_TEXT_TEMPLATE,
   certificateTextHasRecipientNamePlaceholder,

@@ -32,11 +32,11 @@ export function DonationCampaignVideo({
               Lugar de instalación
             </p>
             <h2 className="text-3xl font-semibold leading-tight text-slate-950 md:text-4xl">
-              Conocé el espacio donde se instalará el DEA.
+              Conocé dónde juntos vamos a construir una nueva oportunidad.
             </h2>
             <p className="mt-5 text-base leading-8 text-slate-600">
-              Mirá el lugar que será equipado con este DEA y conocé el destino
-              de las donaciones realizadas en esta campaña.
+              Mirá el lugar que será equipado gracias a esta campaña y descubrí
+              por qué fue elegido para recibir el próximo DEA.
             </p>
           </div>
 

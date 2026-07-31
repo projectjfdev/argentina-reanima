@@ -108,3 +108,11 @@ OK - poner opcion de video a traves de link de youtube
 OK - finalizada la campaña debe figurar la factura
 OK - descarga de excel con los donantes
 OK - establecer como obligatorio el email de donaciones
+
+___________________________
+
+Últimas modificaciones:
+
+Campo para sumar fotos
+Fecha de vencimiento
+Textos wsp

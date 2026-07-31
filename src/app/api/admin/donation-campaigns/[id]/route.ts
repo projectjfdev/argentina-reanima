@@ -10,6 +10,7 @@ import {
 import {
   getFormString,
   getOptionalFormFile,
+  getOptionalFormFiles,
   getRouteId,
   isValidRouteId,
   mapDonationServiceError,
@@ -86,6 +87,8 @@ export async function PUT(request: NextRequest, context: RouteContextWithId) {
 
     const formData = await request.formData();
     const removeInvoiceImage = getFormString(formData, "removeInvoiceImage") === "true";
+    const removeAdditionalImages =
+      getFormString(formData, "removeAdditionalImages") === "true";
     const campaign = await updateActiveDonationCampaignWithPlaceImage(
       campaignId,
       {
@@ -98,6 +101,8 @@ export async function PUT(request: NextRequest, context: RouteContextWithId) {
       getOptionalFormFile(formData, "placeImage"),
       getOptionalFormFile(formData, "invoiceImage"),
       removeInvoiceImage,
+      getOptionalFormFiles(formData, "additionalImages"),
+      removeAdditionalImages,
     );
 
     revalidateDonationCampaignViews(campaignId);

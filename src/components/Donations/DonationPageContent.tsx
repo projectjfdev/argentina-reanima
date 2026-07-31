@@ -337,7 +337,7 @@ export function DonationPageContent() {
               Proceso transparente
             </p>
             <h2 className="text-3xl font-semibold leading-tight text-slate-950 md:text-4xl">
-              ¿Cómo funciona tu aporte?"
+              ¿Cómo funciona tu aporte?
             </h2>
 
             <div className="mt-8">
@@ -1082,30 +1082,37 @@ function DonationThanksScreen({ onClose }: { onClose: () => void }) {
       </div>
       <DialogHeader className="mt-6 items-center text-center">
         <DialogTitle className="text-3xl font-semibold leading-tight text-slate-950">
-          ¡Gracias por tu aporte! ❤️
+          ❤️ ¡Gracias por ser parte!
         </DialogTitle>
         <DialogDescription className="sr-only">
-          Recibimos tu comprobante correctamente.
+          Recibimos correctamente tu comprobante
         </DialogDescription>
       </DialogHeader>
 
       <div className="mt-5 max-w-xl space-y-4 text-sm leading-7 text-slate-600 md:text-base">
-        <p className="font-semibold text-slate-800">
-          Recibimos tu comprobante correctamente.
+        <p>
+          Con tu decisión, la campaña "Quiero Ser Parte" está un paso más cerca
+          de incorporar un nuevo DEA y capacitar a una institución que lo
+          necesita.
         </p>
         <p>
-          Cada persona que decide colaborar acerca un poco más esta campaña a su
-          objetivo y ayuda a que un nuevo espacio pueda contar con un DEA.
+          Ahora nuestro equipo verificará el comprobante. Una vez validado, tu
+          aporte se reflejará automáticamente en el avance de la campaña y, si
+          así lo elegiste, también aparecerás en el listado público de quienes
+          decidieron acompañar esta iniciativa.
         </p>
-        <p>
-          Ahora nuestro equipo revisará el comprobante. Una vez aprobado, tu
-          donación se reflejará automáticamente en el progreso de la campaña y,
-          si elegiste aparecer publicamente, también en el listado de donantes.
-        </p>
+        <p>Gracias por ayudarnos a construir una nueva oportunidad.</p>
         <p className="font-semibold text-slate-800">
-          Gracias por formar parte de esta iniciativa.
+          Seguimos luchando juntos contra la muerte súbita.
         </p>
       </div>
+      <p className="font-semibold text-sm text-slate-600">
+        ¿Necesitás un recibo?
+      </p>
+      <p className="font-semibold text-sm text-slate-600">
+        Escribinos a argentinareanima.ac@gmail.com y adjuntá el comprobante de
+        tu donación. Te enviaremos el recibo correspondiente.
+      </p>
 
       <Button
         type="button"

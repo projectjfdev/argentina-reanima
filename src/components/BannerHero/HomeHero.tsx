@@ -38,9 +38,9 @@ export function HomeHero() {
                   Conocé la historia <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              {/* <Button asChild size="lg" variant="outline">
-                <Link href="/donar">Ayudá a instalar un DEA</Link>
-              </Button> */}
+              <Button asChild size="lg" variant="outline">
+                <Link href="/donar">❤️ QUIERO SER PARTE</Link>
+              </Button>
             </div>
           </div>
 

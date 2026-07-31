@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-// import { DonationBanner } from "@/components/DonationBanner/DonationBanner";
+import { DonationBanner } from "@/components/DonationBanner/DonationBanner";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -46,7 +46,8 @@ import type { Session } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 
 interface MenuLink {
   label: string;
@@ -132,23 +133,23 @@ const aboutLinks: MenuLink[] = [
 
 const donationLinks: MenuLink[] = [
   {
-    label: "Quiero donar",
+    label: "Quiero ser parte",
     href: "/donar",
     icon: Heart,
-    description: "Ayudanos a instalar un DEA.",
+    description: "de una nueva oportunidad.",
   },
   {
     label: "Campañas de donación",
     href: "/campanas-dea",
     icon: School,
-    description: "Campañas de donación para un DEA.",
+    description: "Ver todas las campañas para un DEA.",
   },
 ];
 
 const navGroups: MenuGroup[] = [
   { label: "Recursos", links: resourcesLinks },
   { label: "Nosotros", links: aboutLinks },
-  { label: "Donar", links: donationLinks, highlighted: true },
+  { label: "Campañas", links: donationLinks, highlighted: true },
 ];
 
 const Navbar = ({
@@ -220,9 +221,9 @@ const Navbar = ({
                 <NavigationMenuItem>
                   <DesktopNavLink href="/contacto">Contacto</DesktopNavLink>
                 </NavigationMenuItem>
-                {/* <NavigationMenuItem>
+                <NavigationMenuItem>
                   <DesktopDropdown group={navGroups[2]} />
-                </NavigationMenuItem> */}
+                </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
 
@@ -297,9 +298,19 @@ const Navbar = ({
           </div>
         </div>
       </div>
-      {/* <DonationBanner /> */}
+      <Suspense fallback={null}>
+        <HomeDonationBanner />
+      </Suspense>
     </header>
   );
+};
+
+const HomeDonationBanner = () => {
+  const pathname = usePathname();
+
+  if (pathname !== "/") return null;
+
+  return <DonationBanner />;
 };
 
 const DesktopDropdown = ({ group }: { group: MenuGroup }) => {

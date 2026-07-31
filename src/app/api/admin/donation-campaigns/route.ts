@@ -9,6 +9,7 @@ import {
   getCampaignStatusFilter,
   getFormString,
   getOptionalFormFile,
+  getOptionalFormFiles,
   mapDonationServiceError,
   serializeCampaign,
 } from "@/libs/donations/adminApi";
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const placeImage = getOptionalFormFile(formData, "placeImage");
     const invoiceImage = getOptionalFormFile(formData, "invoiceImage");
+    const additionalImages = getOptionalFormFiles(formData, "additionalImages");
 
     if (!placeImage) {
       return NextResponse.json(
@@ -128,6 +130,7 @@ export async function POST(request: NextRequest) {
       },
       placeImage,
       invoiceImage,
+      additionalImages,
     );
 
     revalidateDonationCampaignViews(campaign.id);

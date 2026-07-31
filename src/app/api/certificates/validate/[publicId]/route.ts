@@ -32,6 +32,7 @@ export async function GET(
         serialNumber: true,
         instructorSignatureEnabled: true,
         instructorKey: true,
+        expiresAt: true,
         status: true,
       },
     });
@@ -51,6 +52,7 @@ export async function GET(
             publicId: certificate.publicId,
             status: certificate.status,
             serialNumber: certificate.serialNumber,
+            expiresAt: certificate.expiresAt?.toISOString() ?? null,
           },
           success: false,
         },
@@ -62,6 +64,7 @@ export async function GET(
       message: "Certificado valido",
       certificate: {
         ...certificate,
+        expiresAt: certificate.expiresAt?.toISOString() ?? null,
         publicUrl: getPublicCertificateUrl(certificate.publicId),
       },
       success: true,

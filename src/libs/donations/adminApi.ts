@@ -38,6 +38,12 @@ export function getOptionalFormFile(formData: FormData, key: string) {
   return value instanceof File && value.size > 0 ? value : null;
 }
 
+export function getOptionalFormFiles(formData: FormData, key: string) {
+  return formData
+    .getAll(key)
+    .filter((value): value is File => value instanceof File && value.size > 0);
+}
+
 export function mapDonationServiceError(error: unknown) {
   if (error instanceof DonationServiceError) {
     return NextResponse.json(
@@ -82,6 +88,8 @@ export function serializeCampaign(
     address: campaign.address,
     placeImageUrl: campaign.placeImageUrl,
     placeImagePublicId: campaign.placeImagePublicId,
+    additionalImageUrls: campaign.additionalImageUrls,
+    additionalImagePublicIds: campaign.additionalImagePublicIds,
     youtubeVideoUrl: campaign.youtubeVideoUrl,
     invoiceImageUrl: campaign.invoiceImageUrl,
     invoiceImagePublicId: campaign.invoiceImagePublicId,

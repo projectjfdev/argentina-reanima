@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { authOptions } from "@/libs/authOptions";
 import {
+  formatCertificateDate,
   normalizeCertificateEmail,
   renderCertificateTextTemplate,
 } from "@/libs/certificates";
@@ -65,6 +66,7 @@ async function MiPerfilContent() {
             certificateText: true,
             templateKey: true,
             serialNumber: true,
+            expiresAt: true,
           },
           orderBy: { createdAt: "desc" },
         })
@@ -193,6 +195,12 @@ async function MiPerfilContent() {
                           </p>
                           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
                             <span>Serie {certificate.serialNumber}</span>
+                            {formatCertificateDate(certificate.expiresAt) && (
+                              <span>
+                                Fecha de vencimiento:{" "}
+                                {formatCertificateDate(certificate.expiresAt)}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <Link
