@@ -31,6 +31,7 @@ type PublicCampaign = {
   locality: string;
   address: string;
   placeImageUrl: string;
+  additionalImageUrls: string[];
   invoiceImageUrl: string | null;
   invoiceImageOriginalName: string | null;
   goalAmount: string;
@@ -97,6 +98,11 @@ export function DonationCampaignsPageContent() {
   const [selectedInvoice, setSelectedInvoice] = useState<PublicCampaign | null>(
     null,
   );
+  const [selectedAdditionalImage, setSelectedAdditionalImage] = useState<{
+    campaign: PublicCampaign;
+    imageUrl: string;
+    index: number;
+  } | null>(null);
 
   const activeCampaign = useMemo(
     () => campaigns.find((campaign) => campaign.status === "ACTIVE") ?? null,
@@ -166,13 +172,15 @@ export function DonationCampaignsPageContent() {
           <div className="max-w-3xl">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur">
               <HeartHandshake className="h-4 w-4 text-primary" />
-              Campañas DEA
+              Quiero ser parte
             </div>
             <h1 className="text-4xl font-semibold leading-tight md:text-6xl">
-              Campañas para instalar desfibriladores.
+              Comunidades que crean nuevas oportunidades
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/78 md:text-lg">
-              Segui las campañas activas y el histórico de objetivos alcanzados.
+              Conocé las campañas activas, acompañá cada proyecto y descubrí los
+              espacios que, gracias al compromiso de todos, hoy están preparados
+              para actuar.
             </p>
           </div>
 
@@ -210,7 +218,7 @@ export function DonationCampaignsPageContent() {
               Todas nuestras campañas
             </p>
             <h2 className="mt-2 text-3xl font-semibold text-slate-950 md:text-4xl">
-              Activas e históicas
+              Activas e históricas
             </h2>
           </div>
         </div>
@@ -239,6 +247,9 @@ export function DonationCampaignsPageContent() {
                   key={campaign.id}
                   campaign={campaign}
                   onViewInvoice={() => setSelectedInvoice(campaign)}
+                  onViewAdditionalImage={(imageUrl, index) =>
+                    setSelectedAdditionalImage({ campaign, imageUrl, index })
+                  }
                 />
               ))}
             </div>
@@ -264,6 +275,12 @@ export function DonationCampaignsPageContent() {
           if (!open) setSelectedInvoice(null);
         }}
       />
+      <AdditionalImageDialog
+        selectedImage={selectedAdditionalImage}
+        onOpenChange={(open) => {
+          if (!open) setSelectedAdditionalImage(null);
+        }}
+      />
       <Toaster />
     </main>
   );
@@ -272,9 +289,11 @@ export function DonationCampaignsPageContent() {
 function CampaignCard({
   campaign,
   onViewInvoice,
+  onViewAdditionalImage,
 }: {
   campaign: PublicCampaign;
   onViewInvoice: () => void;
+  onViewAdditionalImage: (imageUrl: string, index: number) => void;
 }) {
   const completedDate = formatDate(campaign.completedAt);
 
@@ -343,6 +362,35 @@ function CampaignCard({
           )}
         </div>
 
+        {campaign.additionalImageUrls.length > 0 && (
+          <div
+            className={cn(
+              "mt-5 grid gap-2",
+              campaign.additionalImageUrls.length === 1
+                ? "grid-cols-1"
+                : "grid-cols-2",
+            )}
+          >
+            {campaign.additionalImageUrls.slice(0, 2).map((imageUrl, index) => (
+              <button
+                type="button"
+                key={`${campaign.id}-additional-${imageUrl}`}
+                className="relative aspect-[4/3] overflow-hidden rounded-md border border-slate-200 bg-slate-100 transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                onClick={() => onViewAdditionalImage(imageUrl, index)}
+                aria-label={`Ampliar foto adicional ${index + 1} de ${campaign.institutionName}`}
+              >
+                <Image
+                  src={imageUrl}
+                  alt={`Foto adicional ${index + 1} de ${campaign.institutionName}`}
+                  fill
+                  sizes="(min-width: 1280px) 15vw, (min-width: 768px) 22vw, 100vw"
+                  className="object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="mt-5 flex items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
             {campaign.status === "ACTIVE" ? (
@@ -375,6 +423,75 @@ function CampaignCard({
         </div>
       </div>
     </article>
+  );
+}
+
+function AdditionalImageDialog({
+  selectedImage,
+  onOpenChange,
+}: {
+  selectedImage: {
+    campaign: PublicCampaign;
+    imageUrl: string;
+    index: number;
+  } | null;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [hasImageError, setHasImageError] = useState(false);
+  const imageUrl = selectedImage?.imageUrl ?? null;
+
+  useEffect(() => {
+    setHasImageError(false);
+  }, [imageUrl]);
+
+  return (
+    <Dialog open={Boolean(selectedImage)} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="box-border h-auto max-h-[92svh] w-[calc(100vw-2rem)] max-w-5xl overflow-hidden rounded-lg bg-white p-0"
+        closeButtonClassName="[&_svg]:h-5 [&_svg]:w-5 [&_svg]:bg-transparent [&_svg]:text-slate-700"
+      >
+        <div className="flex max-h-[92svh] min-h-0 flex-col">
+          <DialogHeader className="border-b border-slate-200 px-5 py-4 pr-14 md:px-6">
+            <DialogTitle className="text-xl font-semibold text-slate-950">
+              Foto de la campaña
+            </DialogTitle>
+            <DialogDescription className="text-sm text-slate-600">
+              {selectedImage
+                ? `${selectedImage.campaign.institutionName} - ${selectedImage.campaign.locality}`
+                : "Imagen de campaña"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="min-h-0 flex-1 overflow-auto bg-slate-50 p-4 md:p-6">
+            {imageUrl && !hasImageError ? (
+              <img
+                src={imageUrl}
+                alt={`Foto adicional ${(selectedImage?.index ?? 0) + 1} de ${
+                  selectedImage?.campaign.institutionName ?? "la campana"
+                }`}
+                className="mx-auto h-auto max-h-[70svh] max-w-full rounded-md border border-slate-200 bg-white object-contain shadow-sm"
+                onError={() => setHasImageError(true)}
+              />
+            ) : (
+              <div className="rounded-md border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
+                No se pudo cargar la imagen.
+              </div>
+            )}
+          </div>
+
+          {imageUrl && (
+            <div className="border-t border-slate-200 bg-white px-5 py-4 md:px-6">
+              <Button asChild variant="outline" className="gap-2">
+                <a href={imageUrl} target="_blank" rel="noopener noreferrer">
+                  Abrir imagen en una nueva pestaña
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

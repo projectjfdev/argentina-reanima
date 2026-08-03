@@ -1,0 +1,32 @@
+# Reporte de implementacion: fotos adicionales en campanas DEA
+
+## Resumen
+
+Se implemento la carga opcional de hasta dos fotos adicionales por campana DEA, usando un unico input multiple en el panel administrador y guardando las URLs/publicIds como arrays simples en `DonationCampaign`.
+
+## Cambios realizados
+
+- Se agregaron `additionalImageUrls String[]` y `additionalImagePublicIds String[]` con default `[]` en Prisma, junto con la migracion SQL correspondiente.
+- Se extendio el flujo de Cloudinary con una subida generica para fotos adicionales, reutilizando validaciones de imagen de campana: JPG, PNG o WEBP hasta 5MB.
+- Se actualizaron los servicios de creacion y edicion para aceptar cero, una o dos fotos adicionales, conservar las existentes si no hay cambios, reemplazar el conjunto completo si se cargan nuevas fotos y eliminar todas con `removeAdditionalImages=true`.
+- Se actualizaron los endpoints admin para leer `additionalImages` desde `FormData.getAll(...)`.
+- Se expuso `additionalImageUrls` en la API publica de `/api/donation-campaigns`.
+- Se actualizo el dashboard de campanas con un unico input `multiple` y validacion de maximo dos archivos.
+- Se actualizo `/campanas-dea` para mostrar una grilla simple de una o dos miniaturas dentro de la card solo cuando existan fotos adicionales.
+- Se agrego ampliacion de fotos adicionales en `/campanas-dea`: cada miniatura abre un dialog con la imagen grande y opcion de abrirla en una nueva pestana.
+- Se agregaron tests para payloads y validacion/storage de fotos adicionales.
+
+## Validacion
+
+- `npm test -- src/test/donations/validateDonationCampaignPayload.test.ts src/test/donations/cloudinaryDonationStorage.test.ts`
+  - Resultado: 2 archivos, 17 tests pasados.
+- `npm run build`
+  - Resultado: build exitoso tras la implementacion inicial y tras el ajuste de ampliacion de imagenes.
+  - Observacion: persiste un warning preexistente de Turbopack sobre `next.config.ts` y el trace de `src/generated/prisma/index.js` desde `src/app/api/certificates/route.ts`; no bloquea el build.
+
+## Notas
+
+- Se ejecuto `npx prisma generate` para actualizar el cliente Prisma generado.
+- No se agregaron dependencias nuevas.
+- No se crearon tablas nuevas.
+- La UI no agrega carrusel, modal ni galeria compleja.

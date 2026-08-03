@@ -7,7 +7,7 @@ export const CERTIFICATE_PRESIDENT_SIGNATURE = {
 export const CERTIFICATE_INSTRUCTORS = [
   {
     key: "emir",
-    name: "Emir",
+    name: "Emir Darío Lafuente",
     imageSrc: "/firmas/Emir.png",
   },
   {

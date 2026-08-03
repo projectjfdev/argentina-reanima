@@ -67,6 +67,7 @@ model Certificate {
   instructorKey              String?           @db.VarChar(80)
   status                     CertificateStatus @default(ACTIVE)
   userId                     Int?
+  expiresAt                  DateTime?         @db.Date
   createdAt                  DateTime          @default(now())
   updatedAt                  DateTime          @updatedAt
   deletedAt                  DateTime?
@@ -121,6 +122,8 @@ model DonationCampaign {
   address            String
   placeImageUrl      String
   placeImagePublicId String
+  additionalImageUrls String[]              @default([])
+  additionalImagePublicIds String[]         @default([])
   youtubeVideoUrl    String?                @db.VarChar(500)
   invoiceImageUrl    String?
   invoiceImagePublicId String?

@@ -3,6 +3,7 @@
 import {
   CERTIFICATE_PRESIDENT_SIGNATURE,
   DEFAULT_CERTIFICATE_TEMPLATE_KEY,
+  formatCertificateLongDate,
   generateCertificateQrDataUrl,
   getCertificateInstructorByKey,
   getCertificateTemplateByKey,
@@ -29,12 +30,56 @@ export type CertificatePreviewData = {
   publicId?: string;
   publicUrl?: string;
   qrDataUrl?: string;
+  expiresAt?: Date | string | null;
 };
 
 type CertificatePreviewProps = {
   data: CertificatePreviewData;
   className?: string;
+  variant?: "preview" | "export";
 };
+
+const CERTIFICATE_SERIF_FONT = "var(--font-certificate-serif), Georgia, serif";
+const CERTIFICATE_SANS_FONT = "var(--font-geist-sans), Arial, sans-serif";
+const CERTIFICATE_EXPORT_TEXT_STYLE = {
+  title: {
+    fontSize: "40px",
+    lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.title.lineHeight,
+    letterSpacing: CERTIFICATE_PREVIEW_TEXT_STYLE.title.letterSpacing,
+  },
+  certificateText: {
+    fontSize: "20px",
+    lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.certificateText.lineHeight,
+  },
+  footerText: {
+    fontSize: "15px",
+    lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.footerText.lineHeight,
+  },
+  signatureName: {
+    fontSize: "12px",
+    lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.signatureName.lineHeight,
+  },
+  signatureRole: {
+    fontSize: "14px",
+    lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.signatureRole.lineHeight,
+  },
+  serialNumber: {
+    fontSize: "15px",
+    lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.serialNumber.lineHeight,
+  },
+  expirationText: {
+    fontSize: "14px",
+    lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.expirationText.lineHeight,
+  },
+  slogan: {
+    fontSize: "26px",
+    lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.slogan.lineHeight,
+  },
+  organization: {
+    fontSize: "14px",
+    lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.organization.lineHeight,
+  },
+} as const;
 
 function PreviewTextBlock({
   children,
@@ -55,8 +100,12 @@ function PreviewTextBlock({
 export const CertificatePreview = forwardRef<
   HTMLDivElement,
   CertificatePreviewProps
->(function CertificatePreview({ data, className }, ref) {
+>(function CertificatePreview({ data, className, variant = "preview" }, ref) {
   const [qrDataUrl, setQrDataUrl] = useState(data.qrDataUrl || "");
+  const isExportVariant = variant === "export";
+  const textStyle = isExportVariant
+    ? CERTIFICATE_EXPORT_TEXT_STYLE
+    : CERTIFICATE_PREVIEW_TEXT_STYLE;
   const instructor = data.instructorSignatureEnabled
     ? getCertificateInstructorByKey(data.instructorKey)
     : undefined;
@@ -68,6 +117,7 @@ export const CertificatePreview = forwardRef<
   const renderedCertificateText = data.certificateText
     ? renderCertificateTextTemplate(data.certificateText, data.recipientName)
     : "Se deja constancia que la persona destinataria ha participado de la actividad indicada por Argentina Reanima.";
+  const expirationText = formatCertificateLongDate(data.expiresAt);
 
   useEffect(() => {
     let isMounted = true;
@@ -95,12 +145,33 @@ export const CertificatePreview = forwardRef<
   }, [data.publicUrl, data.qrDataUrl]);
 
   return (
-    <div className={cn("w-full", className)}>
+    <div
+      className={cn(isExportVariant ? "block" : "w-full", className)}
+      style={
+        isExportVariant
+          ? {
+              width: CERTIFICATE_CANVAS.width,
+              height: CERTIFICATE_CANVAS.height,
+            }
+          : undefined
+      }
+    >
       <div
         ref={ref}
-        className="relative w-full overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm"
+        className={cn(
+          "relative overflow-hidden bg-white",
+          isExportVariant
+            ? "border-0 shadow-none"
+            : "w-full rounded-md border border-neutral-200 shadow-sm",
+        )}
         style={{
           aspectRatio: `${CERTIFICATE_CANVAS.width} / ${CERTIFICATE_CANVAS.height}`,
+          ...(isExportVariant
+            ? {
+                width: CERTIFICATE_CANVAS.width,
+                height: CERTIFICATE_CANVAS.height,
+              }
+            : undefined),
         }}
       >
         <img
@@ -119,9 +190,10 @@ export const CertificatePreview = forwardRef<
             left: `${CERTIFICATE_DYNAMIC_LAYOUT.title.leftPercent}%`,
             top: `${CERTIFICATE_DYNAMIC_LAYOUT.title.topPercent}%`,
             width: `${CERTIFICATE_DYNAMIC_LAYOUT.title.widthPercent}%`,
-            fontSize: CERTIFICATE_PREVIEW_TEXT_STYLE.title.fontSize,
-            lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.title.lineHeight,
-            letterSpacing: CERTIFICATE_PREVIEW_TEXT_STYLE.title.letterSpacing,
+            fontFamily: CERTIFICATE_SERIF_FONT,
+            fontSize: textStyle.title.fontSize,
+            lineHeight: textStyle.title.lineHeight,
+            letterSpacing: textStyle.title.letterSpacing,
           }}
         >
           CERTIFICADO
@@ -133,9 +205,9 @@ export const CertificatePreview = forwardRef<
             left: `${CERTIFICATE_DYNAMIC_LAYOUT.certificateText.leftPercent}%`,
             top: `${CERTIFICATE_DYNAMIC_LAYOUT.certificateText.topPercent}%`,
             width: `${CERTIFICATE_DYNAMIC_LAYOUT.certificateText.widthPercent}%`,
-            fontSize: CERTIFICATE_PREVIEW_TEXT_STYLE.certificateText.fontSize,
-            lineHeight:
-              CERTIFICATE_PREVIEW_TEXT_STYLE.certificateText.lineHeight,
+            fontFamily: CERTIFICATE_SERIF_FONT,
+            fontSize: textStyle.certificateText.fontSize,
+            lineHeight: textStyle.certificateText.lineHeight,
           }}
         >
           {renderedCertificateText}
@@ -147,8 +219,9 @@ export const CertificatePreview = forwardRef<
             left: `${CERTIFICATE_DYNAMIC_LAYOUT.footerText.leftPercent}%`,
             bottom: `${CERTIFICATE_DYNAMIC_LAYOUT.footerText.bottomPercent}%`,
             width: `${CERTIFICATE_DYNAMIC_LAYOUT.footerText.widthPercent}%`,
-            fontSize: CERTIFICATE_PREVIEW_TEXT_STYLE.footerText.fontSize,
-            lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.footerText.lineHeight,
+            fontFamily: CERTIFICATE_SERIF_FONT,
+            fontSize: textStyle.footerText.fontSize,
+            lineHeight: textStyle.footerText.lineHeight,
           }}
         >
           {data.footerText ||
@@ -174,14 +247,13 @@ export const CertificatePreview = forwardRef<
                 left: `${CERTIFICATE_DYNAMIC_LAYOUT.instructorLabel.leftPercent}%`,
                 bottom: `${CERTIFICATE_DYNAMIC_LAYOUT.instructorLabel.bottomPercent}%`,
                 width: `${CERTIFICATE_DYNAMIC_LAYOUT.instructorLabel.widthPercent}%`,
+                fontFamily: CERTIFICATE_SANS_FONT,
               }}
             >
               <p
                 style={{
-                  fontSize:
-                    CERTIFICATE_PREVIEW_TEXT_STYLE.signatureName.fontSize,
-                  lineHeight:
-                    CERTIFICATE_PREVIEW_TEXT_STYLE.signatureName.lineHeight,
+                  fontSize: textStyle.signatureName.fontSize,
+                  lineHeight: textStyle.signatureName.lineHeight,
                 }}
               >
                 {instructor.name}
@@ -189,10 +261,8 @@ export const CertificatePreview = forwardRef<
               <p
                 className="font-normal"
                 style={{
-                  fontSize:
-                    CERTIFICATE_PREVIEW_TEXT_STYLE.signatureRole.fontSize,
-                  lineHeight:
-                    CERTIFICATE_PREVIEW_TEXT_STYLE.signatureRole.lineHeight,
+                  fontSize: textStyle.signatureRole.fontSize,
+                  lineHeight: textStyle.signatureRole.lineHeight,
                 }}
               >
                 Instructor
@@ -218,13 +288,13 @@ export const CertificatePreview = forwardRef<
             left: `${CERTIFICATE_DYNAMIC_LAYOUT.presidentLabel.leftPercent}%`,
             bottom: `${CERTIFICATE_DYNAMIC_LAYOUT.presidentLabel.bottomPercent}%`,
             width: `${CERTIFICATE_DYNAMIC_LAYOUT.presidentLabel.widthPercent}%`,
+            fontFamily: CERTIFICATE_SANS_FONT,
           }}
         >
           <p
             style={{
-              fontSize: CERTIFICATE_PREVIEW_TEXT_STYLE.signatureName.fontSize,
-              lineHeight:
-                CERTIFICATE_PREVIEW_TEXT_STYLE.signatureName.lineHeight,
+              fontSize: textStyle.signatureName.fontSize,
+              lineHeight: textStyle.signatureName.lineHeight,
             }}
           >
             {CERTIFICATE_PRESIDENT_SIGNATURE.name}
@@ -232,9 +302,8 @@ export const CertificatePreview = forwardRef<
           <p
             className="font-normal"
             style={{
-              fontSize: CERTIFICATE_PREVIEW_TEXT_STYLE.signatureRole.fontSize,
-              lineHeight:
-                CERTIFICATE_PREVIEW_TEXT_STYLE.signatureRole.lineHeight,
+              fontSize: textStyle.signatureRole.fontSize,
+              lineHeight: textStyle.signatureRole.lineHeight,
             }}
           >
             {CERTIFICATE_PRESIDENT_SIGNATURE.role}
@@ -242,11 +311,13 @@ export const CertificatePreview = forwardRef<
         </PreviewTextBlock>
 
         <div
-          className="absolute flex aspect-square items-center justify-center border border-neutral-500 bg-white p-1 text-center text-[clamp(5px,0.8vw,10px)] font-medium leading-tight text-neutral-700"
+          className="absolute flex aspect-square items-center justify-center border border-neutral-500 bg-white p-1 text-center font-medium leading-tight text-neutral-700"
           style={{
             left: `${CERTIFICATE_DYNAMIC_LAYOUT.qr.leftPercent}%`,
             top: `${CERTIFICATE_DYNAMIC_LAYOUT.qr.topPercent}%`,
             width: `${CERTIFICATE_DYNAMIC_LAYOUT.qr.widthPercent}%`,
+            fontFamily: CERTIFICATE_SANS_FONT,
+            fontSize: textStyle.signatureRole.fontSize,
           }}
         >
           {qrDataUrl ? (
@@ -268,12 +339,29 @@ export const CertificatePreview = forwardRef<
             left: `${CERTIFICATE_DYNAMIC_LAYOUT.serialNumber.leftPercent}%`,
             top: `${CERTIFICATE_DYNAMIC_LAYOUT.serialNumber.topPercent}%`,
             width: `${CERTIFICATE_DYNAMIC_LAYOUT.serialNumber.widthPercent}%`,
-            fontSize: CERTIFICATE_PREVIEW_TEXT_STYLE.serialNumber.fontSize,
-            lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.serialNumber.lineHeight,
+            fontFamily: CERTIFICATE_SANS_FONT,
+            fontSize: textStyle.serialNumber.fontSize,
+            lineHeight: textStyle.serialNumber.lineHeight,
           }}
         >
           Serie {data.serialNumber || "AR-0000"}
         </PreviewTextBlock>
+
+        {expirationText && (
+          <PreviewTextBlock
+            className="text-right font-medium text-neutral-700"
+            style={{
+              left: `${CERTIFICATE_DYNAMIC_LAYOUT.expirationText.leftPercent}%`,
+              top: `${CERTIFICATE_DYNAMIC_LAYOUT.expirationText.topPercent}%`,
+              width: `${CERTIFICATE_DYNAMIC_LAYOUT.expirationText.widthPercent}%`,
+              fontFamily: CERTIFICATE_SANS_FONT,
+              fontSize: textStyle.expirationText.fontSize,
+              lineHeight: textStyle.expirationText.lineHeight,
+            }}
+          >
+            Validez del certificado hasta el {expirationText}.
+          </PreviewTextBlock>
+        )}
 
         <PreviewTextBlock
           className="leading-tight text-center"
@@ -281,13 +369,14 @@ export const CertificatePreview = forwardRef<
             left: `${CERTIFICATE_DYNAMIC_LAYOUT.institutionalText.leftPercent}%`,
             bottom: `${CERTIFICATE_DYNAMIC_LAYOUT.institutionalText.bottomPercent}%`,
             width: `${CERTIFICATE_DYNAMIC_LAYOUT.institutionalText.widthPercent}%`,
+            fontFamily: CERTIFICATE_SANS_FONT,
           }}
         >
           <p
-            className="font-medium text-blue-300/90"
+            className="font-normal text-sky-300/75"
             style={{
-              fontSize: CERTIFICATE_PREVIEW_TEXT_STYLE.slogan.fontSize,
-              lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.slogan.lineHeight,
+              fontSize: textStyle.slogan.fontSize,
+              lineHeight: textStyle.slogan.lineHeight,
             }}
           >
             Solo bajamos los brazos para hacer RCP
@@ -295,9 +384,8 @@ export const CertificatePreview = forwardRef<
           <p
             className="font-bold text-neutral-800"
             style={{
-              fontSize: CERTIFICATE_PREVIEW_TEXT_STYLE.organization.fontSize,
-              lineHeight:
-                CERTIFICATE_PREVIEW_TEXT_STYLE.organization.lineHeight,
+              fontSize: textStyle.organization.fontSize,
+              lineHeight: textStyle.organization.lineHeight,
             }}
           >
             Asociación Civil Argentina Reanima - Matrícula N° 48.014

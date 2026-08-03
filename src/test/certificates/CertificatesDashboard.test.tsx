@@ -32,6 +32,7 @@ type CertificateFixture = {
   serialNumber?: string;
   status?: "ACTIVE" | "DELETED";
   publicUrl?: string;
+  expiresAt?: string | null;
   user?: null;
 };
 
@@ -59,6 +60,7 @@ function createListResponse(certificates: CertificateFixture[] = []) {
       serialNumber: `AR-${index + 1}`,
       status: "ACTIVE",
       publicUrl: `http://localhost/cert-${index + 1}`,
+      expiresAt: null,
       user: null,
       ...certificate,
     })),
@@ -84,6 +86,7 @@ function createMutationResponse() {
       serialNumber: "AR-9999",
       status: "ACTIVE",
       publicUrl: "http://localhost/saved-cert",
+      expiresAt: null,
       user: null,
     },
     success: true,
@@ -101,6 +104,10 @@ async function renderDashboardWithList(certificates: CertificateFixture[] = []) 
       { cache: "no-store" },
     );
   });
+
+  if (certificates.length > 0) {
+    await screen.findByRole("button", { name: /Editar/i });
+  }
 }
 
 async function fillSingleCertificateForm(user: ReturnType<typeof userEvent.setup>) {
@@ -164,7 +171,7 @@ describe("CertificatesDashboard instructor signature", () => {
     await fillSingleCertificateForm(user);
     await user.click(screen.getByLabelText(/Agregar firma de instructor/i));
 
-    expect(await screen.findByAltText("Firma de Emir")).toBeInTheDocument();
+    expect(await screen.findByAltText(/Firma de Emir/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Crear certificado/i }));
 
@@ -209,6 +216,35 @@ describe("CertificatesDashboard instructor signature", () => {
     });
   });
 
+  it("posts an optional expiration date when creating a certificate", async () => {
+    const user = userEvent.setup();
+    fetchMock
+      .mockResolvedValueOnce(createListResponse())
+      .mockResolvedValueOnce(createMutationResponse())
+      .mockResolvedValueOnce(createListResponse());
+
+    const { container } = render(<CertificatesDashboard />);
+    await fillSingleCertificateForm(user);
+
+    const expirationInput = container.querySelector(
+      'input[type="date"]',
+    ) as HTMLInputElement;
+    fireEvent.change(expirationInput, { target: { value: "2028-10-15" } });
+
+    await user.click(screen.getByRole("button", { name: /Crear certificado/i }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/certificates",
+        expect.objectContaining({ method: "POST" }),
+      );
+    });
+
+    expect(getJsonFetchBody("/api/certificates")).toMatchObject({
+      expiresAt: "2028-10-15",
+    });
+  });
+
   it("enables a default instructor when editing a certificate without signature", async () => {
     const user = userEvent.setup();
     await renderDashboardWithList([
@@ -225,7 +261,7 @@ describe("CertificatesDashboard instructor signature", () => {
     await user.click(screen.getByRole("button", { name: /Editar/i }));
     await user.click(screen.getByLabelText(/Agregar firma de instructor/i));
 
-    expect(await screen.findByAltText("Firma de Emir")).toBeInTheDocument();
+    expect(await screen.findByAltText(/Firma de Emir/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Guardar cambios/i }));
 
@@ -239,6 +275,72 @@ describe("CertificatesDashboard instructor signature", () => {
     expect(getJsonFetchBody("/api/certificates/cert-without-signature")).toMatchObject({
       instructorSignatureEnabled: true,
       instructorKey: "emir",
+    });
+  });
+
+  it("loads and updates the expiration date when editing a certificate", async () => {
+    const user = userEvent.setup();
+    await renderDashboardWithList([
+      {
+        publicId: "cert-with-expiration",
+        expiresAt: "2028-10-15T00:00:00.000Z",
+      },
+    ]);
+    fetchMock
+      .mockResolvedValueOnce(createMutationResponse())
+      .mockResolvedValueOnce(createListResponse());
+
+    await user.click(screen.getByRole("button", { name: /Editar/i }));
+
+    const expirationInput = screen
+      .getByDisplayValue("2028-10-15")
+      .closest("input") as HTMLInputElement;
+    fireEvent.change(expirationInput, { target: { value: "2029-01-20" } });
+
+    await user.click(screen.getByRole("button", { name: /Guardar cambios/i }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/certificates/cert-with-expiration",
+        expect.objectContaining({ method: "PUT" }),
+      );
+    });
+
+    expect(getJsonFetchBody("/api/certificates/cert-with-expiration")).toMatchObject({
+      expiresAt: "2029-01-20",
+    });
+  });
+
+  it("lets an admin clear the expiration date when editing a certificate", async () => {
+    const user = userEvent.setup();
+    await renderDashboardWithList([
+      {
+        publicId: "cert-clear-expiration",
+        expiresAt: "2028-10-15T00:00:00.000Z",
+      },
+    ]);
+    fetchMock
+      .mockResolvedValueOnce(createMutationResponse())
+      .mockResolvedValueOnce(createListResponse());
+
+    await user.click(screen.getByRole("button", { name: /Editar/i }));
+
+    const expirationInput = screen
+      .getByDisplayValue("2028-10-15")
+      .closest("input") as HTMLInputElement;
+    fireEvent.change(expirationInput, { target: { value: "" } });
+
+    await user.click(screen.getByRole("button", { name: /Guardar cambios/i }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/certificates/cert-clear-expiration",
+        expect.objectContaining({ method: "PUT" }),
+      );
+    });
+
+    expect(getJsonFetchBody("/api/certificates/cert-clear-expiration")).toMatchObject({
+      expiresAt: "",
     });
   });
 
@@ -289,7 +391,7 @@ describe("CertificatesDashboard instructor signature", () => {
 
     await user.click(screen.getByRole("button", { name: /Editar/i }));
 
-    expect(await screen.findByAltText("Firma de Emir")).toBeInTheDocument();
+    expect(await screen.findByAltText(/Firma de Emir/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Guardar cambios/i }));
 
@@ -353,7 +455,7 @@ describe("CertificatesDashboard instructor signature", () => {
     );
     await user.click(screen.getByLabelText(/Agregar firma de instructor/i));
 
-    expect(await screen.findByAltText("Firma de Emir")).toBeInTheDocument();
+    expect(await screen.findByAltText(/Firma de Emir/i)).toBeInTheDocument();
 
     const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
     fireEvent.change(fileInput, {

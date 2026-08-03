@@ -17,12 +17,18 @@ async function getPublicId(context: CertificateRouteContext): Promise<string> {
 }
 
 function serializeCertificate<
-  T extends { publicId: string; createdAt: Date; updatedAt: Date },
+  T extends {
+    publicId: string;
+    createdAt: Date;
+    updatedAt: Date;
+    expiresAt?: Date | null;
+  },
 >(certificate: T) {
   return {
     ...certificate,
     createdAt: certificate.createdAt.toISOString(),
     updatedAt: certificate.updatedAt.toISOString(),
+    expiresAt: certificate.expiresAt?.toISOString() ?? null,
     publicUrl: getPublicCertificateUrl(certificate.publicId),
   };
 }

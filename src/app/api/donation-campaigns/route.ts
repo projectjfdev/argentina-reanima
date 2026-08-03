@@ -13,6 +13,7 @@ type PublicCampaign = {
   locality: string;
   address: string;
   placeImageUrl: string;
+  additionalImageUrls: string[];
   youtubeVideoUrl: string | null;
   invoiceImageUrl: string | null;
   invoiceImageOriginalName: string | null;
@@ -51,6 +52,7 @@ function serializeCampaign(
     locality: campaign.locality,
     address: campaign.address,
     placeImageUrl: campaign.placeImageUrl,
+    additionalImageUrls: campaign.additionalImageUrls,
     youtubeVideoUrl: campaign.youtubeVideoUrl,
     invoiceImageUrl: campaign.invoiceImageUrl,
     invoiceImageOriginalName: campaign.invoiceImageOriginalName,
@@ -105,6 +107,7 @@ export async function GET(request: NextRequest) {
           locality: true,
           address: true,
           placeImageUrl: true,
+          additionalImageUrls: true,
           youtubeVideoUrl: true,
           invoiceImageUrl: true,
           invoiceImageOriginalName: true,

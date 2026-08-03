@@ -68,6 +68,66 @@ describe("validateDonationCampaignPayload", () => {
     });
   });
 
+  it("accepts up to two additional campaign images", () => {
+    expect(
+      validateDonationCampaignPayload({
+        ...VALID_CAMPAIGN_PAYLOAD,
+        additionalImageUrls: [
+          " https://res.cloudinary.com/demo/image/upload/extra-1.jpg ",
+          "https://res.cloudinary.com/demo/image/upload/extra-2.jpg",
+        ],
+        additionalImagePublicIds: [
+          " donation-campaigns/additional-images/extra-1 ",
+          "donation-campaigns/additional-images/extra-2",
+        ],
+      }),
+    ).toMatchObject({
+      success: true,
+      data: {
+        additionalImageUrls: [
+          "https://res.cloudinary.com/demo/image/upload/extra-1.jpg",
+          "https://res.cloudinary.com/demo/image/upload/extra-2.jpg",
+        ],
+        additionalImagePublicIds: [
+          "donation-campaigns/additional-images/extra-1",
+          "donation-campaigns/additional-images/extra-2",
+        ],
+      },
+    });
+  });
+
+  it("rejects more than two additional campaign images", () => {
+    expect(
+      validateDonationCampaignPayload({
+        ...VALID_CAMPAIGN_PAYLOAD,
+        additionalImageUrls: ["1", "2", "3"],
+        additionalImagePublicIds: ["1", "2", "3"],
+      }),
+    ).toEqual({
+      success: false,
+      errors: {
+        additionalImageUrls: "No se pueden cargar mas de 2 imagenes adicionales",
+        additionalImagePublicIds:
+          "No se pueden cargar mas de 2 imagenes adicionales",
+      },
+    });
+  });
+
+  it("rejects inconsistent additional campaign image arrays", () => {
+    expect(
+      validateDonationCampaignPayload({
+        ...VALID_CAMPAIGN_PAYLOAD,
+        additionalImageUrls: ["https://res.cloudinary.com/demo/image/upload/extra.jpg"],
+        additionalImagePublicIds: [],
+      }),
+    ).toEqual({
+      success: false,
+      errors: {
+        additionalImages: "Las imagenes adicionales son invalidas",
+      },
+    });
+  });
+
   it("rejects an invalid YouTube URL", () => {
     expect(
       validateDonationCampaignPayload({

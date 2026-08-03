@@ -9,6 +9,10 @@ import {
   certificateTextHasRecipientNamePlaceholder,
 } from "./certificateTextTemplate";
 import { normalizeCertificateEmail } from "./normalizeCertificateEmail";
+import {
+  isCertificateDateInput,
+  parseCertificateDateInput,
+} from "./certificateDates";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -21,6 +25,7 @@ export type CertificatePayloadInput = {
   templateKey?: unknown;
   instructorSignatureEnabled?: unknown;
   instructorKey?: unknown;
+  expiresAt?: unknown;
 };
 
 export type ValidCertificatePayload = {
@@ -33,6 +38,7 @@ export type ValidCertificatePayload = {
   templateKey: CertificateTemplateKey;
   instructorSignatureEnabled: boolean;
   instructorKey: string | null;
+  expiresAt: Date | null;
 };
 
 export type CertificatePayloadValidationResult =
@@ -61,6 +67,7 @@ export function validateCertificatePayload(
     input.instructorSignatureEnabled,
   );
   const instructorKey = getTrimmedString(input.instructorKey);
+  const expiresAt = parseCertificateDateInput(input.expiresAt);
 
   const errors: Record<string, string> = {};
 
@@ -85,6 +92,9 @@ export function validateCertificatePayload(
   ) {
     errors.instructorKey = "El instructor seleccionado no es valido";
   }
+  if (!isCertificateDateInput(input.expiresAt)) {
+    errors.expiresAt = "La fecha de vencimiento no es valida";
+  }
 
   if (Object.keys(errors).length > 0) {
     return { success: false, errors };
@@ -102,6 +112,7 @@ export function validateCertificatePayload(
       templateKey: templateKey as CertificateTemplateKey,
       instructorSignatureEnabled,
       instructorKey: instructorSignatureEnabled ? instructorKey : null,
+      expiresAt,
     },
   };
 }

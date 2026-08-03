@@ -61,6 +61,7 @@ export async function GET() {
         serialNumber: true,
         instructorSignatureEnabled: true,
         instructorKey: true,
+        expiresAt: true,
         status: true,
       },
       orderBy: { createdAt: "desc" },
@@ -68,7 +69,10 @@ export async function GET() {
 
     return NextResponse.json({
       message: "Certificados obtenidos correctamente",
-      certificates,
+      certificates: certificates.map((certificate) => ({
+        ...certificate,
+        expiresAt: certificate.expiresAt?.toISOString() ?? null,
+      })),
       success: true,
     });
   } catch (error) {

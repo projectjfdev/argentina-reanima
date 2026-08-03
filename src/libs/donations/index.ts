@@ -66,6 +66,7 @@ export {
 } from "./donationService";
 export {
   destroyDonationAsset,
+  uploadDonationCampaignAdditionalImages,
   uploadDonationCampaignInvoiceImage,
   uploadDonationCampaignPlaceImage,
   uploadDonationReceipt,

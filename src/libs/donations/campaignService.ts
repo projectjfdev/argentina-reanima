@@ -2,6 +2,7 @@ import { DonationCampaignStatus, DonationStatus, Prisma } from "@/generated/pris
 import { prisma } from "@/libs/db";
 import {
   destroyDonationAsset,
+  uploadDonationCampaignAdditionalImages,
   uploadDonationCampaignInvoiceImage,
   uploadDonationCampaignPlaceImage,
 } from "./cloudinaryDonationStorage";
@@ -158,17 +159,36 @@ export async function createDonationCampaignWithPlaceImage(
   input: DonationCampaignWithImageInput,
   placeImage: File,
   invoiceImage?: File | null,
+  additionalImages: File[] = [],
 ) {
-  const uploadedImage = await uploadDonationCampaignPlaceImage(placeImage);
-  const uploadedInvoiceImage = invoiceImage
-    ? await uploadDonationCampaignInvoiceImage(invoiceImage)
-    : null;
+  let uploadedImage: Awaited<
+    ReturnType<typeof uploadDonationCampaignPlaceImage>
+  > | null = null;
+  let uploadedInvoiceImage: Awaited<
+    ReturnType<typeof uploadDonationCampaignInvoiceImage>
+  > | null = null;
+  let uploadedAdditionalImages: Awaited<
+    ReturnType<typeof uploadDonationCampaignAdditionalImages>
+  > = [];
 
   try {
+    uploadedImage = await uploadDonationCampaignPlaceImage(placeImage);
+    uploadedInvoiceImage = invoiceImage
+      ? await uploadDonationCampaignInvoiceImage(invoiceImage)
+      : null;
+    uploadedAdditionalImages =
+      additionalImages.length > 0
+        ? await uploadDonationCampaignAdditionalImages(additionalImages)
+        : [];
+
     return await createDonationCampaign({
       ...input,
       placeImageUrl: uploadedImage.url,
       placeImagePublicId: uploadedImage.publicId,
+      additionalImageUrls: uploadedAdditionalImages.map((image) => image.url),
+      additionalImagePublicIds: uploadedAdditionalImages.map(
+        (image) => image.publicId,
+      ),
       invoiceImageUrl: uploadedInvoiceImage?.url ?? null,
       invoiceImagePublicId: uploadedInvoiceImage?.publicId ?? null,
       invoiceImageResourceType: uploadedInvoiceImage?.resourceType ?? null,
@@ -176,10 +196,15 @@ export async function createDonationCampaignWithPlaceImage(
       invoiceImageBytes: uploadedInvoiceImage?.bytes ?? null,
     });
   } catch (error) {
-    await destroyDonationAsset(uploadedImage.publicId, uploadedImage.resourceType);
+    await destroyDonationAsset(uploadedImage?.publicId, uploadedImage?.resourceType);
     await destroyDonationAsset(
       uploadedInvoiceImage?.publicId,
       uploadedInvoiceImage?.resourceType,
+    );
+    await Promise.all(
+      uploadedAdditionalImages.map((image) =>
+        destroyDonationAsset(image.publicId, image.resourceType),
+      ),
     );
     throw error;
   }
@@ -235,12 +260,16 @@ export async function updateActiveDonationCampaignWithPlaceImage(
   placeImage?: File | null,
   invoiceImage?: File | null,
   removeInvoiceImage = false,
+  additionalImages: File[] = [],
+  removeAdditionalImages = false,
 ) {
   const existingCampaign = await prisma.donationCampaign.findUnique({
     where: { id: campaignId },
     select: {
       placeImageUrl: true,
       placeImagePublicId: true,
+      additionalImageUrls: true,
+      additionalImagePublicIds: true,
       invoiceImagePublicId: true,
       invoiceImageResourceType: true,
     },
@@ -254,19 +283,46 @@ export async function updateActiveDonationCampaignWithPlaceImage(
     });
   }
 
-  const uploadedImage = placeImage
-    ? await uploadDonationCampaignPlaceImage(placeImage)
-    : null;
-  const uploadedInvoiceImage = invoiceImage
-    ? await uploadDonationCampaignInvoiceImage(invoiceImage)
-    : null;
+  let uploadedPlaceImage: Awaited<
+    ReturnType<typeof uploadDonationCampaignPlaceImage>
+  > | null = null;
+  let uploadedInvoiceImage: Awaited<
+    ReturnType<typeof uploadDonationCampaignInvoiceImage>
+  > | null = null;
+  let uploadedAdditionalImages: Awaited<
+    ReturnType<typeof uploadDonationCampaignAdditionalImages>
+  > = [];
 
   try {
+    uploadedPlaceImage = placeImage
+      ? await uploadDonationCampaignPlaceImage(placeImage)
+      : null;
+    uploadedInvoiceImage = invoiceImage
+      ? await uploadDonationCampaignInvoiceImage(invoiceImage)
+      : null;
+    uploadedAdditionalImages =
+      additionalImages.length > 0
+        ? await uploadDonationCampaignAdditionalImages(additionalImages)
+        : [];
+    const shouldReplaceAdditionalImages =
+      uploadedAdditionalImages.length > 0 || removeAdditionalImages;
+
     const updatedCampaign = await updateActiveDonationCampaign(campaignId, {
       ...input,
-      placeImageUrl: uploadedImage?.url ?? existingCampaign.placeImageUrl,
+      placeImageUrl: uploadedPlaceImage?.url ?? existingCampaign.placeImageUrl,
       placeImagePublicId:
-        uploadedImage?.publicId ?? existingCampaign.placeImagePublicId,
+        uploadedPlaceImage?.publicId ?? existingCampaign.placeImagePublicId,
+      ...(shouldReplaceAdditionalImages
+        ? {
+            additionalImageUrls: uploadedAdditionalImages.map((image) => image.url),
+            additionalImagePublicIds: uploadedAdditionalImages.map(
+              (image) => image.publicId,
+            ),
+          }
+        : {
+            additionalImageUrls: existingCampaign.additionalImageUrls,
+            additionalImagePublicIds: existingCampaign.additionalImagePublicIds,
+          }),
       ...(uploadedInvoiceImage
         ? {
             invoiceImageUrl: uploadedInvoiceImage.url,
@@ -286,8 +342,15 @@ export async function updateActiveDonationCampaignWithPlaceImage(
           : {}),
     });
 
-    if (uploadedImage) {
+    if (uploadedPlaceImage) {
       await destroyDonationAsset(existingCampaign.placeImagePublicId);
+    }
+    if (shouldReplaceAdditionalImages) {
+      await Promise.all(
+        existingCampaign.additionalImagePublicIds.map((publicId) =>
+          destroyDonationAsset(publicId),
+        ),
+      );
     }
     if (uploadedInvoiceImage || removeInvoiceImage) {
       await destroyDonationAsset(
@@ -298,10 +361,18 @@ export async function updateActiveDonationCampaignWithPlaceImage(
 
     return updatedCampaign;
   } catch (error) {
-    await destroyDonationAsset(uploadedImage?.publicId, uploadedImage?.resourceType);
+    await destroyDonationAsset(
+      uploadedPlaceImage?.publicId,
+      uploadedPlaceImage?.resourceType,
+    );
     await destroyDonationAsset(
       uploadedInvoiceImage?.publicId,
       uploadedInvoiceImage?.resourceType,
+    );
+    await Promise.all(
+      uploadedAdditionalImages.map((image) =>
+        destroyDonationAsset(image.publicId, image.resourceType),
+      ),
     );
     throw error;
   }

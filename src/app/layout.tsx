@@ -1,6 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Lora } from "next/font/google";
 import "./globals.css";
 import { NewsProvider } from "@/context/NewsContext";
 import { CourseProvider } from "@/context/CourseContext";
@@ -13,6 +13,11 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const lora = Lora({
+  variable: "--font-certificate-serif",
   subsets: ["latin"],
 });
 
@@ -58,7 +63,7 @@ export default function RootLayout({
   return (
     <html lang="es" translate="no">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} antialiased`}
       >
         <NextAuthProvider>
           <NewsProvider>

@@ -12,8 +12,8 @@ interface DonationBannerProps {
 
 export const DonationBanner = ({
   href = "/donar",
-  message = "Ayudanos a instalar un DEA.",
-  cta = "Conocé la campaña solidaria.",
+  message = "QUIERO SER PARTE",
+  cta = "de una nueva oportunidad.",
 }: DonationBannerProps) => {
   const [isVisible, setIsVisible] = useState(true);
 

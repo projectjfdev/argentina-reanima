@@ -43,6 +43,7 @@ async function ValidateCertificateContent({
       serialNumber: true,
       instructorSignatureEnabled: true,
       instructorKey: true,
+      expiresAt: true,
       status: true,
     },
   });
@@ -109,6 +110,7 @@ async function ValidateCertificateContent({
           <CertificateValidationContent
             certificate={{
               ...certificate,
+              expiresAt: certificate.expiresAt?.toISOString() ?? null,
               publicUrl,
               qrDataUrl,
             }}

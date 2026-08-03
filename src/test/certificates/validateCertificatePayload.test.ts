@@ -39,6 +39,63 @@ describe("validateCertificatePayload", () => {
         templateKey: DEFAULT_CERTIFICATE_TEMPLATE_KEY,
         instructorSignatureEnabled: false,
         instructorKey: null,
+        expiresAt: null,
+      },
+    });
+  });
+
+  it("accepts an absent expiration date", () => {
+    const result = validateCertificatePayload({
+      ...VALID_PAYLOAD,
+      expiresAt: undefined,
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      data: {
+        expiresAt: null,
+      },
+    });
+  });
+
+  it("accepts an empty expiration date", () => {
+    const result = validateCertificatePayload({
+      ...VALID_PAYLOAD,
+      expiresAt: "",
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      data: {
+        expiresAt: null,
+      },
+    });
+  });
+
+  it("accepts a valid expiration date as a calendar date", () => {
+    const result = validateCertificatePayload({
+      ...VALID_PAYLOAD,
+      expiresAt: "2028-10-15",
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      data: {
+        expiresAt: new Date("2028-10-15T00:00:00.000Z"),
+      },
+    });
+  });
+
+  it("rejects an invalid expiration date", () => {
+    const result = validateCertificatePayload({
+      ...VALID_PAYLOAD,
+      expiresAt: "2028-15-40",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      errors: {
+        expiresAt: "La fecha de vencimiento no es valida",
       },
     });
   });

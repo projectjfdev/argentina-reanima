@@ -14,7 +14,9 @@ const RECEIPT_MIME_TYPES = new Set([
   "image/png",
 ]);
 
-type UploadKind = "placeImage" | "receipt" | "invoice";
+const MAX_ADDITIONAL_IMAGE_FILES = 2;
+
+type UploadKind = "placeImage" | "receipt" | "invoice" | "additionalImage";
 
 export type CloudinaryStoredAsset = {
   url: string;
@@ -29,11 +31,14 @@ export type UploadValidationResult =
   | { success: false; error: string };
 
 function getAllowedMimeTypes(kind: UploadKind) {
-  return kind === "placeImage" ? PLACE_IMAGE_MIME_TYPES : RECEIPT_MIME_TYPES;
+  return kind === "placeImage" || kind === "additionalImage"
+    ? PLACE_IMAGE_MIME_TYPES
+    : RECEIPT_MIME_TYPES;
 }
 
 function getUploadLabel(kind: UploadKind) {
   if (kind === "placeImage") return "imagen del lugar";
+  if (kind === "additionalImage") return "imagenes adicionales";
   if (kind === "invoice") return "factura";
 
   return "comprobante";
@@ -145,12 +150,12 @@ async function fileToDataUri(file: File): Promise<string> {
   return `data:${file.type};base64,${base64}`;
 }
 
-function createUploadValidationError(error: string) {
+function createUploadValidationError(error: string, field = "file") {
   return new DonationServiceError({
     code: "UPLOAD_VALIDATION_ERROR",
     message: error,
     status: 400,
-    details: { file: error },
+    details: { [field]: error },
   });
 }
 
@@ -195,6 +200,66 @@ export async function uploadDonationCampaignPlaceImage(
   } catch (error) {
     console.error("Error uploading donation campaign place image:", error);
     throw createUploadError("No se pudo subir la imagen del lugar");
+  }
+}
+
+export async function uploadDonationCampaignAdditionalImages(
+  files: File[],
+): Promise<CloudinaryStoredAsset[]> {
+  if (files.length > MAX_ADDITIONAL_IMAGE_FILES) {
+    throw createUploadValidationError(
+      "No se pueden cargar mas de 2 imagenes adicionales",
+      "additionalImages",
+    );
+  }
+
+  const uploadedImages: CloudinaryStoredAsset[] = [];
+
+  try {
+    for (const file of files) {
+      const validation = validateDonationUploadFile(file, "additionalImage");
+
+      if (!validation.success) {
+        throw createUploadValidationError(validation.error, "additionalImages");
+      }
+
+      const uploadResult = await cloudinary.uploader.upload(
+        await fileToDataUri(file),
+        {
+          folder: "donation-campaigns/additional-images",
+          resource_type: "image",
+          transformation: [
+            {
+              crop: "fill",
+              quality: 70,
+              format: "auto",
+              strip_metadata: true,
+            },
+          ],
+        },
+      );
+
+      uploadedImages.push({
+        url: uploadResult.secure_url,
+        publicId: uploadResult.public_id,
+        resourceType: uploadResult.resource_type,
+        originalName: file.name,
+        bytes: uploadResult.bytes,
+      });
+    }
+
+    return uploadedImages;
+  } catch (error) {
+    await Promise.all(
+      uploadedImages.map((image) =>
+        destroyDonationAsset(image.publicId, image.resourceType),
+      ),
+    );
+
+    if (error instanceof DonationServiceError) throw error;
+
+    console.error("Error uploading donation campaign additional images:", error);
+    throw createUploadError("No se pudieron subir las imagenes adicionales");
   }
 }
 

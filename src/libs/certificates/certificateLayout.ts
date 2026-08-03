@@ -56,11 +56,17 @@ export const CERTIFICATE_DYNAMIC_LAYOUT = {
     topPercent: 10,
     widthPercent: 28,
   },
+  expirationText: {
+    leftPercent: 60,
+    topPercent: 10,
+    widthPercent: 32,
+  },
 } as const;
 
 export const CERTIFICATE_PREVIEW_TEXT_STYLE = {
   title: {
-    fontSize: "clamp(18px, 4vw, 46px)",
+    fontSize: "clamp(14px, 3.2vw, 37px)",
+    // fontSize: "clamp(18px, 4vw, 46px)",
     lineHeight: 1.1,
     letterSpacing: "0.08em",
   },
@@ -81,6 +87,10 @@ export const CERTIFICATE_PREVIEW_TEXT_STYLE = {
     lineHeight: 1.15,
   },
   serialNumber: {
+    fontSize: "clamp(5px, 0.85vw, 10px)",
+    lineHeight: 1.25,
+  },
+  expirationText: {
     fontSize: "clamp(5px, 0.85vw, 10px)",
     lineHeight: 1.25,
   },
