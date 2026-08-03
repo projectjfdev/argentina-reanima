@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { DonationBanner } from "@/components/DonationBanner/DonationBanner";
+// import { DonationBanner } from "@/components/DonationBanner/DonationBanner";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -221,9 +221,9 @@ const Navbar = ({
                 <NavigationMenuItem>
                   <DesktopNavLink href="/contacto">Contacto</DesktopNavLink>
                 </NavigationMenuItem>
-                <NavigationMenuItem>
+                {/* <NavigationMenuItem>
                   <DesktopDropdown group={navGroups[2]} />
-                </NavigationMenuItem>
+                </NavigationMenuItem> */}
               </NavigationMenuList>
             </NavigationMenu>
 
@@ -298,20 +298,20 @@ const Navbar = ({
           </div>
         </div>
       </div>
-      <Suspense fallback={null}>
+      {/* <Suspense fallback={null}>
         <HomeDonationBanner />
-      </Suspense>
+      </Suspense> */}
     </header>
   );
 };
 
-const HomeDonationBanner = () => {
-  const pathname = usePathname();
+// const HomeDonationBanner = () => {
+//   const pathname = usePathname();
 
-  if (pathname !== "/") return null;
+//   if (pathname !== "/") return null;
 
-  return <DonationBanner />;
-};
+//   return <DonationBanner />;
+// };
 
 const DesktopDropdown = ({ group }: { group: MenuGroup }) => {
   const [isOpen, setIsOpen] = useState(false);
