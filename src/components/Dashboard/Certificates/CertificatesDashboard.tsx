@@ -201,10 +201,8 @@ export function CertificatesDashboard() {
     bulkValidation?.previewRows?.[0]?.recipientName || "Nombre de ejemplo";
   const previewData: CertificatePreviewData = useMemo(
     () => {
-      const { expiresAt: _expiresAt, ...previewValues } = watchedValues;
-
       return {
-        ...previewValues,
+        ...watchedValues,
         recipientName:
           certificateMode === "bulk"
             ? bulkPreviewRecipientName

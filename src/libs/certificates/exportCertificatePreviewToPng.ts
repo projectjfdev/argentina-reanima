@@ -50,7 +50,51 @@ async function inlineImages(source: Element, clone: Element) {
       const cloneImage = cloneImages[index];
       if (!cloneImage) return;
 
-      cloneImage.setAttribute("src", await srcToDataUrl(sourceImage.currentSrc || sourceImage.src));
+      cloneImage.setAttribute(
+        "src",
+        await srcToDataUrl(sourceImage.currentSrc || sourceImage.src),
+      );
+    }),
+  );
+}
+
+async function waitForFonts() {
+  if ("fonts" in document) {
+    await document.fonts.ready;
+  }
+}
+
+async function waitForImages(element: HTMLElement) {
+  const images = Array.from(element.querySelectorAll("img"));
+
+  await Promise.all(
+    images.map(async (image) => {
+      if (image.complete && image.naturalWidth > 0) return;
+      if (image.complete) {
+        throw new Error("No se pudo cargar una imagen del certificado");
+      }
+
+      if (image.decode) {
+        try {
+          await image.decode();
+          return;
+        } catch {
+          // Fall back to load/error events below.
+        }
+      }
+
+      if (image.complete) {
+        throw new Error("No se pudo cargar una imagen del certificado");
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        image.addEventListener("load", () => resolve(), { once: true });
+        image.addEventListener(
+          "error",
+          () => reject(new Error("No se pudo cargar una imagen del certificado")),
+          { once: true },
+        );
+      });
     }),
   );
 }
@@ -68,6 +112,9 @@ export async function exportCertificatePreviewToPng(
   element: HTMLElement,
   serialNumber: string,
 ) {
+  await waitForFonts();
+  await waitForImages(element);
+
   const bounds = element.getBoundingClientRect();
   const clone = element.cloneNode(true) as HTMLElement;
 
@@ -97,7 +144,8 @@ export async function exportCertificatePreviewToPng(
 
   await new Promise<void>((resolve, reject) => {
     image.onload = () => resolve();
-    image.onerror = () => reject(new Error("No se pudo renderizar el certificado"));
+    image.onerror = () =>
+      reject(new Error("No se pudo renderizar el certificado"));
     image.src = svgUrl;
   });
 

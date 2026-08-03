@@ -51,3 +51,24 @@ export function formatCertificateDate(
   const [year, month, day] = inputValue.split("-");
   return `${day}/${month}/${year}`;
 }
+
+export function formatCertificateLongDate(
+  value: Date | string | null | undefined,
+): string {
+  const inputValue = getCertificateDateInputValue(value);
+  const date = parseCertificateDateInput(inputValue);
+  if (!date) return "";
+
+  const formattedDate = new Intl.DateTimeFormat("es-AR", {
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+    year: "numeric",
+  }).format(date);
+
+  return formattedDate.replace(
+    / de ([a-záéíóúñ]+) de /i,
+    (_match, monthName: string) =>
+      ` de ${monthName.charAt(0).toUpperCase()}${monthName.slice(1)} de `,
+  );
+}

@@ -36,7 +36,7 @@ type CertificateValidationContentProps = {
 export function CertificateValidationContent({
   certificate,
 }: CertificateValidationContentProps) {
-  const previewRef = useRef<HTMLDivElement>(null);
+  const exportPreviewRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [hasCopiedLink, setHasCopiedLink] = useState(false);
   const shareUrl = certificate.publicUrl || "";
@@ -67,14 +67,28 @@ export function CertificateValidationContent({
       icon: Twitter,
     },
   ];
+  const certificatePreviewData: CertificatePreviewData = {
+    recipientName: certificate.recipientName,
+    recipientDni: certificate.recipientDni,
+    certificateText: certificate.certificateText,
+    footerText: certificate.footerText,
+    templateKey: certificate.templateKey,
+    serialNumber: certificate.serialNumber,
+    instructorSignatureEnabled: certificate.instructorSignatureEnabled,
+    instructorKey: certificate.instructorKey,
+    publicId: certificate.publicId,
+    publicUrl: certificate.publicUrl,
+    qrDataUrl: certificate.qrDataUrl,
+    expiresAt: certificate.expiresAt,
+  };
 
   const handleDownloadPng = async () => {
-    if (!previewRef.current) return;
+    if (!exportPreviewRef.current) return;
 
     try {
       setIsExporting(true);
       await exportCertificatePreviewToPng(
-        previewRef.current,
+        exportPreviewRef.current,
         certificate.serialNumber,
       );
     } catch (error) {
@@ -114,25 +128,19 @@ export function CertificateValidationContent({
 
   return (
     <>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed left-[-10000px] top-0 overflow-hidden opacity-0"
+      >
+        <CertificatePreview
+          ref={exportPreviewRef}
+          variant="export"
+          data={certificatePreviewData}
+        />
+      </div>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)]">
         <section className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
-          <CertificatePreview
-            ref={previewRef}
-            data={{
-              recipientName: certificate.recipientName,
-              recipientDni: certificate.recipientDni,
-              certificateText: certificate.certificateText,
-              footerText: certificate.footerText,
-              templateKey: certificate.templateKey,
-              serialNumber: certificate.serialNumber,
-              instructorSignatureEnabled:
-                certificate.instructorSignatureEnabled,
-              instructorKey: certificate.instructorKey,
-              publicId: certificate.publicId,
-              publicUrl: certificate.publicUrl,
-              qrDataUrl: certificate.qrDataUrl,
-            }}
-          />
+          <CertificatePreview data={certificatePreviewData} />
         </section>
 
         <aside className="rounded-lg border border-neutral-200 bg-white p-5 shadow-sm">

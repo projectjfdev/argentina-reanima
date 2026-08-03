@@ -10,6 +10,7 @@ export { linkCertificatesToUserByEmail } from "./linkCertificatesToUserByEmail";
 export { normalizeCertificateEmail } from "./normalizeCertificateEmail";
 export {
   formatCertificateDate,
+  formatCertificateLongDate,
   getCertificateDateInputValue,
   isCertificateDateInput,
   parseCertificateDateInput,
