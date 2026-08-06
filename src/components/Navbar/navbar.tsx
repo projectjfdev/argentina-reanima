@@ -221,9 +221,9 @@ const Navbar = ({
                 <NavigationMenuItem>
                   <DesktopNavLink href="/contacto">Contacto</DesktopNavLink>
                 </NavigationMenuItem>
-                <NavigationMenuItem>
+                {/*<NavigationMenuItem>
                   <DesktopDropdown group={navGroups[2]} />
-                </NavigationMenuItem>
+                </NavigationMenuItem>} */}
               </NavigationMenuList>
             </NavigationMenu>
 
