@@ -55,6 +55,7 @@ type Campaign = {
   additionalImageUrls: string[];
   additionalImagePublicIds: string[];
   youtubeVideoUrl: string | null;
+  invoiceImageUrls: string[];
   invoiceImageUrl: string | null;
   invoiceImageOriginalName: string | null;
   goalAmount: string;
@@ -110,7 +111,7 @@ type CampaignFormState = {
   youtubeVideoUrl: string;
   goalAmount: string;
   placeImage: File | null;
-  invoiceImage: File | null;
+  invoiceImages: File[];
   removeInvoiceImage: boolean;
   additionalImages: File[];
   removeAdditionalImages: boolean;
@@ -123,14 +124,16 @@ const EMPTY_FORM: CampaignFormState = {
   youtubeVideoUrl: "",
   goalAmount: "",
   placeImage: null,
-  invoiceImage: null,
+  invoiceImages: [],
   removeInvoiceImage: false,
   additionalImages: [],
   removeAdditionalImages: false,
 };
 
 const MAX_ADDITIONAL_IMAGES = 2;
+const MAX_INVOICE_IMAGES = 2;
 const ADDITIONAL_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const INVOICE_IMAGE_TYPES = ["image/jpeg", "image/png"];
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const moneyFormatter = new Intl.NumberFormat("es-AR", {
@@ -373,7 +376,7 @@ export function DonationCampaignDashboard() {
       youtubeVideoUrl: campaign.youtubeVideoUrl ?? "",
       goalAmount: campaign.goalAmount,
       placeImage: null,
-      invoiceImage: null,
+      invoiceImages: [],
       removeInvoiceImage: false,
       additionalImages: [],
       removeAdditionalImages: false,
@@ -401,11 +404,13 @@ export function DonationCampaignDashboard() {
       formData.append("youtubeVideoUrl", form.youtubeVideoUrl);
       formData.append("goalAmount", form.goalAmount);
       if (form.placeImage) formData.append("placeImage", form.placeImage);
-      if (form.invoiceImage) formData.append("invoiceImage", form.invoiceImage);
+      form.invoiceImages.forEach((image) => {
+        formData.append("invoiceImages", image);
+      });
       form.additionalImages.forEach((image) => {
         formData.append("additionalImages", image);
       });
-      if (form.removeInvoiceImage && !form.invoiceImage) {
+      if (form.removeInvoiceImage && form.invoiceImages.length === 0) {
         formData.append("removeInvoiceImage", "true");
       }
       if (form.removeAdditionalImages && form.additionalImages.length === 0) {
@@ -427,8 +432,8 @@ export function DonationCampaignDashboard() {
       if (!response.ok) {
         if (data.errors && typeof data.errors === "object") {
           const nextErrors = { ...data.errors };
-          if (nextErrors.file && form.invoiceImage) {
-            nextErrors.invoiceImage = nextErrors.file;
+          if (nextErrors.file && form.invoiceImages.length > 0) {
+            nextErrors.invoiceImages = nextErrors.file;
           }
           if (nextErrors.file && form.additionalImages.length > 0) {
             nextErrors.additionalImages = nextErrors.file;
@@ -746,7 +751,7 @@ export function DonationCampaignDashboard() {
           detail={
             activeCampaign
               ? `${formatMoney(activeCampaign.progress?.approvedTotal)} de ${formatMoney(activeCampaign.goalAmount)}`
-              : "Crea una campaña para publicar /donar"
+              : "Crea una campaña para publicar /quiero-ser-parte"
           }
           icon={ShieldCheck}
         />
@@ -1004,73 +1009,97 @@ export function DonationCampaignDashboard() {
             <Field
               label="Factura de compra"
               optional
-              error={campaignFormErrors.invoiceImage}
+              error={campaignFormErrors.invoiceImages}
             >
               <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-4 py-5 text-center text-sm transition-colors hover:border-rose-300 hover:bg-rose-50/70">
                 <FileText className="h-5 w-5 text-rose-700" />
                 <span className="font-medium text-neutral-900">
-                  {form.invoiceImage?.name ??
-                    (selectedCampaign?.invoiceImageUrl &&
-                    !form.removeInvoiceImage
+                  {form.invoiceImages.length > 0
+                    ? form.invoiceImages.map((image) => image.name).join(", ")
+                    : selectedCampaign?.invoiceImageUrl &&
+                        !form.removeInvoiceImage
                       ? "Reemplazar factura actual"
-                      : "Seleccionar factura")}
+                      : "Seleccionar hasta 2 paginas"}
                 </span>
                 <span className="text-xs text-neutral-500">
                   JPG, JPEG o PNG hasta 5MB
                 </span>
                 <input
                   type="file"
+                  multiple
                   accept="image/jpeg,image/png"
                   className="sr-only"
                   onChange={(event) => {
-                    const invoiceImage = event.target.files?.[0] ?? null;
+                    const invoiceImages = Array.from(event.target.files ?? []);
 
-                    if (
-                      invoiceImage &&
-                      !["image/jpeg", "image/png"].includes(invoiceImage.type)
-                    ) {
+                    if (invoiceImages.length > MAX_INVOICE_IMAGES) {
                       event.target.value = "";
                       toast.error(
-                        "La factura debe ser una imagen JPG, JPEG o PNG.",
+                        "Solo se pueden cargar hasta 2 paginas de factura.",
+                      );
+                      return;
+                    }
+
+                    const invalidImage = invoiceImages.find(
+                      (image) =>
+                        !INVOICE_IMAGE_TYPES.includes(image.type) ||
+                        image.size > MAX_IMAGE_SIZE_BYTES,
+                    );
+
+                    if (invalidImage) {
+                      event.target.value = "";
+                      toast.error(
+                        "Las paginas de factura deben ser JPG, JPEG o PNG de hasta 5MB.",
                       );
                       return;
                     }
 
                     setForm((state) => ({
                       ...state,
-                      invoiceImage,
-                      removeInvoiceImage: invoiceImage
-                        ? false
-                        : state.removeInvoiceImage,
+                      invoiceImages,
+                      removeInvoiceImage:
+                        invoiceImages.length > 0
+                          ? false
+                          : state.removeInvoiceImage,
                     }));
                   }}
                 />
               </label>
-              {selectedCampaign?.invoiceImageUrl && !form.invoiceImage && (
-                <div className="mt-2 flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600">
-                  <span className="min-w-0 truncate">
-                    {form.removeInvoiceImage
-                      ? "La factura actual se eliminara al guardar."
-                      : (selectedCampaign.invoiceImageOriginalName ??
-                        "Factura cargada")}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 shrink-0 gap-2 border-red-200 text-red-700 hover:bg-red-50"
-                    onClick={() =>
-                      setForm((state) => ({
-                        ...state,
-                        removeInvoiceImage: !state.removeInvoiceImage,
-                      }))
-                    }
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    {form.removeInvoiceImage ? "Conservar" : "Eliminar"}
-                  </Button>
-                </div>
-              )}
+              {selectedCampaign?.invoiceImageUrl &&
+                form.invoiceImages.length === 0 && (
+                  <div className="mt-2 flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600">
+                    <span className="min-w-0 truncate">
+                      {form.removeInvoiceImage
+                        ? "La factura actual se eliminara al guardar."
+                        : `${selectedCampaign.invoiceImageUrls.length || 1} pagina${
+                            (selectedCampaign.invoiceImageUrls.length || 1) ===
+                            1
+                              ? ""
+                              : "s"
+                          } de factura cargada${
+                            (selectedCampaign.invoiceImageUrls.length || 1) ===
+                            1
+                              ? ""
+                              : "s"
+                          }`}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 shrink-0 gap-2 border-red-200 text-red-700 hover:bg-red-50"
+                      onClick={() =>
+                        setForm((state) => ({
+                          ...state,
+                          removeInvoiceImage: !state.removeInvoiceImage,
+                        }))
+                      }
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {form.removeInvoiceImage ? "Conservar" : "Eliminar"}
+                    </Button>
+                  </div>
+                )}
             </Field>
             <div className="flex gap-2 pt-2">
               <Button disabled={isSubmittingCampaign} className="gap-2">

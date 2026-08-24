@@ -1,4 +1,5 @@
 import { POST } from "@/app/api/donations/route";
+import { DonationStatus } from "@/generated/prisma";
 import { createPendingDonationWithReceipt } from "@/libs/donations";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -34,11 +35,16 @@ const donationsMock = vi.hoisted(() => {
 });
 
 const revalidatePathMock = vi.hoisted(() => vi.fn());
+const notifyNewDonationMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/libs/donations", () => donationsMock);
 
 vi.mock("next/cache", () => ({
   revalidatePath: revalidatePathMock,
+}));
+
+vi.mock("@/libs/donations/telegramNotifications", () => ({
+  notifyNewDonation: notifyNewDonationMock,
 }));
 
 const createPendingDonationWithReceiptMock = vi.mocked(
@@ -58,14 +64,24 @@ function createReceipt() {
 describe("POST /api/donations", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    notifyNewDonationMock.mockResolvedValue(undefined);
     createPendingDonationWithReceiptMock.mockResolvedValue({
       id: 12,
       campaignId: 7,
+      amount: null,
       isAnonymous: false,
       firstName: "Ana",
       lastName: "Perez",
-      status: "PENDING",
+      email: "ana@example.com",
+      status: DonationStatus.PENDING,
+      receiptUrl: "https://res.cloudinary.com/demo/image/upload/receipt.png",
+      receiptPublicId: "donation-campaigns/receipts/receipt",
+      receiptResourceType: "image",
+      receiptOriginalName: "comprobante.png",
+      receiptBytes: 7,
       createdAt: new Date("2026-07-16T10:00:00.000Z"),
+      updatedAt: new Date("2026-07-16T10:00:00.000Z"),
+      reviewedAt: null,
     });
   });
 
@@ -123,7 +139,7 @@ describe("POST /api/donations", () => {
       },
       receipt,
     );
-    expect(revalidatePathMock).toHaveBeenCalledWith("/donar");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/quiero-ser-parte");
     expect(revalidatePathMock).toHaveBeenCalledWith("/campanas-dea");
     expect(revalidatePathMock).toHaveBeenCalledWith("/api/donation-campaigns");
     expect(revalidatePathMock).toHaveBeenCalledWith(
@@ -131,6 +147,15 @@ describe("POST /api/donations", () => {
     );
     expect(revalidatePathMock).toHaveBeenCalledWith(
       "/api/donation-campaigns/7/donors",
+    );
+    expect(notifyNewDonationMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        campaignId: 7,
+        isAnonymous: false,
+        firstName: "Ana",
+        lastName: "Perez",
+        email: "ana@example.com",
+      }),
     );
   });
 });

@@ -44,7 +44,7 @@ export function revalidateCourseViews(courseId?: number) {
 }
 
 export function revalidateDonationCampaignViews(campaignId?: number) {
-  revalidatePath("/donar");
+  revalidatePath("/quiero-ser-parte");
   revalidatePath("/campanas-dea");
   revalidatePath("/api/donation-campaigns");
   revalidatePath("/api/donation-campaigns/current");

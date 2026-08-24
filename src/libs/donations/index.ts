@@ -68,6 +68,7 @@ export {
   destroyDonationAsset,
   uploadDonationCampaignAdditionalImages,
   uploadDonationCampaignInvoiceImage,
+  uploadDonationCampaignInvoiceImages,
   uploadDonationCampaignPlaceImage,
   uploadDonationReceipt,
   validateDonationInvoiceFile,

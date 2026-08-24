@@ -1,5 +1,5 @@
 import { DonationPageContent } from "@/components/Donations/DonationPageContent";
 
-export default function DonarPage() {
+export default function QuieroSerPartePage() {
   return <DonationPageContent />;
 }

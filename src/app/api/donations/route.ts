@@ -3,6 +3,7 @@ import {
   DonationServiceError,
 } from "@/libs/donations";
 import { revalidateDonationCampaignViews } from "@/libs/cache/revalidation";
+import { notifyNewDonation } from "@/libs/donations/telegramNotifications";
 import { NextRequest, NextResponse } from "next/server";
 
 function getFormString(formData: FormData, key: string) {
@@ -70,6 +71,9 @@ export async function POST(request: NextRequest) {
     );
 
     revalidateDonationCampaignViews(donation.campaignId);
+    await notifyNewDonation(donation).catch((error) => {
+      console.error("Error notifying Telegram donation:", error);
+    });
 
     return NextResponse.json(
       {

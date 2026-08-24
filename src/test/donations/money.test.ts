@@ -7,7 +7,7 @@ describe("validateMoneyAmount", () => {
       success: true,
       data: {
         amount: "1234.50",
-        cents: 123450n,
+        cents: 123450,
       },
     });
   });
@@ -17,7 +17,7 @@ describe("validateMoneyAmount", () => {
       success: true,
       data: {
         amount: "1234567.89",
-        cents: 123456789n,
+        cents: 123456789,
       },
     });
   });
@@ -34,7 +34,7 @@ describe("validateMoneyAmount", () => {
       success: true,
       data: {
         amount: "0.00",
-        cents: 0n,
+        cents: 0,
       },
     });
   });
@@ -53,4 +53,3 @@ describe("validateMoneyAmount", () => {
     });
   });
 });
-

@@ -39,7 +39,7 @@ export function HomeHero() {
                 </Link>
               </Button>
               {/* <Button asChild size="lg" variant="outline">
-                <Link href="/donar">❤️ QUIERO SER PARTE</Link>
+                <Link href="/quiero-ser-parte">❤️ QUIERO SER PARTE</Link>
               </Button> */}
             </div>
           </div>

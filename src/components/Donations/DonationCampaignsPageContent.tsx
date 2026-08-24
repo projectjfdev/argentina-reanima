@@ -32,6 +32,7 @@ type PublicCampaign = {
   address: string;
   placeImageUrl: string;
   additionalImageUrls: string[];
+  invoiceImageUrls: string[];
   invoiceImageUrl: string | null;
   invoiceImageOriginalName: string | null;
   goalAmount: string;
@@ -202,7 +203,7 @@ export function DonationCampaignsPageContent() {
             )}
             {activeCampaign && (
               <Button asChild className="mt-5 bg-primary text-white">
-                <Link href="/donar">
+                <Link href="/quiero-ser-parte">
                   Quiero ahora <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -395,8 +396,8 @@ function CampaignCard({
           <div className="flex flex-wrap items-center gap-2">
             {campaign.status === "ACTIVE" ? (
               <Button asChild className="bg-primary text-white">
-                <Link href="/donar">
-                  Donar <ArrowRight className="ml-2 h-4 w-4" />
+                <Link href="/quiero-ser-parte">
+                  Quiero ser parte <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             ) : (
@@ -405,7 +406,8 @@ function CampaignCard({
                 Objetivo alcanzado
               </div>
             )}
-            {campaign.invoiceImageUrl && (
+            {(campaign.invoiceImageUrls.length > 0 ||
+              campaign.invoiceImageUrl) && (
               <Button
                 type="button"
                 variant="outline"
@@ -503,11 +505,17 @@ function InvoiceDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const [hasImageError, setHasImageError] = useState(false);
-  const invoiceUrl = campaign?.invoiceImageUrl ?? null;
+  const invoiceUrls =
+    campaign && campaign.invoiceImageUrls.length > 0
+      ? campaign.invoiceImageUrls
+      : campaign?.invoiceImageUrl
+        ? [campaign.invoiceImageUrl]
+        : [];
+  const firstInvoiceUrl = invoiceUrls[0] ?? null;
 
   useEffect(() => {
     setHasImageError(false);
-  }, [invoiceUrl]);
+  }, [campaign?.id]);
 
   return (
     <Dialog open={Boolean(campaign)} onOpenChange={onOpenChange}>
@@ -528,13 +536,20 @@ function InvoiceDialog({
           </DialogHeader>
 
           <div className="min-h-0 flex-1 overflow-auto bg-slate-50 p-4 md:p-6">
-            {invoiceUrl && !hasImageError ? (
-              <img
-                src={invoiceUrl}
-                alt={`Factura de compra del DEA para ${campaign?.institutionName ?? "la campana"}`}
-                className="mx-auto h-auto max-w-full rounded-md border border-slate-200 bg-white object-contain shadow-sm"
-                onError={() => setHasImageError(true)}
-              />
+            {invoiceUrls.length > 0 && !hasImageError ? (
+              <div className="grid gap-4">
+                {invoiceUrls.slice(0, 2).map((invoiceUrl, index) => (
+                  <img
+                    key={`${campaign?.id}-invoice-${invoiceUrl}`}
+                    src={invoiceUrl}
+                    alt={`Factura de compra del DEA pagina ${index + 1} para ${
+                      campaign?.institutionName ?? "la campana"
+                    }`}
+                    className="mx-auto h-auto max-w-full rounded-md border border-slate-200 bg-white object-contain shadow-sm"
+                    onError={() => setHasImageError(true)}
+                  />
+                ))}
+              </div>
             ) : (
               <div className="rounded-md border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">
                 No se pudo cargar la imagen de la factura.
@@ -542,10 +557,14 @@ function InvoiceDialog({
             )}
           </div>
 
-          {invoiceUrl && (
+          {firstInvoiceUrl && (
             <div className="border-t border-slate-200 bg-white px-5 py-4 md:px-6">
               <Button asChild variant="outline" className="gap-2">
-                <a href={invoiceUrl} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={firstInvoiceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Abrir imágen en una nueva pestaña
                   <ExternalLink className="h-4 w-4" />
                 </a>

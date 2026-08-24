@@ -54,24 +54,24 @@ La cache futura de noticias/cursos debe planificarse despues de que la migracion
 
 Inventario por busqueda en `src`, `next.config.ts` y `package.json`:
 
-| Mecanismo | Estado actual |
-| --- | --- |
-| `cacheComponents` | No usado. |
-| `"use cache"` | No usado. |
-| `cacheTag` | No usado. |
-| `cacheLife` | No usado. |
-| `revalidateTag` | No usado. |
-| `updateTag` | No usado. |
-| `unstable_cache` | No usado. |
-| `cache` de React | No usado para datos de dominio. |
-| `fetchCache` | No usado. |
-| `dynamicParams` | No usado. |
-| `force-static` | No usado. |
-| `export const revalidate` | No usado. |
-| `dynamic = "force-dynamic"` | Usado en APIs de auth, donaciones y campanas. |
-| `fetch(..., { cache: "no-store" })` | Usado en cliente para campana actual y listado de campanas DEA. |
-| `revalidatePath` | Usado en noticias, cursos, donaciones y campanas admin. |
-| Headers HTTP de cache | No hay `Cache-Control` explicito para privadas/publicas criticas. |
+| Mecanismo                           | Estado actual                                                     |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| `cacheComponents`                   | No usado.                                                         |
+| `"use cache"`                       | No usado.                                                         |
+| `cacheTag`                          | No usado.                                                         |
+| `cacheLife`                         | No usado.                                                         |
+| `revalidateTag`                     | No usado.                                                         |
+| `updateTag`                         | No usado.                                                         |
+| `unstable_cache`                    | No usado.                                                         |
+| `cache` de React                    | No usado para datos de dominio.                                   |
+| `fetchCache`                        | No usado.                                                         |
+| `dynamicParams`                     | No usado.                                                         |
+| `force-static`                      | No usado.                                                         |
+| `export const revalidate`           | No usado.                                                         |
+| `dynamic = "force-dynamic"`         | Usado en APIs de auth, donaciones y campanas.                     |
+| `fetch(..., { cache: "no-store" })` | Usado en cliente para campana actual y listado de campanas DEA.   |
+| `revalidatePath`                    | Usado en noticias, cursos, donaciones y campanas admin.           |
+| Headers HTTP de cache               | No hay `Cache-Control` explicito para privadas/publicas criticas. |
 
 ### Resultado de build de produccion actual
 
@@ -79,18 +79,18 @@ El build de referencia con el modelo anterior (`npm run build`) paso correctamen
 
 Clasificacion relevante:
 
-| Ruta | Build actual | Observacion |
-| --- | --- | --- |
-| `/` | Estatica | Shell cliente; noticias recientes via `/api/news/lastThreeNews`. |
-| `/noticias` | Estatica | Shell cliente; listado via `/api/news`. |
-| `/capacitaciones` | Estatica | Shell cliente; listado via `/api/courses`. |
-| `/capacitaciones/[id]` | Dinamica | Pagina cliente con `useParams`; fetch cliente a `/api/courses/[id]`. |
-| `/donar` | Estatica | Shell cliente; datos via `/api/donation-campaigns/current` con `no-store`. |
-| `/campanas-dea` | Estatica | Shell cliente; datos via `/api/donation-campaigns` con `no-store`. |
-| `/certificado/validar/[publicId]` | Dinamica | Server Component con `params`, Prisma y `notFound`. |
-| `/mi-perfil` | Dinamica | Server Component con `getServerSession`, Prisma y `redirect`. |
-| `/dashboard/*` | Dinamicas | Layout con `getServerSession`; paginas dashboard son cliente. |
-| `/api/*` | Dinamicas | Route Handlers; varias declaran `force-dynamic`. |
+| Ruta                              | Build actual | Observacion                                                                |
+| --------------------------------- | ------------ | -------------------------------------------------------------------------- |
+| `/`                               | Estatica     | Shell cliente; noticias recientes via `/api/news/lastThreeNews`.           |
+| `/noticias`                       | Estatica     | Shell cliente; listado via `/api/news`.                                    |
+| `/capacitaciones`                 | Estatica     | Shell cliente; listado via `/api/courses`.                                 |
+| `/capacitaciones/[id]`            | Dinamica     | Pagina cliente con `useParams`; fetch cliente a `/api/courses/[id]`.       |
+| `/quiero-ser-parte`               | Estatica     | Shell cliente; datos via `/api/donation-campaigns/current` con `no-store`. |
+| `/campanas-dea`                   | Estatica     | Shell cliente; datos via `/api/donation-campaigns` con `no-store`.         |
+| `/certificado/validar/[publicId]` | Dinamica     | Server Component con `params`, Prisma y `notFound`.                        |
+| `/mi-perfil`                      | Dinamica     | Server Component con `getServerSession`, Prisma y `redirect`.              |
+| `/dashboard/*`                    | Dinamicas    | Layout con `getServerSession`; paginas dashboard son cliente.              |
+| `/api/*`                          | Dinamicas    | Route Handlers; varias declaran `force-dynamic`.                           |
 
 Warning observado en build anterior:
 
@@ -195,32 +195,32 @@ Implicacion:
 
 ## Clasificacion de rutas para la migracion
 
-| Ruta | Tipo | Debe permanecer dinamica | Puede fallar con Cache Components | Accion de migracion |
-| --- | --- | --- | --- | --- |
-| `/` | Publica estatica shell | No | Bajo | Mantener sin cache de datos. No agregar `"use cache"` aun. |
-| `/noticias` | Publica shell + fetch cliente | No | Bajo | Mantener como cliente; futura candidata a cache de datos. |
-| `/api/news` | GET publico, POST admin | GET puede ser futuro cacheado; POST no | Medio | Antes de cache real, asegurar que no se prerenderice accidentalmente si usa Prisma sin cache. |
-| `/api/news/[id]` | GET publico, PUT/DELETE admin | GET futuro detalle si existe | Medio | Igual que noticias; corregir invalidaciones en fase previa. |
-| `/api/news/lastThreeNews` | GET publico | Futuro cacheado | Medio | Futuro `use cache` en helper, no en handler. |
-| `/capacitaciones` | Publica shell + fetch cliente | No | Bajo | Mantener; futura candidata. |
-| `/capacitaciones/[id]` | Publica detalle cliente | No por pagina, si por API | Bajo/medio | Mantener cliente por ahora; futuro cachear helper de detalle. |
-| `/api/courses` | GET publico, POST/PUT admin | GET futuro cacheado; mutaciones no | Medio | Evitar prerender accidental; futura extraccion a helper. |
-| `/api/courses/[id]` | GET publico, PUT/DELETE admin | GET futuro cacheado | Medio | Evitar prerender accidental; futura cache por id. |
-| `/donar` | Publica shell + datos criticos cliente | Datos deben ser frescos | Bajo | Mantener `no-store`; no cachear. |
-| `/campanas-dea` | Publica shell + datos criticos cliente | Datos deben ser frescos | Bajo | Mantener `no-store`; no cachear. |
-| `/api/donation-campaigns/current` | Publica critica | Si | Alto | Quitar dependencia de `dynamic` como blindaje unico; garantizar runtime/no-store. |
-| `/api/donation-campaigns` | Publica critica | Si por ahora | Alto | Igual; no cachear totales/listado. |
-| `/api/donation-campaigns/[id]/donors` | Publica critica | Si | Alto | Agregar `no-store` tambien en fetch cliente de "ver mas". |
-| `/api/donations` | Mutacion publica | Si | Bajo | POST no cacheado; invalidacion solo post-exito. |
-| `/certificado/validar/[publicId]` | Publica critica | Si | Alto | Server Component con Prisma + params; necesitara `Suspense`/runtime boundary o reestructura. No cachear. |
-| `/api/certificates/validate/[publicId]` | Publica critica | Si | Alto | No cachear 404/410/valido; garantizar runtime/no-store. |
-| `/mi-perfil` | Personalizada | Si | Alto | `getServerSession` + Prisma; debe quedar en subtree dinamico con `Suspense` o page request-time. |
-| `/api/me/certificates` | Personalizada | Si | Alto | Garantizar no-store y runtime. |
-| `/dashboard/*` | Admin | Si | Alto | Layout con sesion/redirect. Requiere tratamiento especifico, no root Suspense global. |
-| `/api/admin/*` | Admin | Si | Alto | No cache; headers no-store; revisar `dynamic` deshabilitado. |
-| `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password` | Publicas cliente | No | Bajo | Formularios cliente; APIs no cache. |
-| `/auth/verify-email` | Publica con token | Si | Medio | `searchParams`; debe mantenerse runtime/stream si accede token server-side. |
-| Institucionales | Publicas estaticas | No | Bajo | Mantener como shell estatica/deterministica. |
+| Ruta                                                                             | Tipo                                   | Debe permanecer dinamica               | Puede fallar con Cache Components | Accion de migracion                                                                                      |
+| -------------------------------------------------------------------------------- | -------------------------------------- | -------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `/`                                                                              | Publica estatica shell                 | No                                     | Bajo                              | Mantener sin cache de datos. No agregar `"use cache"` aun.                                               |
+| `/noticias`                                                                      | Publica shell + fetch cliente          | No                                     | Bajo                              | Mantener como cliente; futura candidata a cache de datos.                                                |
+| `/api/news`                                                                      | GET publico, POST admin                | GET puede ser futuro cacheado; POST no | Medio                             | Antes de cache real, asegurar que no se prerenderice accidentalmente si usa Prisma sin cache.            |
+| `/api/news/[id]`                                                                 | GET publico, PUT/DELETE admin          | GET futuro detalle si existe           | Medio                             | Igual que noticias; corregir invalidaciones en fase previa.                                              |
+| `/api/news/lastThreeNews`                                                        | GET publico                            | Futuro cacheado                        | Medio                             | Futuro `use cache` en helper, no en handler.                                                             |
+| `/capacitaciones`                                                                | Publica shell + fetch cliente          | No                                     | Bajo                              | Mantener; futura candidata.                                                                              |
+| `/capacitaciones/[id]`                                                           | Publica detalle cliente                | No por pagina, si por API              | Bajo/medio                        | Mantener cliente por ahora; futuro cachear helper de detalle.                                            |
+| `/api/courses`                                                                   | GET publico, POST/PUT admin            | GET futuro cacheado; mutaciones no     | Medio                             | Evitar prerender accidental; futura extraccion a helper.                                                 |
+| `/api/courses/[id]`                                                              | GET publico, PUT/DELETE admin          | GET futuro cacheado                    | Medio                             | Evitar prerender accidental; futura cache por id.                                                        |
+| `/quiero-ser-parte`                                                              | Publica shell + datos criticos cliente | Datos deben ser frescos                | Bajo                              | Mantener `no-store`; no cachear.                                                                         |
+| `/campanas-dea`                                                                  | Publica shell + datos criticos cliente | Datos deben ser frescos                | Bajo                              | Mantener `no-store`; no cachear.                                                                         |
+| `/api/donation-campaigns/current`                                                | Publica critica                        | Si                                     | Alto                              | Quitar dependencia de `dynamic` como blindaje unico; garantizar runtime/no-store.                        |
+| `/api/donation-campaigns`                                                        | Publica critica                        | Si por ahora                           | Alto                              | Igual; no cachear totales/listado.                                                                       |
+| `/api/donation-campaigns/[id]/donors`                                            | Publica critica                        | Si                                     | Alto                              | Agregar `no-store` tambien en fetch cliente de "ver mas".                                                |
+| `/api/donations`                                                                 | Mutacion publica                       | Si                                     | Bajo                              | POST no cacheado; invalidacion solo post-exito.                                                          |
+| `/certificado/validar/[publicId]`                                                | Publica critica                        | Si                                     | Alto                              | Server Component con Prisma + params; necesitara `Suspense`/runtime boundary o reestructura. No cachear. |
+| `/api/certificates/validate/[publicId]`                                          | Publica critica                        | Si                                     | Alto                              | No cachear 404/410/valido; garantizar runtime/no-store.                                                  |
+| `/mi-perfil`                                                                     | Personalizada                          | Si                                     | Alto                              | `getServerSession` + Prisma; debe quedar en subtree dinamico con `Suspense` o page request-time.         |
+| `/api/me/certificates`                                                           | Personalizada                          | Si                                     | Alto                              | Garantizar no-store y runtime.                                                                           |
+| `/dashboard/*`                                                                   | Admin                                  | Si                                     | Alto                              | Layout con sesion/redirect. Requiere tratamiento especifico, no root Suspense global.                    |
+| `/api/admin/*`                                                                   | Admin                                  | Si                                     | Alto                              | No cache; headers no-store; revisar `dynamic` deshabilitado.                                             |
+| `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password` | Publicas cliente                       | No                                     | Bajo                              | Formularios cliente; APIs no cache.                                                                      |
+| `/auth/verify-email`                                                             | Publica con token                      | Si                                     | Medio                             | `searchParams`; debe mantenerse runtime/stream si accede token server-side.                              |
+| Institucionales                                                                  | Publicas estaticas                     | No                                     | Bajo                              | Mantener como shell estatica/deterministica.                                                             |
 
 ## Impacto esperado de habilitar `cacheComponents`
 
@@ -697,17 +697,17 @@ Objetivo:
 
 Estado actual despues de Fases 1 a 7:
 
-| Pieza | Estado | Detalle |
-| --- | --- | --- |
-| `src/libs/cache/cacheTags.ts` | Implementado parcialmente | Existe una convencion inicial de tags para noticias, cursos, campanas y donaciones. Todavia no se usa con `cacheTag`, `revalidateTag` ni `updateTag`. |
-| `src/libs/cache/revalidation.ts` | Implementado parcialmente | Centraliza invalidaciones actuales con `revalidatePath`: `revalidateNewsViews`, `revalidateCourseViews` y `revalidateDonationCampaignViews`. Todavia no tiene helpers semanticos finales `invalidateNews`/`invalidateCourse` basados en tags. |
-| `src/libs/cache/runtime.ts` | Implementado como soporte de migracion | Centraliza `connection()` mediante `ensureRequestTimeRendering()` para mantener endpoints dinamicos bajo Cache Components. No es parte de la cache futura de noticias/cursos, pero evita prerender accidental mientras no haya `"use cache"`. |
-| `src/libs/news/publicNewsQueries.ts` | Pendiente | No existe. Las lecturas publicas siguen dentro de Route Handlers con Prisma directo y runtime forzado. |
-| `src/libs/courses/publicCourseQueries.ts` | Pendiente | No existe. Las lecturas publicas siguen dentro de Route Handlers con Prisma directo y runtime forzado. |
-| `"use cache"` | Pendiente | No hay uso en el proyecto. Correcto para Fases 1 a 7; debe introducirse recien en una fase posterior de cache real. |
-| `cacheTag` / `cacheLife` | Pendiente | No hay uso real. Los nombres de tags existen, pero no se adjuntan a lecturas cacheadas. |
-| `revalidateTag` | Pendiente | No hay caches tagueadas que invalidar todavia. |
-| `updateTag` | Pendiente / fuera de alcance inmediato | No hay Server Actions para estas mutaciones. Con Route Handlers, la opcion futura natural sigue siendo `revalidateTag`; `updateTag` solo aplica si una mutacion concreta se migra a Server Action. |
+| Pieza                                     | Estado                                 | Detalle                                                                                                                                                                                                                                       |
+| ----------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/libs/cache/cacheTags.ts`             | Implementado parcialmente              | Existe una convencion inicial de tags para noticias, cursos, campanas y donaciones. Todavia no se usa con `cacheTag`, `revalidateTag` ni `updateTag`.                                                                                         |
+| `src/libs/cache/revalidation.ts`          | Implementado parcialmente              | Centraliza invalidaciones actuales con `revalidatePath`: `revalidateNewsViews`, `revalidateCourseViews` y `revalidateDonationCampaignViews`. Todavia no tiene helpers semanticos finales `invalidateNews`/`invalidateCourse` basados en tags. |
+| `src/libs/cache/runtime.ts`               | Implementado como soporte de migracion | Centraliza `connection()` mediante `ensureRequestTimeRendering()` para mantener endpoints dinamicos bajo Cache Components. No es parte de la cache futura de noticias/cursos, pero evita prerender accidental mientras no haya `"use cache"`. |
+| `src/libs/news/publicNewsQueries.ts`      | Pendiente                              | No existe. Las lecturas publicas siguen dentro de Route Handlers con Prisma directo y runtime forzado.                                                                                                                                        |
+| `src/libs/courses/publicCourseQueries.ts` | Pendiente                              | No existe. Las lecturas publicas siguen dentro de Route Handlers con Prisma directo y runtime forzado.                                                                                                                                        |
+| `"use cache"`                             | Pendiente                              | No hay uso en el proyecto. Correcto para Fases 1 a 7; debe introducirse recien en una fase posterior de cache real.                                                                                                                           |
+| `cacheTag` / `cacheLife`                  | Pendiente                              | No hay uso real. Los nombres de tags existen, pero no se adjuntan a lecturas cacheadas.                                                                                                                                                       |
+| `revalidateTag`                           | Pendiente                              | No hay caches tagueadas que invalidar todavia.                                                                                                                                                                                                |
+| `updateTag`                               | Pendiente / fuera de alcance inmediato | No hay Server Actions para estas mutaciones. Con Route Handlers, la opcion futura natural sigue siendo `revalidateTag`; `updateTag` solo aplica si una mutacion concreta se migra a Server Action.                                            |
 
 Estructura futura recomendada:
 
@@ -887,16 +887,16 @@ No conviene migrar inicialmente:
 
 ## Riesgos de regresion
 
-| Riesgo | Probabilidad | Impacto | Mitigacion |
-| --- | --- | --- | --- |
-| Build falla por Prisma fuera de `Suspense` | Alta | Medio | Fase 3 antes de activar bandera. |
-| Dashboard queda parcialmente prerenderizado | Media | Alto | No usar `"use cache"`; headers no-store; tests auth. |
-| Certificado publico sirve estado viejo | Media | Alto | Mantener runtime/no-store; no cachear 404/410. |
-| Route Handler GET se prerenderiza accidentalmente | Media | Alto | Revisar todos los GET criticos y agregar runtime/no-store. |
-| `dynamic = "force-dynamic"` deja de proteger rutas | Alta | Alto | Reemplazar intencion por patrones Cache Components. |
-| `Suspense` global degrada toda la app | Media | Medio | Boundaries locales, fallbacks especificos. |
-| Router Cache muestra contenido viejo al admin | Media | Medio | `router.refresh`/refetch despues de mutaciones criticas. |
-| Vercel Hobby consume mas funciones | Media | Medio | Medir Preview antes de produccion. |
+| Riesgo                                             | Probabilidad | Impacto | Mitigacion                                                 |
+| -------------------------------------------------- | ------------ | ------- | ---------------------------------------------------------- |
+| Build falla por Prisma fuera de `Suspense`         | Alta         | Medio   | Fase 3 antes de activar bandera.                           |
+| Dashboard queda parcialmente prerenderizado        | Media        | Alto    | No usar `"use cache"`; headers no-store; tests auth.       |
+| Certificado publico sirve estado viejo             | Media        | Alto    | Mantener runtime/no-store; no cachear 404/410.             |
+| Route Handler GET se prerenderiza accidentalmente  | Media        | Alto    | Revisar todos los GET criticos y agregar runtime/no-store. |
+| `dynamic = "force-dynamic"` deja de proteger rutas | Alta         | Alto    | Reemplazar intencion por patrones Cache Components.        |
+| `Suspense` global degrada toda la app              | Media        | Medio   | Boundaries locales, fallbacks especificos.                 |
+| Router Cache muestra contenido viejo al admin      | Media        | Medio   | `router.refresh`/refetch despues de mutaciones criticas.   |
+| Vercel Hobby consume mas funciones                 | Media        | Medio   | Medir Preview antes de produccion.                         |
 
 ## Estrategia de rollback
 

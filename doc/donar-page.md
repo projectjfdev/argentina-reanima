@@ -2,7 +2,7 @@
 
 ## Archivos creados o modificados
 
-- `src/app/(front)/donar/page.tsx`: nueva ruta estatica `/donar` y modal de donacion por transferencia.
+- `src/app/(front)/quiero-ser-parte/page.tsx`: nueva ruta estatica `/quiero-ser-parte` y modal de donacion por transferencia.
 - `doc/donar-page.md`: documentacion de la implementacion.
 
 No se modifico backend, Prisma, base de datos, pagos ni navegacion global.
@@ -109,7 +109,7 @@ Cada paso incluye icono circular de Lucide, titulo y descripcion breve. Los icon
 - Registrar y mostrar detalle publico de donaciones.
 - Publicar factura, comprobantes y evidencia de entrega cuando existan.
 - Reemplazar o actualizar `public/images/club.jpg` cuando el cliente confirme el lugar definitivo de la campana.
-- Agregar la ruta `/donar` al menu principal si se decide publicar la campana.
+- Agregar la ruta `/quiero-ser-parte` al menu principal si se decide publicar la campana.
 
 ## Recomendaciones futuras
 

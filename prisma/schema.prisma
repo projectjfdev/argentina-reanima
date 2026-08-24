@@ -125,6 +125,8 @@ model DonationCampaign {
   additionalImageUrls String[]              @default([])
   additionalImagePublicIds String[]         @default([])
   youtubeVideoUrl    String?                @db.VarChar(500)
+  invoiceImageUrls   String[]               @default([])
+  invoiceImagePublicIds String[]            @default([])
   invoiceImageUrl    String?
   invoiceImagePublicId String?
   invoiceImageResourceType String?          @db.VarChar(40)

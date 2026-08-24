@@ -11,7 +11,7 @@ interface DonationBannerProps {
 }
 
 export const DonationBanner = ({
-  href = "/donar",
+  href = "/quiero-ser-parte",
   message = "QUIERO SER PARTE",
   cta = "de una nueva oportunidad.",
 }: DonationBannerProps) => {

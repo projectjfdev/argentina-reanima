@@ -5,6 +5,7 @@ const MAX_INSTITUTION_NAME_LENGTH = 120;
 const MAX_LOCALITY_LENGTH = 80;
 const MAX_ADDRESS_LENGTH = 180;
 export const MAX_DONATION_CAMPAIGN_ADDITIONAL_IMAGES = 2;
+export const MAX_DONATION_CAMPAIGN_INVOICE_IMAGES = 2;
 
 export type DonationCampaignPayloadInput = {
   institutionName?: unknown;
@@ -15,6 +16,8 @@ export type DonationCampaignPayloadInput = {
   additionalImageUrls?: unknown;
   additionalImagePublicIds?: unknown;
   youtubeVideoUrl?: unknown;
+  invoiceImageUrls?: unknown;
+  invoiceImagePublicIds?: unknown;
   invoiceImageUrl?: unknown;
   invoiceImagePublicId?: unknown;
   invoiceImageResourceType?: unknown;
@@ -32,6 +35,8 @@ export type ValidDonationCampaignPayload = {
   additionalImageUrls?: string[];
   additionalImagePublicIds?: string[];
   youtubeVideoUrl: string | null;
+  invoiceImageUrls?: string[];
+  invoiceImagePublicIds?: string[];
   invoiceImageUrl?: string | null;
   invoiceImagePublicId?: string | null;
   invoiceImageResourceType?: string | null;
@@ -92,6 +97,8 @@ export function validateDonationCampaignPayload(
     input.additionalImagePublicIds,
   );
   const youtubeVideoUrl = validateOptionalYouTubeUrl(input.youtubeVideoUrl);
+  const invoiceImageUrls = getOptionalStringArray(input.invoiceImageUrls);
+  const invoiceImagePublicIds = getOptionalStringArray(input.invoiceImagePublicIds);
   const goalAmount = validateMoneyAmount(input.goalAmount);
   const errors: Record<string, string> = {};
 
@@ -130,6 +137,16 @@ export function validateDonationCampaignPayload(
   if (additionalImageUrls.length !== additionalImagePublicIds.length) {
     errors.additionalImages = "Las imagenes adicionales son invalidas";
   }
+  if (invoiceImageUrls.length > MAX_DONATION_CAMPAIGN_INVOICE_IMAGES) {
+    errors.invoiceImageUrls = "No se pueden cargar mas de 2 imagenes de factura";
+  }
+  if (invoiceImagePublicIds.length > MAX_DONATION_CAMPAIGN_INVOICE_IMAGES) {
+    errors.invoiceImagePublicIds =
+      "No se pueden cargar mas de 2 imagenes de factura";
+  }
+  if (invoiceImageUrls.length !== invoiceImagePublicIds.length) {
+    errors.invoiceImages = "Las imagenes de factura son invalidas";
+  }
   if (!goalAmount.success) {
     errors.goalAmount = goalAmount.error;
   }
@@ -156,6 +173,8 @@ export function validateDonationCampaignPayload(
       ...("additionalImageUrls" in input && { additionalImageUrls }),
       ...("additionalImagePublicIds" in input && { additionalImagePublicIds }),
       youtubeVideoUrl: youtubeVideoUrl.data,
+      ...("invoiceImageUrls" in input && { invoiceImageUrls }),
+      ...("invoiceImagePublicIds" in input && { invoiceImagePublicIds }),
       ...("invoiceImageUrl" in input && {
         invoiceImageUrl: getOptionalTrimmedString(input.invoiceImageUrl),
       }),

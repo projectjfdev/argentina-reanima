@@ -15,6 +15,7 @@ const RECEIPT_MIME_TYPES = new Set([
 ]);
 
 const MAX_ADDITIONAL_IMAGE_FILES = 2;
+const MAX_INVOICE_IMAGE_FILES = 2;
 
 type UploadKind = "placeImage" | "receipt" | "invoice" | "additionalImage";
 
@@ -260,6 +261,65 @@ export async function uploadDonationCampaignAdditionalImages(
 
     console.error("Error uploading donation campaign additional images:", error);
     throw createUploadError("No se pudieron subir las imagenes adicionales");
+  }
+}
+
+export async function uploadDonationCampaignInvoiceImages(
+  files: File[],
+): Promise<CloudinaryStoredAsset[]> {
+  if (files.length > MAX_INVOICE_IMAGE_FILES) {
+    throw createUploadValidationError(
+      "No se pueden cargar mas de 2 imagenes de factura",
+      "invoiceImages",
+    );
+  }
+
+  const uploadedImages: CloudinaryStoredAsset[] = [];
+
+  try {
+    for (const file of files) {
+      const validation = await validateDonationInvoiceFile(file);
+
+      if (!validation.success) {
+        throw createUploadValidationError(validation.error, "invoiceImages");
+      }
+
+      const uploadResult = await cloudinary.uploader.upload(
+        await fileToDataUri(file),
+        {
+          folder: "donation-campaigns/invoices",
+          resource_type: "image",
+          transformation: [
+            {
+              quality: 85,
+              format: "auto",
+              strip_metadata: true,
+            },
+          ],
+        },
+      );
+
+      uploadedImages.push({
+        url: uploadResult.secure_url,
+        publicId: uploadResult.public_id,
+        resourceType: uploadResult.resource_type,
+        originalName: file.name,
+        bytes: uploadResult.bytes,
+      });
+    }
+
+    return uploadedImages;
+  } catch (error) {
+    await Promise.all(
+      uploadedImages.map((image) =>
+        destroyDonationAsset(image.publicId, image.resourceType),
+      ),
+    );
+
+    if (error instanceof DonationServiceError) throw error;
+
+    console.error("Error uploading donation campaign invoice images:", error);
+    throw createUploadError("No se pudieron subir las facturas");
   }
 }
 

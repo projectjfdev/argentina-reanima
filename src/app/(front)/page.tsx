@@ -4,6 +4,7 @@ import { AnimatedLogos } from "@/components/AnimatedCarousel/AnimatedLogos";
 import { AnimatedFeatureSpotlight } from "@/components/BannerHero/BannerHomenaje";
 import { HomeHero } from "@/components/BannerHero/HomeHero";
 import { BoxTresHome } from "@/components/Box3Home/BoxTresHome";
+import TelegramButton from "@/components/Buttons/TelegramButton";
 import {
   features,
   FeatureSteps,
@@ -58,7 +59,7 @@ export default function Home() {
           ))}
         </div>
       </section>
-
+      {/* <TelegramButton /> */}
       <section className="container mx-auto grid gap-8 px-4 pb-16 md:grid-cols-[0.9fr_1.1fr] md:items-start md:pb-24">
         <div className="md:sticky md:top-24">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-primary">
