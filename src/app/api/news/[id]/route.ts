@@ -6,13 +6,26 @@ import cloudinary from "@/libs/cloudinary";
 import { prisma } from "@/libs/db";
 import { NextRequest, NextResponse } from "next/server";
 
+type NewsRouteContext = {
+  params: Promise<{ id: string }> | { id: string };
+};
+
+async function getNewsRouteId(context: NewsRouteContext): Promise<number> {
+  const params = await context.params;
+  return Number(params.id);
+}
+
+function isValidNewsRouteId(id: number): boolean {
+  return Number.isInteger(id) && id > 0;
+}
+
 // GET /api/news/[id]
-export async function GET(request: NextRequest, context: any) {
+export async function GET(request: NextRequest, context: NewsRouteContext) {
   await ensureRequestTimeRendering();
 
-  const id = Number(context.params.id);
+  const id = await getNewsRouteId(context);
 
-  if (isNaN(id)) {
+  if (!isValidNewsRouteId(id)) {
     return NextResponse.json(
       { error: "ID inválido", success: false },
       { status: 400 }
@@ -50,13 +63,13 @@ export async function GET(request: NextRequest, context: any) {
 }
 
 // DELETE /api/news/[id]
-export async function DELETE(request: NextRequest, context: any) {
+export async function DELETE(request: NextRequest, context: NewsRouteContext) {
   const authError = await requireAdminSession();
   if (authError) return authError;
 
-  const id = Number(context.params.id);
+  const id = await getNewsRouteId(context);
 
-  if (isNaN(id)) {
+  if (!isValidNewsRouteId(id)) {
     return NextResponse.json(
       { error: "ID inválido", success: false },
       { status: 400 }
@@ -104,13 +117,13 @@ export async function DELETE(request: NextRequest, context: any) {
 }
 
 // PUT /api/news/[id]
-export async function PUT(request: NextRequest, context: any) {
+export async function PUT(request: NextRequest, context: NewsRouteContext) {
   const authError = await requireAdminSession();
   if (authError) return authError;
 
-  const id = Number(context.params.id);
+  const id = await getNewsRouteId(context);
 
-  if (isNaN(id)) {
+  if (!isValidNewsRouteId(id)) {
     return NextResponse.json(
       { error: "ID inválido", success: false },
       { status: 400 }

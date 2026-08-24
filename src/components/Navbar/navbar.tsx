@@ -134,7 +134,7 @@ const aboutLinks: MenuLink[] = [
 const donationLinks: MenuLink[] = [
   {
     label: "Quiero ser parte",
-    href: "/donar",
+    href: "/quiero-ser-parte",
     icon: Heart,
     description: "de una nueva oportunidad.",
   },

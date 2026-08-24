@@ -8,7 +8,7 @@
 
 ## Implementacion
 
-La barra es un `Link` completo hacia `/donar`, por lo que toda el area es clickeable. El mensaje por defecto es:
+La barra es un `Link` completo hacia `/quiero-ser-parte`, por lo que toda el area es clickeable. El mensaje por defecto es:
 
 `Ayudanos a instalar un DEA. Conocé la campaña solidaria.`
 
@@ -30,7 +30,7 @@ Ejemplo:
 
 ```tsx
 <DonationBanner
-  href="/donar"
+  href="/quiero-ser-parte"
   message="Ayudanos a instalar un DEA."
   cta="Conocé la campaña solidaria."
 />

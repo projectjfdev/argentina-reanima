@@ -10,6 +10,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { donationBankData } from "@/libs/donations/bankData";
 import { DonationCampaignVideo } from "./DonationCampaignVideo";
 import { AnimatePresence, motion } from "framer-motion";
@@ -26,6 +32,7 @@ import {
   HandCoins,
   Heart,
   HeartPulse,
+  Info,
   Loader2,
   MapPin,
   Shield,
@@ -82,6 +89,8 @@ type CurrentCampaignResponse = {
 
 const DONATION_RECEIPT_ACCEPT = "image/jpeg,image/png";
 const DONATION_RECEIPT_ALLOWED_TYPES = new Set(["image/jpeg", "image/png"]);
+const GOAL_AMOUNT_NOTE =
+  "La meta se calcula según costos estimados para adquirir e instalar el DEA y puede actualizarse si esos costos varían antes de la compra.";
 
 const donationSteps = [
   {
@@ -279,7 +288,7 @@ export function DonationPageContent() {
               className="mt-8 h-12 bg-primary px-6 text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
               onClick={campaign?.canDonate ? openDonationModal : undefined}
             >
-              {campaign?.canDonate ? "Quiero donar" : "Donaciones cerradas"}
+              {campaign?.canDonate ? "Quiero ser parte" : "Donaciones cerradas"}
               <Heart className="ml-2 h-4 w-4" />
             </Button>
           </motion.div>
@@ -324,6 +333,7 @@ export function DonationPageContent() {
             <InfoPoint text="100% destinado a compra de DEA" />
             <InfoPoint text="Monto confirmado desde el comprobante" />
             <InfoPoint text="Excedentes aplicados a la próxima campaña" />
+            <InfoPoint text="Meta económica sujeta a actualización por variación de costos" />
           </div>
         </motion.div>
       </section>
@@ -386,7 +396,7 @@ export function DonationPageContent() {
                 onClick={openDonationModal}
                 className="mt-8 inline-flex cursor-pointer items-center justify-center rounded-md bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
               >
-                Quiero donar
+                Quiero ser parte
               </button>
             </div>
           ) : (
@@ -461,8 +471,24 @@ function DonationProgressSummary({
             <p className="text-4xl font-semibold tracking-tight text-slate-950 md:text-5xl">
               {formatMoney(campaign.approvedTotal)}
             </p>
-            <p className="mt-2 text-lg text-slate-600">
-              recaudados de {formatMoney(campaign.goalAmount)}
+            <p className="mt-2 flex flex-wrap items-center gap-2 text-lg text-slate-600">
+              <span>recaudados de {formatMoney(campaign.goalAmount)}</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-primary transition-colors hover:bg-primary hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                      aria-label="Información sobre la meta económica"
+                    >
+                      <Info className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-pretty leading-5">
+                    {GOAL_AMOUNT_NOTE}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </p>
           </div>
           <div className="mt-6">

@@ -128,6 +128,50 @@ describe("validateDonationCampaignPayload", () => {
     });
   });
 
+  it("accepts up to two invoice images", () => {
+    expect(
+      validateDonationCampaignPayload({
+        ...VALID_CAMPAIGN_PAYLOAD,
+        invoiceImageUrls: [
+          " https://res.cloudinary.com/demo/image/upload/factura-1.jpg ",
+          "https://res.cloudinary.com/demo/image/upload/factura-2.jpg",
+        ],
+        invoiceImagePublicIds: [
+          " donation-campaigns/invoices/factura-1 ",
+          "donation-campaigns/invoices/factura-2",
+        ],
+      }),
+    ).toMatchObject({
+      success: true,
+      data: {
+        invoiceImageUrls: [
+          "https://res.cloudinary.com/demo/image/upload/factura-1.jpg",
+          "https://res.cloudinary.com/demo/image/upload/factura-2.jpg",
+        ],
+        invoiceImagePublicIds: [
+          "donation-campaigns/invoices/factura-1",
+          "donation-campaigns/invoices/factura-2",
+        ],
+      },
+    });
+  });
+
+  it("rejects invalid invoice image arrays", () => {
+    expect(
+      validateDonationCampaignPayload({
+        ...VALID_CAMPAIGN_PAYLOAD,
+        invoiceImageUrls: ["1", "2", "3"],
+        invoiceImagePublicIds: ["1", "2"],
+      }),
+    ).toEqual({
+      success: false,
+      errors: {
+        invoiceImageUrls: "No se pueden cargar mas de 2 imagenes de factura",
+        invoiceImages: "Las imagenes de factura son invalidas",
+      },
+    });
+  });
+
   it("rejects an invalid YouTube URL", () => {
     expect(
       validateDonationCampaignPayload({

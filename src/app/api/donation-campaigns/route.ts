@@ -15,6 +15,7 @@ type PublicCampaign = {
   placeImageUrl: string;
   additionalImageUrls: string[];
   youtubeVideoUrl: string | null;
+  invoiceImageUrls: string[];
   invoiceImageUrl: string | null;
   invoiceImageOriginalName: string | null;
   goalAmount: unknown;
@@ -54,6 +55,12 @@ function serializeCampaign(
     placeImageUrl: campaign.placeImageUrl,
     additionalImageUrls: campaign.additionalImageUrls,
     youtubeVideoUrl: campaign.youtubeVideoUrl,
+    invoiceImageUrls:
+      campaign.invoiceImageUrls.length > 0
+        ? campaign.invoiceImageUrls
+        : campaign.invoiceImageUrl
+          ? [campaign.invoiceImageUrl]
+          : [],
     invoiceImageUrl: campaign.invoiceImageUrl,
     invoiceImageOriginalName: campaign.invoiceImageOriginalName,
     goalAmount: decimalToString(campaign.goalAmount),
@@ -109,6 +116,7 @@ export async function GET(request: NextRequest) {
           placeImageUrl: true,
           additionalImageUrls: true,
           youtubeVideoUrl: true,
+          invoiceImageUrls: true,
           invoiceImageUrl: true,
           invoiceImageOriginalName: true,
           goalAmount: true,

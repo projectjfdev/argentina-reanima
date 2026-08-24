@@ -91,6 +91,8 @@ export function serializeCampaign(
     additionalImageUrls: campaign.additionalImageUrls,
     additionalImagePublicIds: campaign.additionalImagePublicIds,
     youtubeVideoUrl: campaign.youtubeVideoUrl,
+    invoiceImageUrls: campaign.invoiceImageUrls,
+    invoiceImagePublicIds: campaign.invoiceImagePublicIds,
     invoiceImageUrl: campaign.invoiceImageUrl,
     invoiceImagePublicId: campaign.invoiceImagePublicId,
     invoiceImageResourceType: campaign.invoiceImageResourceType,

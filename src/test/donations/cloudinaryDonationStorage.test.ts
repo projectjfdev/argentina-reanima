@@ -1,5 +1,6 @@
 import {
   uploadDonationCampaignAdditionalImages,
+  uploadDonationCampaignInvoiceImages,
   validateDonationReceiptFile,
   validateDonationUploadFile,
 } from "@/libs/donations";
@@ -125,6 +126,21 @@ describe("validateDonationUploadFile", () => {
       code: "UPLOAD_VALIDATION_ERROR",
       details: {
         additionalImages: "No se pueden cargar mas de 2 imagenes adicionales",
+      },
+    });
+  });
+
+  it("rejects more than two campaign invoice images", async () => {
+    await expect(
+      uploadDonationCampaignInvoiceImages([
+        new File([PNG_BYTES], "factura-1.png", { type: "image/png" }),
+        new File([PNG_BYTES], "factura-2.png", { type: "image/png" }),
+        new File([PNG_BYTES], "factura-3.png", { type: "image/png" }),
+      ]),
+    ).rejects.toMatchObject({
+      code: "UPLOAD_VALIDATION_ERROR",
+      details: {
+        invoiceImages: "No se pueden cargar mas de 2 imagenes de factura",
       },
     });
   });

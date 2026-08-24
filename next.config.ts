@@ -17,6 +17,15 @@ const noStoreHeaders = [
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  async redirects() {
+    return [
+      {
+        source: "/donar",
+        destination: "/quiero-ser-parte",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

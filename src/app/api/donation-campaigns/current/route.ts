@@ -13,6 +13,7 @@ type PublicDonationCampaign = {
   address: string;
   placeImageUrl: string;
   youtubeVideoUrl: string | null;
+  invoiceImageUrls: string[];
   invoiceImageUrl: string | null;
   invoiceImageOriginalName: string | null;
   goalAmount: unknown;
@@ -73,6 +74,12 @@ function serializePublicCampaign(
     address: campaign.address,
     placeImageUrl: campaign.placeImageUrl,
     youtubeVideoUrl: campaign.youtubeVideoUrl,
+    invoiceImageUrls:
+      campaign.invoiceImageUrls.length > 0
+        ? campaign.invoiceImageUrls
+        : campaign.invoiceImageUrl
+          ? [campaign.invoiceImageUrl]
+          : [],
     invoiceImageUrl: campaign.invoiceImageUrl,
     invoiceImageOriginalName: campaign.invoiceImageOriginalName,
     goalAmount: decimalToString(campaign.goalAmount),
@@ -104,6 +111,7 @@ async function getCurrentPublicCampaign() {
       address: true,
       placeImageUrl: true,
       youtubeVideoUrl: true,
+      invoiceImageUrls: true,
       invoiceImageUrl: true,
       invoiceImageOriginalName: true,
       goalAmount: true,
@@ -127,6 +135,7 @@ async function getCurrentPublicCampaign() {
       address: true,
       placeImageUrl: true,
       youtubeVideoUrl: true,
+      invoiceImageUrls: true,
       invoiceImageUrl: true,
       invoiceImageOriginalName: true,
       goalAmount: true,

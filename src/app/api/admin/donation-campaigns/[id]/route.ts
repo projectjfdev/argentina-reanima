@@ -99,7 +99,15 @@ export async function PUT(request: NextRequest, context: RouteContextWithId) {
         goalAmount: getFormString(formData, "goalAmount"),
       },
       getOptionalFormFile(formData, "placeImage"),
-      getOptionalFormFile(formData, "invoiceImage"),
+      (() => {
+        const invoiceImages = getOptionalFormFiles(formData, "invoiceImages");
+        const legacyInvoiceImage = getOptionalFormFile(formData, "invoiceImage");
+        return invoiceImages.length > 0
+          ? invoiceImages
+          : legacyInvoiceImage
+            ? [legacyInvoiceImage]
+            : [];
+      })(),
       removeInvoiceImage,
       getOptionalFormFiles(formData, "additionalImages"),
       removeAdditionalImages,

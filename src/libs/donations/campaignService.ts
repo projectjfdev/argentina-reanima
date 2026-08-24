@@ -3,7 +3,7 @@ import { prisma } from "@/libs/db";
 import {
   destroyDonationAsset,
   uploadDonationCampaignAdditionalImages,
-  uploadDonationCampaignInvoiceImage,
+  uploadDonationCampaignInvoiceImages,
   uploadDonationCampaignPlaceImage,
 } from "./cloudinaryDonationStorage";
 import {
@@ -158,24 +158,25 @@ export async function createDonationCampaign(input: DonationCampaignPayloadInput
 export async function createDonationCampaignWithPlaceImage(
   input: DonationCampaignWithImageInput,
   placeImage: File,
-  invoiceImage?: File | null,
+  invoiceImages: File[] = [],
   additionalImages: File[] = [],
 ) {
   let uploadedImage: Awaited<
     ReturnType<typeof uploadDonationCampaignPlaceImage>
   > | null = null;
-  let uploadedInvoiceImage: Awaited<
-    ReturnType<typeof uploadDonationCampaignInvoiceImage>
-  > | null = null;
+  let uploadedInvoiceImages: Awaited<
+    ReturnType<typeof uploadDonationCampaignInvoiceImages>
+  > = [];
   let uploadedAdditionalImages: Awaited<
     ReturnType<typeof uploadDonationCampaignAdditionalImages>
   > = [];
 
   try {
     uploadedImage = await uploadDonationCampaignPlaceImage(placeImage);
-    uploadedInvoiceImage = invoiceImage
-      ? await uploadDonationCampaignInvoiceImage(invoiceImage)
-      : null;
+    uploadedInvoiceImages =
+      invoiceImages.length > 0
+        ? await uploadDonationCampaignInvoiceImages(invoiceImages)
+        : [];
     uploadedAdditionalImages =
       additionalImages.length > 0
         ? await uploadDonationCampaignAdditionalImages(additionalImages)
@@ -189,17 +190,20 @@ export async function createDonationCampaignWithPlaceImage(
       additionalImagePublicIds: uploadedAdditionalImages.map(
         (image) => image.publicId,
       ),
-      invoiceImageUrl: uploadedInvoiceImage?.url ?? null,
-      invoiceImagePublicId: uploadedInvoiceImage?.publicId ?? null,
-      invoiceImageResourceType: uploadedInvoiceImage?.resourceType ?? null,
-      invoiceImageOriginalName: uploadedInvoiceImage?.originalName ?? null,
-      invoiceImageBytes: uploadedInvoiceImage?.bytes ?? null,
+      invoiceImageUrls: uploadedInvoiceImages.map((image) => image.url),
+      invoiceImagePublicIds: uploadedInvoiceImages.map((image) => image.publicId),
+      invoiceImageUrl: uploadedInvoiceImages[0]?.url ?? null,
+      invoiceImagePublicId: uploadedInvoiceImages[0]?.publicId ?? null,
+      invoiceImageResourceType: uploadedInvoiceImages[0]?.resourceType ?? null,
+      invoiceImageOriginalName: uploadedInvoiceImages[0]?.originalName ?? null,
+      invoiceImageBytes: uploadedInvoiceImages[0]?.bytes ?? null,
     });
   } catch (error) {
     await destroyDonationAsset(uploadedImage?.publicId, uploadedImage?.resourceType);
-    await destroyDonationAsset(
-      uploadedInvoiceImage?.publicId,
-      uploadedInvoiceImage?.resourceType,
+    await Promise.all(
+      uploadedInvoiceImages.map((image) =>
+        destroyDonationAsset(image.publicId, image.resourceType),
+      ),
     );
     await Promise.all(
       uploadedAdditionalImages.map((image) =>
@@ -258,7 +262,7 @@ export async function updateActiveDonationCampaignWithPlaceImage(
   campaignId: number,
   input: DonationCampaignWithImageInput,
   placeImage?: File | null,
-  invoiceImage?: File | null,
+  invoiceImages: File[] = [],
   removeInvoiceImage = false,
   additionalImages: File[] = [],
   removeAdditionalImages = false,
@@ -270,6 +274,8 @@ export async function updateActiveDonationCampaignWithPlaceImage(
       placeImagePublicId: true,
       additionalImageUrls: true,
       additionalImagePublicIds: true,
+      invoiceImageUrls: true,
+      invoiceImagePublicIds: true,
       invoiceImagePublicId: true,
       invoiceImageResourceType: true,
     },
@@ -286,9 +292,9 @@ export async function updateActiveDonationCampaignWithPlaceImage(
   let uploadedPlaceImage: Awaited<
     ReturnType<typeof uploadDonationCampaignPlaceImage>
   > | null = null;
-  let uploadedInvoiceImage: Awaited<
-    ReturnType<typeof uploadDonationCampaignInvoiceImage>
-  > | null = null;
+  let uploadedInvoiceImages: Awaited<
+    ReturnType<typeof uploadDonationCampaignInvoiceImages>
+  > = [];
   let uploadedAdditionalImages: Awaited<
     ReturnType<typeof uploadDonationCampaignAdditionalImages>
   > = [];
@@ -297,15 +303,18 @@ export async function updateActiveDonationCampaignWithPlaceImage(
     uploadedPlaceImage = placeImage
       ? await uploadDonationCampaignPlaceImage(placeImage)
       : null;
-    uploadedInvoiceImage = invoiceImage
-      ? await uploadDonationCampaignInvoiceImage(invoiceImage)
-      : null;
+    uploadedInvoiceImages =
+      invoiceImages.length > 0
+        ? await uploadDonationCampaignInvoiceImages(invoiceImages)
+        : [];
     uploadedAdditionalImages =
       additionalImages.length > 0
         ? await uploadDonationCampaignAdditionalImages(additionalImages)
         : [];
     const shouldReplaceAdditionalImages =
       uploadedAdditionalImages.length > 0 || removeAdditionalImages;
+    const shouldReplaceInvoiceImages =
+      uploadedInvoiceImages.length > 0 || removeInvoiceImage;
 
     const updatedCampaign = await updateActiveDonationCampaign(campaignId, {
       ...input,
@@ -323,16 +332,22 @@ export async function updateActiveDonationCampaignWithPlaceImage(
             additionalImageUrls: existingCampaign.additionalImageUrls,
             additionalImagePublicIds: existingCampaign.additionalImagePublicIds,
           }),
-      ...(uploadedInvoiceImage
+      ...(uploadedInvoiceImages.length > 0
         ? {
-            invoiceImageUrl: uploadedInvoiceImage.url,
-            invoiceImagePublicId: uploadedInvoiceImage.publicId,
-            invoiceImageResourceType: uploadedInvoiceImage.resourceType,
-            invoiceImageOriginalName: uploadedInvoiceImage.originalName ?? null,
-            invoiceImageBytes: uploadedInvoiceImage.bytes ?? null,
+            invoiceImageUrls: uploadedInvoiceImages.map((image) => image.url),
+            invoiceImagePublicIds: uploadedInvoiceImages.map(
+              (image) => image.publicId,
+            ),
+            invoiceImageUrl: uploadedInvoiceImages[0].url,
+            invoiceImagePublicId: uploadedInvoiceImages[0].publicId,
+            invoiceImageResourceType: uploadedInvoiceImages[0].resourceType,
+            invoiceImageOriginalName: uploadedInvoiceImages[0].originalName ?? null,
+            invoiceImageBytes: uploadedInvoiceImages[0].bytes ?? null,
           }
         : removeInvoiceImage
           ? {
+              invoiceImageUrls: [],
+              invoiceImagePublicIds: [],
               invoiceImageUrl: null,
               invoiceImagePublicId: null,
               invoiceImageResourceType: null,
@@ -352,10 +367,20 @@ export async function updateActiveDonationCampaignWithPlaceImage(
         ),
       );
     }
-    if (uploadedInvoiceImage || removeInvoiceImage) {
-      await destroyDonationAsset(
-        existingCampaign.invoiceImagePublicId,
-        existingCampaign.invoiceImageResourceType ?? "image",
+    if (shouldReplaceInvoiceImages) {
+      const invoicePublicIds = Array.from(
+        new Set([
+          ...existingCampaign.invoiceImagePublicIds,
+          existingCampaign.invoiceImagePublicId,
+        ].filter((publicId): publicId is string => Boolean(publicId))),
+      );
+      await Promise.all(
+        invoicePublicIds.map((publicId) =>
+          destroyDonationAsset(
+            publicId,
+            existingCampaign.invoiceImageResourceType ?? "image",
+          ),
+        ),
       );
     }
 
@@ -365,9 +390,10 @@ export async function updateActiveDonationCampaignWithPlaceImage(
       uploadedPlaceImage?.publicId,
       uploadedPlaceImage?.resourceType,
     );
-    await destroyDonationAsset(
-      uploadedInvoiceImage?.publicId,
-      uploadedInvoiceImage?.resourceType,
+    await Promise.all(
+      uploadedInvoiceImages.map((image) =>
+        destroyDonationAsset(image.publicId, image.resourceType),
+      ),
     );
     await Promise.all(
       uploadedAdditionalImages.map((image) =>

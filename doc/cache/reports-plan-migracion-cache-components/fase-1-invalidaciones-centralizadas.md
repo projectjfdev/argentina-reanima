@@ -78,7 +78,7 @@ Cambios:
 - Se eliminaron helpers locales duplicados de invalidacion.
 - Se reemplazaron llamadas directas a `revalidatePath` por `revalidateDonationCampaignViews`.
 - Las operaciones que afectan una campana ahora invalidan:
-  - `/donar`
+  - `/quiero-ser-parte`
   - `/campanas-dea`
   - `/api/donation-campaigns`
   - `/api/donation-campaigns/current`

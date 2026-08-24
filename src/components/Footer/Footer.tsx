@@ -222,14 +222,26 @@ function Footer() {
           <p className="text-sm text-muted-foreground">
             © 2026 Argentina Reanima. Todos los derechos reservados.
           </p>
-          {/* <nav className="flex gap-4 text-sm">
-            <Link href="#" className="transition-colors hover:text-gray-600">
+          <nav className="flex flex-wrap justify-center gap-4 text-sm">
+            <Link
+              href="/politica-de-privacidad"
+              className="transition-colors hover:text-gray-600"
+            >
               Política de Privacidad
             </Link>
-            <Link href="#" className="transition-colors hover:text-gray-600">
-              Configuración de Cookies
+            <Link
+              href="/terminos-y-condiciones"
+              className="transition-colors hover:text-gray-600"
+            >
+              Términos y Condiciones
             </Link>
-          </nav> */}
+            <Link
+              href="/politica-de-donaciones"
+              className="transition-colors hover:text-gray-600"
+            >
+              Política de Donaciones
+            </Link>
+          </nav>
         </div>
       </div>
     </footer>

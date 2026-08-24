@@ -106,7 +106,8 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const placeImage = getOptionalFormFile(formData, "placeImage");
-    const invoiceImage = getOptionalFormFile(formData, "invoiceImage");
+    const invoiceImages = getOptionalFormFiles(formData, "invoiceImages");
+    const legacyInvoiceImage = getOptionalFormFile(formData, "invoiceImage");
     const additionalImages = getOptionalFormFiles(formData, "additionalImages");
 
     if (!placeImage) {
@@ -129,7 +130,11 @@ export async function POST(request: NextRequest) {
         goalAmount: getFormString(formData, "goalAmount"),
       },
       placeImage,
-      invoiceImage,
+      invoiceImages.length > 0
+        ? invoiceImages
+        : legacyInvoiceImage
+          ? [legacyInvoiceImage]
+          : [],
       additionalImages,
     );
 

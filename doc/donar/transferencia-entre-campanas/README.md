@@ -21,7 +21,7 @@ Las reglas actuales relevantes son:
 - Las donaciones `PENDING` y `REJECTED` no suman.
 - Una campana se completa automaticamente cuando la suma aprobada alcanza o supera el objetivo.
 - Una correccion posterior de monto aprobado puede hacer que una campana `COMPLETED` vuelva a `ACTIVE` si deja de alcanzar el objetivo.
-- `/donar` muestra la campana `ACTIVE`; si no hay activa, muestra la ultima `COMPLETED`.
+- `/quiero-ser-parte` muestra la campana `ACTIVE`; si no hay activa, muestra la ultima `COMPLETED`.
 - `/campanas-dea` lista campanas `ACTIVE` y `COMPLETED`, excluyendo `ARCHIVED`.
 
 Actualmente el progreso se calcula desde `getApprovedDonationTotal(campaignId)` y `calculateCampaignProgress`:
@@ -327,7 +327,7 @@ No hace falta crear una pantalla contable global en v1. Si se necesita detalle, 
 
 Agregar aclaraciones visibles y concretas.
 
-En `/donar`, antes del CTA o junto al progreso:
+En `/quiero-ser-parte`, antes del CTA o junto al progreso:
 
 ```txt
 Si la campana supera su objetivo, el excedente sera aplicado automaticamente a la proxima campana DEA.
@@ -389,7 +389,7 @@ Mitigaciones:
 - Recalcular siempre desde la base dentro de la transaccion.
 - No confiar en totales enviados por cliente.
 - Usar `Decimal` o strings normalizados; no usar floats para decisiones de dinero.
-- Revalidar cache de campana origen, campana destino, `/donar`, `/campanas-dea` y endpoints publicos relacionados.
+- Revalidar cache de campana origen, campana destino, `/quiero-ser-parte`, `/campanas-dea` y endpoints publicos relacionados.
 
 Si en pruebas aparecen carreras reales que Prisma no resuelve con upsert e indice unico, se puede agregar bloqueo puntual con SQL (`SELECT ... FOR UPDATE`) sobre la campana origen. No hacerlo de entrada.
 
@@ -454,7 +454,7 @@ Datos existentes:
 - Tests de dominio y servicios.
 - Tests de APIs publicas/admin.
 - `npm run build`.
-- Revision manual de `/donar`, `/campanas-dea` y dashboard.
+- Revision manual de `/quiero-ser-parte`, `/campanas-dea` y dashboard.
 
 ## Pruebas necesarias
 
@@ -480,7 +480,7 @@ APIs/UI:
 
 - APIs publicas no exponen comprobantes ni emails.
 - Transferencias no aparecen como donantes.
-- `/donar` informa la regla del excedente antes de donar.
+- `/quiero-ser-parte` informa la regla del excedente antes de donar.
 - `/campanas-dea` muestra fondos transferidos de forma clara.
 - Dashboard muestra excedente pendiente, enviado y recibido.
 
