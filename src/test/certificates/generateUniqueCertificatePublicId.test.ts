@@ -1,4 +1,7 @@
-import { generateUniqueCertificatePublicId } from "@/libs/certificates";
+import {
+  generateUniqueCertificatePublicId,
+  generateUniqueCertificatePublicIds,
+} from "@/libs/certificates";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/libs/certificates/generateCertificatePublicId", () => ({
@@ -6,7 +9,11 @@ vi.mock("@/libs/certificates/generateCertificatePublicId", () => ({
     .fn()
     .mockReturnValueOnce("existing-public-id")
     .mockReturnValueOnce("reserved-public-id")
-    .mockReturnValueOnce("new-public-id"),
+    .mockReturnValueOnce("new-public-id")
+    .mockReturnValueOnce("bulk-1")
+    .mockReturnValueOnce("bulk-1")
+    .mockReturnValueOnce("bulk-2")
+    .mockReturnValueOnce("bulk-3"),
 }));
 
 describe("generateUniqueCertificatePublicId", () => {
@@ -28,5 +35,13 @@ describe("generateUniqueCertificatePublicId", () => {
 
     expect(reservedPublicIds.has("new-public-id")).toBe(true);
     expect(client.certificate.findUnique).toHaveBeenCalledTimes(2);
+  });
+
+  it("generates a batch of unique public ids without database checks", () => {
+    expect(generateUniqueCertificatePublicIds(3)).toEqual([
+      "bulk-1",
+      "bulk-2",
+      "bulk-3",
+    ]);
   });
 });

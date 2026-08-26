@@ -4,7 +4,10 @@ export {
   generateNextCertificateSerialNumber,
   generateNextCertificateSerialNumbers,
 } from "./generateCertificateSerialNumber";
-export { generateUniqueCertificatePublicId } from "./generateUniqueCertificatePublicId";
+export {
+  generateUniqueCertificatePublicId,
+  generateUniqueCertificatePublicIds,
+} from "./generateUniqueCertificatePublicId";
 export { getPublicCertificateUrl } from "./getPublicCertificateUrl";
 export { linkCertificatesToUserByEmail } from "./linkCertificatesToUserByEmail";
 export { normalizeCertificateEmail } from "./normalizeCertificateEmail";
