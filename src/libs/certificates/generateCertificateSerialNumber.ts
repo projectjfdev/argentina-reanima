@@ -3,17 +3,11 @@ import { Prisma } from "@/generated/prisma";
 const CERTIFICATE_SERIAL_PREFIX = "AR-";
 const CERTIFICATE_SERIAL_PADDING = 4;
 const CERTIFICATE_SERIAL_LOCK_KEY = 7142026;
-const CERTIFICATE_SERIAL_REGEX = /^AR-(\d+)$/;
 
 type CertificateSerialClient = Pick<
   Prisma.TransactionClient,
-  "$executeRaw" | "certificate"
+  "$executeRaw" | "$queryRaw"
 >;
-
-function getSerialValue(serialNumber: string): number {
-  const match = CERTIFICATE_SERIAL_REGEX.exec(serialNumber);
-  return match ? Number(match[1]) : 0;
-}
 
 export function formatCertificateSerialNumber(value: number): string {
   return `${CERTIFICATE_SERIAL_PREFIX}${value
@@ -31,22 +25,12 @@ export async function generateNextCertificateSerialNumbers(
 
   await client.$executeRaw`SELECT pg_advisory_xact_lock(${CERTIFICATE_SERIAL_LOCK_KEY})`;
 
-  const certificates = await client.certificate.findMany({
-    where: {
-      serialNumber: {
-        startsWith: CERTIFICATE_SERIAL_PREFIX,
-      },
-    },
-    select: {
-      serialNumber: true,
-    },
-  });
-
-  const maxSerialValue = certificates.reduce(
-    (maxValue, certificate) =>
-      Math.max(maxValue, getSerialValue(certificate.serialNumber)),
-    0,
-  );
+  const [result] = await client.$queryRaw<{ maxSerialValue: number | bigint }[]>`
+    SELECT COALESCE(MAX(CAST(SUBSTRING("serialNumber" FROM 4) AS INTEGER)), 0) AS "maxSerialValue"
+    FROM "Certificate"
+    WHERE "serialNumber" ~ '^AR-[0-9]+$'
+  `;
+  const maxSerialValue = Number(result?.maxSerialValue ?? 0);
 
   return Array.from({ length: count }, (_item, index) =>
     formatCertificateSerialNumber(maxSerialValue + index + 1),

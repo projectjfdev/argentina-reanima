@@ -6,15 +6,14 @@ import {
 import { describe, expect, it, vi } from "vitest";
 
 function createSerialClient(serialNumbers: string[]) {
+  const maxSerialValue = serialNumbers.reduce((maxValue, serialNumber) => {
+    const match = /^AR-(\d+)$/.exec(serialNumber);
+    return Math.max(maxValue, match ? Number(match[1]) : 0);
+  }, 0);
+
   return {
     $executeRaw: vi.fn(),
-    certificate: {
-      findMany: vi.fn().mockResolvedValue(
-        serialNumbers.map((serialNumber) => ({
-          serialNumber,
-        })),
-      ),
-    },
+    $queryRaw: vi.fn().mockResolvedValue([{ maxSerialValue }]),
   };
 }
 
@@ -47,16 +46,11 @@ describe("generateCertificateSerialNumber", () => {
       generateNextCertificateSerialNumbers(client as never, 3),
     ).resolves.toEqual(["AR-0011", "AR-0012", "AR-0013"]);
 
-    expect(client.certificate.findMany).toHaveBeenCalledWith({
-      where: {
-        serialNumber: {
-          startsWith: "AR-",
-        },
-      },
-      select: {
-        serialNumber: true,
-      },
-    });
+    expect(client.$executeRaw).toHaveBeenCalledTimes(1);
+    expect(client.$queryRaw).toHaveBeenCalledTimes(1);
+    expect(client.$executeRaw.mock.invocationCallOrder[0]).toBeLessThan(
+      client.$queryRaw.mock.invocationCallOrder[0],
+    );
   });
 
   it("rejects invalid batch sizes", async () => {

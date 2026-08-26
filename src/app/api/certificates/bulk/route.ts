@@ -1,8 +1,6 @@
 import { Prisma } from "@/generated/prisma";
 import { requireAdminSession } from "@/libs/auth/requireAdminSession";
 import {
-  generateNextCertificateSerialNumbers,
-  generateUniqueCertificatePublicId,
   CERTIFICATE_RECIPIENT_NAME_PLACEHOLDER,
   certificateTextHasRecipientNamePlaceholder,
   getCertificateInstructorByKey,
@@ -10,16 +8,14 @@ import {
   getPublicCertificateUrl,
   isCertificateDateInput,
   normalizeCertificateTemplateKey,
-  normalizeCertificateEmail,
   parseCertificateDateInput,
   type CertificateTemplateKey,
 } from "@/libs/certificates";
+import { createCertificatesFromRows } from "@/libs/certificates/createCertificatesFromRows";
 import {
   validateCertificateImportRows,
   type CertificateImportRowInput,
-  type ValidCertificateImportRow,
 } from "@/libs/certificates/validateCertificateImportRows";
-import { prisma } from "@/libs/db";
 import ExcelJS from "exceljs";
 import { NextResponse } from "next/server";
 
@@ -251,10 +247,15 @@ async function parseCertificateImportFile(
   worksheet.eachRow((row, rowNumber) => {
     if (rowNumber === 1) return;
 
+    const recipientEmail = getCellText(row.getCell(emailColumn).value).trim();
+    const recipientName = getCellText(row.getCell(nameColumn).value).trim();
+
+    if (!recipientEmail && !recipientName) return;
+
     rows.push({
       rowNumber,
-      recipientEmail: getCellText(row.getCell(emailColumn).value),
-      recipientName: getCellText(row.getCell(nameColumn).value),
+      recipientEmail,
+      recipientName,
     });
   });
 
@@ -282,81 +283,6 @@ function buildValidationResponse(importData: ParsedCertificateImport) {
     },
     { status: responseStatus },
   );
-}
-
-async function createCertificatesFromRows(
-  rows: ValidCertificateImportRow[],
-  sharedData: BulkSharedPayloadValidationResult & { success: true },
-) {
-  const normalizedEmails = Array.from(
-    new Set(rows.map((row) => row.recipientEmailNormalized)),
-  );
-  const users = await prisma.user.findMany({
-    where: {
-      email: {
-        in: normalizedEmails,
-      },
-    },
-    select: {
-      id: true,
-      email: true,
-    },
-  });
-  const usersByEmail = new Map(
-    users.map((user) => [normalizeCertificateEmail(user.email), user]),
-  );
-
-  return prisma.$transaction(async (tx) => {
-    const serialNumbers = await generateNextCertificateSerialNumbers(
-      tx,
-      rows.length,
-    );
-    const reservedPublicIds = new Set<string>();
-    const certificates = [];
-
-    for (const [index, row] of rows.entries()) {
-      const publicId = await generateUniqueCertificatePublicId(
-        tx,
-        reservedPublicIds,
-      );
-      const user = usersByEmail.get(row.recipientEmailNormalized);
-
-      certificates.push(
-        await tx.certificate.create({
-          data: {
-            publicId,
-            recipientName: row.recipientName,
-            recipientEmail: row.recipientEmail,
-            recipientEmailNormalized: row.recipientEmailNormalized,
-            recipientDni: null,
-            certificateText: sharedData.data.certificateText,
-            footerText: sharedData.data.footerText,
-            templateKey: sharedData.data.templateKey,
-            serialNumber: serialNumbers[index],
-            instructorSignatureEnabled:
-              sharedData.data.instructorSignatureEnabled,
-            instructorKey: sharedData.data.instructorKey,
-            expiresAt: sharedData.data.expiresAt,
-            userId: user?.id ?? null,
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
-        }),
-      );
-    }
-
-    return {
-      certificates,
-      serialNumbers,
-    };
-  });
 }
 
 export async function POST(request: Request) {
@@ -416,7 +342,7 @@ export async function POST(request: Request) {
 
     const { certificates, serialNumbers } = await createCertificatesFromRows(
       importData.validation.validRows,
-      sharedPayload,
+      sharedPayload.data,
     );
 
     return NextResponse.json(
