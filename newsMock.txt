@@ -1,6 +1,6 @@
 {
     "message": "Todas las noticias",
-    "total": 41,
+    "total": 44,
     "news": [
         {
             "id": 3,
@@ -493,6 +493,42 @@
             "dateNew": "2026-04-11T03:00:00.000Z",
             "createdAt": "2026-04-15T01:06:02.030Z",
             "updatedAt": "2026-04-15T01:06:02.030Z"
+        },
+        {
+            "id": 44,
+            "title": "250 personas en Bomberos Chivilcoy",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1783391356/images/n3cnfnr5f1fxrwbkopi1.jpg",
+            "imagePublicId": "images/n3cnfnr5f1fxrwbkopi1",
+            "description": "Una vez más, esta alianza que nos llena de orgullo sigue creciendo y dejando huella en cada comunidad. Hace ya 3 años que trabajamos juntos llevando un mensaje preventivo integral:\n🔥 Prevención de intoxicaciones por monóxido de carbono\n❤️ RCP, uso de DEA y Maniobra de Heimlich\nGracias totales¡!¡",
+            "redirect": "https://www.larazondechivilcoy.com.ar/locales/2026/6/12/camuzzi-dono-un-desfibrilador-capacito-en-rcp-prevencion-de-monoxido-de-carbono-196330.html",
+            "category": "Alianza con Camuzzi Gas",
+            "dateNew": "2026-06-11T03:00:00.000Z",
+            "createdAt": "2026-07-07T02:29:19.809Z",
+            "updatedAt": "2026-07-07T02:29:19.809Z"
+        },
+        {
+            "id": 45,
+            "title": "Reportaje al presidente de Argentina Reanima",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1787584725/images/oekoymx1yv1fwqp5rzos.jpg",
+            "imagePublicId": "images/oekoymx1yv1fwqp5rzos",
+            "description": "Nuestro presidente, Sergio Felice, responde inquietudes sobre RCP, DEA, Heimlich y ley 27159. Un interesante reportaje para conocer mas sobre estos temas, que agradecemos profundamente a la 91.9 Chivilcoy.  @diarioyradio",
+            "redirect": "https://www.youtube.com/watch?v=FzpiE0DQY5Q",
+            "category": "Medios",
+            "dateNew": "2026-08-20T03:00:00.000Z",
+            "createdAt": "2026-08-23T21:31:48.434Z",
+            "updatedAt": "2026-08-24T15:18:45.928Z"
+        },
+        {
+            "id": 46,
+            "title": "Tres jornadas. Dos ciudades. Más de 300 personas compartiendo herramientas que pueden hacer la diferencia. ",
+            "imageUrl": "https://res.cloudinary.com/dtbryiptz/image/upload/v1787590197/images/qtanhldgfurnsir1o3vr.jpg",
+            "imagePublicId": "images/qtanhldgfurnsir1o3vr",
+            "description": "Desde Argentina Reanima queremos agradecer especialmente a las más de 300 personas que participaron, se acercaron, preguntaron, practicaron y eligieron dedicar parte de su tiempo a aprender.\nGracias Viedma y Patagones. Hasta el próximo encuentro¡!¡!",
+            "redirect": "https://www.rionegro.com.ar/sociedad/viedma-y-patagones-suman-desfibriladores-y-capacitan-a-mas-de-250-vecinos-en-rcp-como-se-usaran-los-nuevos-equipos-4683478/",
+            "category": "Alianza con Camuzzi Gas",
+            "dateNew": "2026-08-13T03:00:00.000Z",
+            "createdAt": "2026-08-24T16:40:58.842Z",
+            "updatedAt": "2026-08-24T16:49:59.221Z"
         }
     ],
     "status": 200,

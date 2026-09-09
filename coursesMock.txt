@@ -3,32 +3,64 @@
     "total": 4,
     "courses": [
         {
-            "id": 3,
-            "title": "Video Institucional",
+            "id": 6,
+            "title": "Disertaciones en Primer Congreso. Trenque Lauquen",
             "category": "RCP y DEA",
-            "createdAt": "2025-10-25T12:15:56.518Z",
-            "updatedAt": "2025-10-25T12:15:56.518Z"
-        },
-        {
-            "id": 4,
-            "title": "Homenajes. Primer Congreso de Instructores de RCP. Trenque Lauquen",
-            "category": "RCP y DEA",
-            "createdAt": "2025-11-11T19:45:44.039Z",
-            "updatedAt": "2025-11-11T19:45:44.039Z"
+            "createdAt": "2025-11-22T14:04:43.691Z",
+            "updatedAt": "2025-11-22T14:04:43.691Z",
+            "lessons": [
+                {
+                    "id": 9,
+                    "title": "Sergio Felice. Presidente de Argentina Reanima",
+                    "href": "https://www.youtube.com/watch?v=h9zHCGdS-lc&t=2498s",
+                    "courseId": 6
+                }
+            ]
         },
         {
             "id": 5,
             "title": "Disertaciones en Primer Congreso. Trenque Lauquen",
             "category": "RCP y DEA",
             "createdAt": "2025-11-22T14:03:05.251Z",
-            "updatedAt": "2025-11-22T14:03:05.251Z"
+            "updatedAt": "2025-11-22T14:03:05.251Z",
+            "lessons": [
+                {
+                    "id": 8,
+                    "title": "Jorge Godoy. Referente de Argentina Reanima en Río Tercero. Córdoba  ",
+                    "href": "https://www.youtube.com/watch?v=cH06e2pu_Yk&t=1285s",
+                    "courseId": 5
+                }
+            ]
         },
         {
-            "id": 6,
-            "title": "Disertaciones en Primer Congreso. Trenque Lauquen",
+            "id": 4,
+            "title": "Homenajes. Primer Congreso de Instructores de RCP. Trenque Lauquen",
             "category": "RCP y DEA",
-            "createdAt": "2025-11-22T14:04:43.691Z",
-            "updatedAt": "2025-11-22T14:04:43.691Z"
+            "createdAt": "2025-11-11T19:45:44.039Z",
+            "updatedAt": "2025-11-11T19:45:44.039Z",
+            "lessons": [
+                {
+                    "id": 7,
+                    "title": "El porqué de nuestra pasión, el fundamento de nuestro lema...",
+                    "href": "https://www.youtube.com/watch?v=afsa6HPZ8kc",
+                    "courseId": 4
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "title": "Video Institucional",
+            "category": "RCP y DEA",
+            "createdAt": "2025-10-25T12:15:56.518Z",
+            "updatedAt": "2025-10-25T12:15:56.518Z",
+            "lessons": [
+                {
+                    "id": 6,
+                    "title": "Nuestra Historia, Presente y Futuro",
+                    "href": "https://www.youtube.com/watch?v=JcSuh4oU_Zw",
+                    "courseId": 3
+                }
+            ]
         }
     ],
     "status": 200,
