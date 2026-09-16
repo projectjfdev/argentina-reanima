@@ -28,6 +28,12 @@ describe("certificateTemplates", () => {
         imageSrc: "/certificado-template/certificado-template_3.png",
         description: "Variante visual alternativa.",
       },
+      {
+        key: "template_4",
+        name: "Plantilla 4",
+        imageSrc: "/certificado-template/certificado-template_4.png",
+        description: "Variante visual alternativa.",
+      },
     ]);
   });
 

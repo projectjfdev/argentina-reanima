@@ -19,14 +19,18 @@ export const CERTIFICATE_TEMPLATES = [
     imageSrc: "/certificado-template/certificado-template_3.png",
     description: "Variante visual alternativa.",
   },
+  {
+    key: "template_4",
+    name: "Plantilla 4",
+    imageSrc: "/certificado-template/certificado-template_4.png",
+    description: "Variante visual alternativa.",
+  },
 ] as const;
 
 export type CertificateTemplateKey =
   (typeof CERTIFICATE_TEMPLATES)[number]["key"];
 
-export function getCertificateTemplateByKey(
-  key: string | null | undefined,
-) {
+export function getCertificateTemplateByKey(key: string | null | undefined) {
   return CERTIFICATE_TEMPLATES.find((template) => template.key === key);
 }
 
@@ -34,9 +38,7 @@ export function getDefaultCertificateTemplate() {
   return getCertificateTemplateByKey(DEFAULT_CERTIFICATE_TEMPLATE_KEY);
 }
 
-export function normalizeCertificateTemplateKey(
-  value: unknown,
-): string {
+export function normalizeCertificateTemplateKey(value: unknown): string {
   if (value === undefined || value === null) {
     return DEFAULT_CERTIFICATE_TEMPLATE_KEY;
   }
