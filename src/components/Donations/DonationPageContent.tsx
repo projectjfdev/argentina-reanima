@@ -282,15 +282,23 @@ export function DonationPageContent() {
                 : // ? `${campaign.locality} - ${campaign.address}. Cuando se llegue al objetivo, se instala el DEA y se capacita gratis.`
                   "En este momento no hay una campaña disponible para recibir donaciones."}
             </p>
-            <Button
-              size="lg"
-              disabled={!campaign?.canDonate}
-              className="mt-8 h-12 bg-primary px-6 text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
-              onClick={campaign?.canDonate ? openDonationModal : undefined}
-            >
-              {campaign?.canDonate ? "Quiero ser parte" : "Donaciones cerradas"}
-              <Heart className="ml-2 h-4 w-4" />
-            </Button>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Button
+                size="lg"
+                disabled={!campaign?.canDonate}
+                className="h-12 bg-primary px-6 text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
+                onClick={campaign?.canDonate ? openDonationModal : undefined}
+              >
+                {campaign?.canDonate ? "Quiero ser parte" : "Donaciones cerradas"}
+                <Heart className="ml-2 h-4 w-4" />
+              </Button>
+              <Link
+                href="/comunicado-quiero-ser-parte-el-carmen"
+                className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/70 bg-slate-950/30 px-6 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                Comunicado importante
+              </Link>
+            </div>
           </motion.div>
 
           <DonationProgressSummary campaign={campaign} isLoading={isLoading} />
@@ -391,13 +399,21 @@ export function DonationPageContent() {
                 emergencia por muerte súbita.
               </p>
 
-              <button
-                type="button"
-                onClick={openDonationModal}
-                className="mt-8 inline-flex cursor-pointer items-center justify-center rounded-md bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
-              >
-                Quiero ser parte
-              </button>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={openDonationModal}
+                  className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-md bg-primary px-8 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
+                >
+                  Quiero ser parte
+                </button>
+                <Link
+                  href="/comunicado-quiero-ser-parte-el-carmen"
+                  className="inline-flex min-h-12 items-center justify-center rounded-md border border-primary px-8 py-3 text-base font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  Comunicado importante
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-8 text-center">

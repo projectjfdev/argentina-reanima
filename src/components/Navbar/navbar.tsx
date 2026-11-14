@@ -24,6 +24,7 @@ import {
 import {
   ActivityIcon,
   ChevronDown,
+  FileText,
   Globe,
   Headset,
   Heart,
@@ -143,6 +144,12 @@ const donationLinks: MenuLink[] = [
     href: "/campanas-dea",
     icon: School,
     description: "Ver todas las campañas para un DEA.",
+  },
+  {
+    label: "Comunicado importante",
+    href: "/comunicado-quiero-ser-parte-el-carmen",
+    icon: FileText,
+    description: "Nuestro compromiso con El Carmen.",
   },
 ];
 
