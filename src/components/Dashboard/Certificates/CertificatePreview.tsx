@@ -48,7 +48,7 @@ const CERTIFICATE_EXPORT_TEXT_STYLE = {
     letterSpacing: CERTIFICATE_PREVIEW_TEXT_STYLE.title.letterSpacing,
   },
   certificateText: {
-    fontSize: "20px",
+    fontSize: "30px",
     lineHeight: CERTIFICATE_PREVIEW_TEXT_STYLE.certificateText.lineHeight,
   },
   footerText: {
